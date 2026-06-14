@@ -4,6 +4,11 @@
 # and the HTTPS repo verifies correctly.
 set -e
 
+if [ -e /etc/boykisser/netinstall ]; then
+	echo "netinstall: skipping VS Code (installed on first boot) :3"
+	exit 0
+fi
+
 echo "Installing VS Code Insiders :3"
 
 install -d -m 0755 /etc/apt/keyrings

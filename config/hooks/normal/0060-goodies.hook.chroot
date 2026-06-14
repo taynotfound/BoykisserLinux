@@ -1,0 +1,48 @@
+#!/bin/sh
+# Boykisser Linux goodies :3
+# Drops the /etc/boykisser metadata, makes the helper scripts executable, and
+# wires up friendly shell aliases + a tip line.
+set -e
+
+echo "Sprinkling Boykisser goodies :3"
+
+# --- /etc/boykisser metadata --------------------------------------------------
+mkdir -p /etc/boykisser
+
+# The netinstall marker (if any) is dropped by build.sh into includes.chroot and
+# is already here. Record which flavour this image is.
+if [ -e /etc/boykisser/netinstall ]; then
+	VARIANT="netinstall"
+else
+	VARIANT="full"
+fi
+echo "$VARIANT" > /etc/boykisser/variant
+
+DEBVER="$(cat /etc/debian_version 2>/dev/null || echo 13)"
+cat > /etc/boykisser/version <<EOF
+Boykisser Linux :3  (Debian $DEBVER · trixie · amd64 · $VARIANT)
+built $(date -u +%Y-%m-%d)
+https://boykisser.taymaerz.de
+EOF
+
+# --- make every boykisser helper executable -----------------------------------
+for f in /usr/local/bin/boykisser /usr/local/bin/boykisser-*; do
+	[ -e "$f" ] && chmod 0755 "$f" || true
+done
+
+# --- friendly shell aliases + a tip -------------------------------------------
+if [ -f /etc/bash.bashrc ] && ! grep -q 'BOYKISSER_ALIASES' /etc/bash.bashrc; then
+	cat >> /etc/bash.bashrc <<'EOF'
+
+# Boykisser Linux aliases :3
+if [ -n "$PS1" ] && [ -z "$BOYKISSER_ALIASES" ]; then
+	export BOYKISSER_ALIASES=1
+	alias update='boykisser-update'
+	alias cleanup='boykisser-cleanup'
+	alias doctor='boykisser-doctor'
+	alias bk='boykisser'
+	alias ll='ls -lah --color=auto'
+	alias la='ls -A --color=auto'
+fi
+EOF
+fi

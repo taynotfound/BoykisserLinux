@@ -36,7 +36,7 @@ fun refresh_callback() {
     s = "";
     i = 0;
     while (i < n) { s = s + " ."; i = i + 1; }
-    dots.image  = Image.Text("loading" + s, 0.85, 0.55, 0.75);
+    dots.image  = Image.Text("loafing" + s, 0.85, 0.55, 0.75);
     dots.sprite.SetImage(dots.image);
     dots.x = Window.GetX() + Window.GetWidth() / 2 - dots.image.GetWidth() / 2;
     dots.sprite.SetPosition(dots.x, dots.y, 1);

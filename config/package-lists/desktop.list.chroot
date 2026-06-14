@@ -119,3 +119,7 @@ xdg-user-dirs-gtk
 xdg-utils
 nano
 vim-tiny
+
+# Boykisser goodies — desktop widget + dialogs for the welcome/control center
+conky-all
+yad

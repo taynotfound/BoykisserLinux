@@ -20,6 +20,18 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: full
+            netinstall: "0"
+            iso: boykisser-linux-amd64.iso
+            item_suffix: ""
+          - variant: netinstall
+            netinstall: "1"
+            iso: boykisser-linux-netinstall-amd64.iso
+            item_suffix: "-netinstall"
     steps:
       - uses: actions/checkout@v4
 
@@ -44,7 +56,17 @@ jobs:
       - name: Build the builder image
         run: docker build -t boykisser-builder -f docker/Dockerfile.builder docker/
 
-      - name: Build the live ISO
+      - name: Toggle the netinstall variant
+        if: matrix.netinstall == '1'
+        run: |
+          # Mirror build.sh --netinstall: keep the heavy apps out of the squashfs
+          # and drop the marker the chroot hooks + first-boot service look for.
+          extra=config/package-lists/apps-extra.list.chroot
+          [ -f "$extra" ] && mv -f "$extra" "$extra.disabled"
+          mkdir -p config/includes.chroot/etc/boykisser
+          echo "netinstall" > config/includes.chroot/etc/boykisser/netinstall
+
+      - name: Build the live ISO (${{ matrix.variant }})
         run: |
           docker run --rm --privileged \
             -v "$PWD":/build -w /build \
@@ -59,9 +81,9 @@ jobs:
         id: iso
         run: |
           iso=$(ls -1 *.iso | head -n1)
-          mv -f "$iso" boykisser-linux-amd64.iso
-          sha256sum boykisser-linux-amd64.iso | tee SHA256SUMS
-          echo "size=$(du -h boykisser-linux-amd64.iso | cut -f1)" >> "$GITHUB_OUTPUT"
+          mv -f "$iso" "${{ matrix.iso }}"
+          sha256sum "${{ matrix.iso }}" | tee "SHA256SUMS-${{ matrix.variant }}"
+          echo "size=$(du -h "${{ matrix.iso }}" | cut -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Resolve tag
         id: tag
@@ -75,7 +97,7 @@ jobs:
             fi
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          echo "item=boykisser-linux-$tag" >> "$GITHUB_OUTPUT"
+          echo "item=boykisser-linux-$tag${{ matrix.item_suffix }}" >> "$GITHUB_OUTPUT"
 
       - name: Mirror to the Internet Archive
         id: ia
@@ -84,6 +106,8 @@ jobs:
           IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
           ITEM: ${{ steps.tag.outputs.item }}
           TAG: ${{ steps.tag.outputs.tag }}
+          ISO: ${{ matrix.iso }}
+          VARIANT: ${{ matrix.variant }}
         run: |
           if [ -z "$IA_ACCESS_KEY" ] || [ -z "$IA_SECRET_KEY" ]; then
             echo "No Internet Archive keys set — skipping mirror upload."
@@ -97,8 +121,8 @@ jobs:
           access = ${IA_ACCESS_KEY}
           secret = ${IA_SECRET_KEY}
           EOF
-          ia upload "$ITEM" boykisser-linux-amd64.iso SHA256SUMS \
-            --metadata="title:Boykisser Linux ${TAG}" \
+          ia upload "$ITEM" "$ISO" "SHA256SUMS-${VARIANT}" \
+            --metadata="title:Boykisser Linux ${TAG} (${VARIANT})" \
             --metadata="mediatype:software" \
             --metadata="collection:opensource_media" \
             --metadata="subject:linux;debian;boykisser-linux" \
@@ -107,62 +131,122 @@ jobs:
           echo "uploaded=true" >> "$GITHUB_OUTPUT"
           {
             echo "item_url=https://archive.org/details/${ITEM}"
-            echo "iso_url=https://archive.org/download/${ITEM}/boykisser-linux-amd64.iso"
+            echo "iso_url=https://archive.org/download/${ITEM}/${ISO}"
             echo "torrent_url=https://archive.org/download/${ITEM}/${ITEM}_archive.torrent"
           } >> "$GITHUB_OUTPUT"
 
       - name: Split ISO for the GitHub fallback
         run: |
-          split -b 1900M -d boykisser-linux-amd64.iso boykisser-linux-amd64.iso.part
-          ls -lh boykisser-linux-amd64.iso.part* SHA256SUMS
+          split -b 1900M -d "${{ matrix.iso }}" "${{ matrix.iso }}.part"
+          rm -f "${{ matrix.iso }}"
+          ls -lh "${{ matrix.iso }}".part* "SHA256SUMS-${{ matrix.variant }}"
 
-      - name: Write release notes
+      - name: Write release-notes fragment
         env:
-          TAG: ${{ steps.tag.outputs.tag }}
+          VARIANT: ${{ matrix.variant }}
+          ISO: ${{ matrix.iso }}
           UPLOADED: ${{ steps.ia.outputs.uploaded }}
           ISO_URL: ${{ steps.ia.outputs.iso_url }}
           TORRENT_URL: ${{ steps.ia.outputs.torrent_url }}
           ITEM_URL: ${{ steps.ia.outputs.item_url }}
           SIZE: ${{ steps.iso.outputs.size }}
         run: |
+          if [ "$VARIANT" = "netinstall" ]; then
+            heading="### Netinstall ISO — slim, needs internet on first boot (~${SIZE})"
+            blurb="A much smaller image with just the base desktop, browser and store. The installed system downloads the rest (OBS, VLC, codecs, Steam, VS Code, gaming bits + Flatpaks) on first boot, so it needs an internet connection to finish setup."
+          else
+            heading="### Full ISO — everything offline (~${SIZE})"
+            blurb="The complete daily driver: every app is already in the image, installs and runs fully offline."
+          fi
           {
-            echo "## Boykisser Linux ${TAG} :3"
+            echo "$heading"
             echo
-            echo "Debian 13 (trixie) · amd64 · UEFI + legacy BIOS · ~${SIZE} ISO."
+            echo "$blurb"
             echo
             if [ "$UPLOADED" = "true" ]; then
-              echo "### Download — one whole ISO, no reassembly"
-              echo
               echo "- **Direct mirror:** ${ISO_URL}"
-              echo "- **Torrent:** ${TORRENT_URL} _(can take a few minutes to appear while the Archive finishes processing)_"
+              echo "- **Torrent:** ${TORRENT_URL} _(can take a few minutes to appear)_"
               echo "- **Mirror page:** ${ITEM_URL}"
               echo
             fi
-            echo "### Download — GitHub fallback (split parts)"
-            echo
-            echo 'The parts below are the 2.5 GB ISO cut into 1.9 GiB chunks (GitHub caps assets at 2 GiB).'
+            echo "GitHub fallback (split parts — reassemble first):"
             echo
             echo '```sh'
-            echo 'cat boykisser-linux-amd64.iso.part* > boykisser-linux-amd64.iso'
+            echo "cat ${ISO}.part* > ${ISO}"
             echo 'sha256sum -c SHA256SUMS'
+            echo "# double-check /dev/sdX first — this wipes the target drive"
+            echo "sudo dd if=${ISO} of=/dev/sdX bs=4M status=progress oflag=sync"
             echo '```'
             echo
-            echo "### Flash it"
+          } > "release-notes-${VARIANT}.md"
+          cat "release-notes-${VARIANT}.md"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: iso-${{ matrix.variant }}
+          retention-days: 1
+          if-no-files-found: error
+          path: |
+            ${{ matrix.iso }}.part*
+            SHA256SUMS-${{ matrix.variant }}
+            release-notes-${{ matrix.variant }}.md
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          tag="${{ github.event.inputs.release_tag }}"
+          if [ -z "$tag" ]; then
+            if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+              tag="${GITHUB_REF_NAME}"
+            else
+              tag="nightly-$(date +%Y%m%d)"
+            fi
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Combine checksums and release notes
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          cd dist
+          # One SHA256SUMS covering both ISOs.
+          cat SHA256SUMS-* > SHA256SUMS
+          rm -f SHA256SUMS-*
+          # Compose the release notes: shared header + full + netinstall fragments.
+          {
+            echo "## Boykisser Linux ${TAG} :3"
             echo
-            echo '```sh'
-            echo '# double-check /dev/sdX first — this wipes the target drive'
-            echo 'sudo dd if=boykisser-linux-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync'
-            echo '```'
+            echo "Debian 13 (trixie) · amd64 · UEFI + legacy BIOS."
+            echo
+            echo "Two flavours below — grab the **full** ISO for an offline daily driver,"
+            echo "or the **netinstall** ISO for a tiny download that pulls apps on first boot."
+            echo
+            [ -f release-notes-full.md ] && cat release-notes-full.md
+            [ -f release-notes-netinstall.md ] && cat release-notes-netinstall.md
           } > release-notes.md
-          cat release-notes.md
+          rm -f release-notes-full.md release-notes-netinstall.md
+          echo "=== files to publish ==="; ls -lh
+          echo "=== notes ==="; cat release-notes.md
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: Boykisser Linux ${{ steps.tag.outputs.tag }}
-          body_path: release-notes.md
+          body_path: dist/release-notes.md
           files: |
-            boykisser-linux-amd64.iso.part*
-            SHA256SUMS
+            dist/boykisser-linux-amd64.iso.part*
+            dist/boykisser-linux-netinstall-amd64.iso.part*
+            dist/SHA256SUMS
 

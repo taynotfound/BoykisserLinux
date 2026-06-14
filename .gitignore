@@ -24,3 +24,6 @@ config/package-lists/*.binary
 local/
 *.ovmf-vars.fd
 website/
+# netinstall build marker (created/removed by build.sh --netinstall)
+config/includes.chroot/etc/boykisser/netinstall
+config/package-lists/*.disabled

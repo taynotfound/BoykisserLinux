@@ -1,0 +1,27 @@
+#!/bin/bash
+# Boykisser Linux — offline-friendly bootloader-config.
+#
+# The stock Debian helper runs `apt-get install grub-pc` (BIOS) or
+# `apt-get install grub-efi` (UEFI) here, which fails when the machine is
+# offline (the ISO ships no package pool) with "grub-pc doesn't exist".
+#
+# We instead ship the GRUB platform packages inside the squashfs
+# (grub-pc-bin + grub-efi-amd64-bin + grub2-common + grub-common), so they are
+# already present on the target after unpackfs. No apt access is needed: the
+# upstream `bootloader` module runs grub-install for the right platform, and we
+# just re-enable os-prober and refresh the menu here.
+
+CHROOT=$(mount | grep proc | grep calamares | awk '{print $3}' | sed -e "s#/proc##g")
+
+# Set secure initramfs permissions for full-disk-encryption installs. The
+# cryptsetup-initramfs/keyutils packages are shipped in the image already, so we
+# don't apt-get install anything.
+if [ "$(mount | grep $CHROOT" " | cut -c -16)" = "/dev/mapper/luks" ]; then
+    echo "UMASK=0077" > $CHROOT/etc/initramfs-tools/conf.d/initramfs-permissions
+fi
+
+echo "Running bootloader-config (offline)..."
+
+# Re-enable os-prober:
+sed -i "s/#GRUB_DISABLE_OS_PROBER=false/# OS_PROBER re-enabled by Boykisser Calamares installation:\nGRUB_DISABLE_OS_PROBER=false/g" $CHROOT/etc/default/grub
+chroot $CHROOT /usr/sbin/update-grub

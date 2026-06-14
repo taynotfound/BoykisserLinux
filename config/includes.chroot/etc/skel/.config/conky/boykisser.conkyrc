@@ -1,0 +1,57 @@
+--[[  Boykisser Linux conky :3  — a cute pink system widget  ]]--
+
+conky.config = {
+    alignment = 'top_right',
+    gap_x = 28,
+    gap_y = 48,
+    minimum_width = 220,
+    maximum_width = 260,
+
+    own_window = true,
+    own_window_type = 'desktop',
+    own_window_transparent = true,
+    own_window_argb_visual = true,
+    own_window_argb_value = 0,
+    own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
+
+    double_buffer = true,
+    update_interval = 2,
+    no_buffers = true,
+    cpu_avg_samples = 2,
+
+    draw_shades = false,
+    draw_outline = false,
+    draw_borders = false,
+
+    use_xft = true,
+    font = 'Quicksand:size=10',
+    override_utf8_locale = true,
+
+    default_color = 'FFE6F4',
+    color1 = 'FF5FA2',   -- pink headings
+    color2 = 'FFA6D1',   -- soft pink accents
+}
+
+conky.text = [[
+${color1}${font Quicksand:bold:size=16}Boykisser :3${font}${color}
+${color2}${hr 2}${color}
+${color1}${font Quicksand:bold:size=10}SYSTEM${font}${color}
+ Host    ${alignr}${nodename}
+ Kernel  ${alignr}${kernel}
+ Uptime  ${alignr}${uptime_short}
+${color2}${hr 1}${color}
+${color1}${font Quicksand:bold:size=10}CPU${font}${color}
+ Usage   ${alignr}${cpu}%
+${cpubar 6,0 FF5FA2 FFA6D1}
+${color1}${font Quicksand:bold:size=10}MEMORY${font}${color}
+ RAM     ${alignr}$mem / $memmax
+${membar 6,0 FF5FA2 FFA6D1}
+${color1}${font Quicksand:bold:size=10}DISK${font}${color}
+ Root    ${alignr}${fs_used /} / ${fs_size /}
+${fs_bar 6,0 /}
+${color1}${font Quicksand:bold:size=10}NETWORK${font}${color}
+ Down    ${alignr}${downspeedf}k
+ Up      ${alignr}${upspeedf}k
+${color2}${hr 1}${color}
+${alignc}${color2}stay cute <3${color}
+]]

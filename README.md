@@ -35,11 +35,22 @@ You need `podman` (or `docker`). The ISO is built inside a Debian container, so
 it works from any host.
 
 ```sh
-./build.sh        # build the ISO
+./build.sh        # build the full ISO
+./build.sh --netinstall   # build the slim ISO (pulls apps from the net on first boot)
 ./test-vm.sh      # boot it in QEMU
 ```
 
-The result lands at `boykisser-linux-amd64.iso`.
+The result lands at `boykisser-linux-amd64.iso` (or
+`boykisser-linux-netinstall-amd64.iso` for the slim build).
+
+### Full vs netinstall
+
+- **Full** — every app is in the squashfs; installs and runs fully offline.
+- **Netinstall** — a much smaller ISO with only the base desktop, browser and
+  store. On the first boot of the *installed* system it downloads the rest
+  (OBS, VLC, codecs, Steam, VS Code, gaming bits + Flatpaks) via
+  `boykisser-postinstall-apps`, so it **needs an internet connection** to finish
+  setup. You can also re-run `sudo boykisser-postinstall-apps` any time.
 
 ## Releases
 

@@ -4,6 +4,14 @@ set -e
 
 echo "Branding the Calamares installer :3"
 
+# Make sure our offline-friendly Calamares helper overrides stay executable
+# (includes.chroot doesn't always preserve the +x bit). These replace the stock
+# Debian helpers that apt-get install grub-pc/grub-efi at install time and would
+# otherwise fail on an offline machine.
+for h in calamares-bootloader-config calamares-sources-media; do
+	[ -f "/usr/share/calamares/helpers/$h" ] && chmod 0755 "/usr/share/calamares/helpers/$h"
+done
+
 # Rebrand the launcher calamares-settings-debian copies to the Desktop.
 DEB_LAUNCHER=/usr/share/applications/calamares-install-debian.desktop
 if [ -f "$DEB_LAUNCHER" ]; then

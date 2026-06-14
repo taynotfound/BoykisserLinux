@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Boykisser Conky
+Comment=Cute pink system widget on the desktop :3
+Exec=sh -c "sleep 6; conky -c $HOME/.config/conky/boykisser.conkyrc"
+OnlyShowIn=XFCE;
+Terminal=false
+NoDisplay=true
+X-XFCE-Autostart-Phase=Application

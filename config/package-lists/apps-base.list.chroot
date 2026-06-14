@@ -1,0 +1,19 @@
+# Boykisser Linux — base applications (always installed, full + netinstall)
+# ---------------------------------------------------------------------------
+# Keep this list SMALL: it is what ships in the slim "netinstall" ISO. Anything
+# heavy lives in apps-extra.list.chroot, which the netinstall build leaves out
+# and boykisser-postinstall-apps pulls from the internet on first boot.
+
+# Web browser
+firefox-esr
+
+# Flatpak + storefront (Flathub wired up via hook, GNOME Software as the store)
+flatpak
+gnome-software
+gnome-software-plugin-flatpak
+
+# NVIDIA detection only — the proprietary driver is NOT shipped (its DKMS
+# module can't build against the live kernel). Users run "Install NVIDIA
+# Drivers" / boykisser-nvidia on the installed system. nvidia-detect is
+# detection-only (no module build).
+nvidia-detect

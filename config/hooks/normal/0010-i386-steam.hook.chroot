@@ -4,6 +4,11 @@
 # rather than from a plain package list.
 set -e
 
+if [ -e /etc/boykisser/netinstall ]; then
+	echo "netinstall: skipping Steam (installed on first boot) :3"
+	exit 0
+fi
+
 echo "I-I-I'm installing Steam :3  (enabling i386 multiarch)"
 
 dpkg --add-architecture i386

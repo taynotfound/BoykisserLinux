@@ -2,6 +2,11 @@
 # Make the OBS Virtual Camera work out of the box via v4l2loopback.
 set -e
 
+if [ -e /etc/boykisser/netinstall ]; then
+	echo "netinstall: skipping OBS virtual camera setup (done on first boot) :3"
+	exit 0
+fi
+
 echo "Setting up the OBS Virtual Camera :3"
 
 mkdir -p /etc/modules-load.d /etc/modprobe.d

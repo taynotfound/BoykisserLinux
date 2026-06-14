@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Boykisser Welcome
+GenericName=Welcome & Control Center
+Comment=Tips, updates, apps and themes for Boykisser Linux :3
+Exec=boykisser-welcome
+Icon=/usr/share/boykisser/start.png
+Terminal=false
+Categories=System;Settings;
+Keywords=welcome;boykisser;control;center;help;

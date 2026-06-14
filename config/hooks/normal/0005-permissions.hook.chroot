@@ -8,6 +8,12 @@ for f in \
 	/usr/local/bin/boykisser-theme-toggle \
 	/usr/local/bin/boykisser-nvidia \
 	/usr/local/bin/boykisser-wallpaper \
+	/usr/local/bin/boykisser \
+	/usr/local/bin/boykisser-update \
+	/usr/local/bin/boykisser-cleanup \
+	/usr/local/bin/boykisser-doctor \
+	/usr/local/bin/boykisser-welcome \
+	/usr/local/bin/boykisser-postinstall-apps \
 	/usr/local/bin/install-boykisser
 do
 	[ -e "$f" ] && chmod 0755 "$f" || true

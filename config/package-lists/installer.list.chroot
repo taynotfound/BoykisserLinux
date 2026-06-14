@@ -6,6 +6,8 @@ calamares-settings-debian
 # Partitioning / install backends Calamares leans on
 gparted
 cryptsetup
+cryptsetup-initramfs
+keyutils
 lvm2
 dosfstools
 e2fsprogs

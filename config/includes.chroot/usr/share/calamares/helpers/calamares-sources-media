@@ -1,0 +1,21 @@
+#!/bin/sh
+# Boykisser Linux — offline-friendly sources-media.
+#
+# The stock Debian helper mounts the live medium as an apt source and runs
+# `apt-get update` against it. Our ISO carries no full package pool, so that
+# `apt-get update` fails and aborts the installation. Because we never
+# apt-get install anything during the install (GRUB and friends are already in
+# the squashfs), we simply skip the media apt source entirely. The real apt
+# sources for the installed system are written later by `sources-final`.
+
+CHROOT=$(mount | grep proc | grep calamares | awk '{print $3}' | sed -e "s#/proc##g")
+
+# sources-media-unmount calls this with -u; nothing to undo.
+if [ "$1" = "-u" ]; then
+    exit 0
+fi
+
+# Drop the live-build base source so it doesn't leak onto the installed system.
+rm -f $CHROOT/etc/apt/sources.list.d/base.list
+
+exit 0

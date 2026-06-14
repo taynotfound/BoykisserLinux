@@ -9,6 +9,44 @@ cd "$HERE"
 IMAGE="boykisser-builder"
 NAME="boykisser-linux"
 
+# --- build variant -----------------------------------------------------------
+# Default is the full daily-driver ISO. Pass --netinstall (or NETINSTALL=1) for
+# a slim ISO: it ships only the base apps and pulls the heavy ones (OBS, VLC,
+# codecs, Steam, VS Code, gaming bits + Flatpaks) from the internet on first
+# boot via boykisser-postinstall-apps. Needs an internet connection to finish.
+NETINSTALL="${NETINSTALL:-0}"
+LB_ARGS=()
+for arg in "$@"; do
+	case "$arg" in
+		--netinstall) NETINSTALL=1 ;;
+		--full)       NETINSTALL=0 ;;
+		*)            LB_ARGS+=("$arg") ;;
+	esac
+done
+set -- "${LB_ARGS[@]+"${LB_ARGS[@]}"}"
+
+EXTRA_LIST="$HERE/config/package-lists/apps-extra.list.chroot"
+MARKER="$HERE/config/includes.chroot/etc/boykisser/netinstall"
+
+restore_variant() {
+	# Always undo the netinstall tweaks so the working tree stays clean.
+	[ -f "$EXTRA_LIST.disabled" ] && mv -f "$EXTRA_LIST.disabled" "$EXTRA_LIST"
+	rm -f "$MARKER"
+}
+trap restore_variant EXIT
+restore_variant
+
+if [ "$NETINSTALL" = "1" ]; then
+	echo ":3 building the SLIM netinstall variant (needs internet on first boot)"
+	# Keep the heavy apps out of the squashfs...
+	[ -f "$EXTRA_LIST" ] && mv -f "$EXTRA_LIST" "$EXTRA_LIST.disabled"
+	# ...and drop a marker the chroot hooks + first-boot service look for.
+	mkdir -p "$(dirname "$MARKER")"
+	echo "netinstall" > "$MARKER"
+else
+	echo ":3 building the FULL daily-driver ISO"
+fi
+
 # --- pick a container engine --------------------------------------------------
 ENGINE="${ENGINE:-}"
 if [ -z "$ENGINE" ]; then
@@ -43,8 +81,12 @@ $ENGINE run --rm -it \
 # --- report -------------------------------------------------------------------
 ISO="$(ls -1 "$HERE"/*.iso 2>/dev/null | head -n1 || true)"
 if [ -n "$ISO" ]; then
-	# Give a friendly stable name
-	FINAL="$HERE/boykisser-linux-amd64.iso"
+	# Give a friendly stable name (slim builds get a -netinstall suffix)
+	if [ "$NETINSTALL" = "1" ]; then
+		FINAL="$HERE/boykisser-linux-netinstall-amd64.iso"
+	else
+		FINAL="$HERE/boykisser-linux-amd64.iso"
+	fi
 	mv -f "$ISO" "$FINAL"
 	echo ""
 	echo ":3 ===================================================="
