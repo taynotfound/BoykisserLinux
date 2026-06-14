@@ -6,12 +6,16 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Tag to publish the build under (e.g. v1.0.0)"
+        description: "Tag to publish the build under (e.g. v1.0.0). Blank = nightly-DATE."
         required: false
         default: ""
 
 permissions:
   contents: write
+
+concurrency:
+  group: build-iso
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -21,9 +25,10 @@ jobs:
 
       - name: Free up disk space
         run: |
-          sudo rm -rf /opt/hostedtoolcache /usr/local/lib/android /usr/share/dotnet /usr/share/swift
+          sudo rm -rf /opt/hostedtoolcache /usr/local/lib/android \
+            /usr/share/dotnet /usr/share/swift /usr/local/.ghcup
           sudo docker image prune -af || true
-          df -h
+          df -h /
 
       - name: Build the builder image
         run: docker build -t boykisser-builder -f docker/Dockerfile.builder docker/
@@ -39,16 +44,13 @@ jobs:
               lb build
             '
 
-      - name: Package the ISO
-        id: package
+      - name: Name and checksum the ISO
+        id: iso
         run: |
           iso=$(ls -1 *.iso | head -n1)
           mv -f "$iso" boykisser-linux-amd64.iso
-          sha256sum boykisser-linux-amd64.iso > SHA256SUMS
-          # GitHub release assets cap at ~2 GiB, so split into 1.9 GiB parts.
-          split -b 1900M boykisser-linux-amd64.iso boykisser-linux-amd64.iso.part-
-          rm -f boykisser-linux-amd64.iso
-          ls -lh boykisser-linux-amd64.iso.part-* SHA256SUMS
+          sha256sum boykisser-linux-amd64.iso | tee SHA256SUMS
+          echo "size=$(du -h boykisser-linux-amd64.iso | cut -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Resolve tag
         id: tag
@@ -57,25 +59,94 @@ jobs:
           [ -z "$tag" ] && tag="${GITHUB_REF_NAME}"
           [ -z "$tag" ] && tag="nightly-$(date +%Y%m%d)"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "item=boykisser-linux-$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Mirror to the Internet Archive
+        id: ia
+        env:
+          IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
+          IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
+          ITEM: ${{ steps.tag.outputs.item }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          if [ -z "$IA_ACCESS_KEY" ] || [ -z "$IA_SECRET_KEY" ]; then
+            echo "No Internet Archive keys set — skipping mirror upload."
+            echo "uploaded=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          pip install --user internetarchive
+          mkdir -p ~/.config/internetarchive
+          cat > ~/.config/internetarchive/ia.ini <<EOF
+          [s3]
+          access = ${IA_ACCESS_KEY}
+          secret = ${IA_SECRET_KEY}
+          EOF
+          ia upload "$ITEM" boykisser-linux-amd64.iso SHA256SUMS \
+            --metadata="title:Boykisser Linux ${TAG}" \
+            --metadata="mediatype:software" \
+            --metadata="collection:opensource_media" \
+            --metadata="subject:linux;debian;boykisser-linux" \
+            --metadata="creator:taynotfound" \
+            --retries 5
+          echo "uploaded=true" >> "$GITHUB_OUTPUT"
+          {
+            echo "item_url=https://archive.org/details/${ITEM}"
+            echo "iso_url=https://archive.org/download/${ITEM}/boykisser-linux-amd64.iso"
+            echo "torrent_url=https://archive.org/download/${ITEM}/${ITEM}_archive.torrent"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Split ISO for the GitHub fallback
+        run: |
+          split -b 1900M -d boykisser-linux-amd64.iso boykisser-linux-amd64.iso.part
+          ls -lh boykisser-linux-amd64.iso.part* SHA256SUMS
+
+      - name: Write release notes
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          UPLOADED: ${{ steps.ia.outputs.uploaded }}
+          ISO_URL: ${{ steps.ia.outputs.iso_url }}
+          TORRENT_URL: ${{ steps.ia.outputs.torrent_url }}
+          ITEM_URL: ${{ steps.ia.outputs.item_url }}
+          SIZE: ${{ steps.iso.outputs.size }}
+        run: |
+          {
+            echo "## Boykisser Linux ${TAG} :3"
+            echo
+            echo "Debian 13 (trixie) · amd64 · UEFI + legacy BIOS · ~${SIZE} ISO."
+            echo
+            if [ "$UPLOADED" = "true" ]; then
+              echo "### Download — one whole ISO, no reassembly"
+              echo
+              echo "- **Direct mirror:** ${ISO_URL}"
+              echo "- **Torrent:** ${TORRENT_URL} _(can take a few minutes to appear while the Archive finishes processing)_"
+              echo "- **Mirror page:** ${ITEM_URL}"
+              echo
+            fi
+            echo "### Download — GitHub fallback (split parts)"
+            echo
+            echo 'The parts below are the 2.5 GB ISO cut into 1.9 GiB chunks (GitHub caps assets at 2 GiB).'
+            echo
+            echo '```sh'
+            echo 'cat boykisser-linux-amd64.iso.part* > boykisser-linux-amd64.iso'
+            echo 'sha256sum -c SHA256SUMS'
+            echo '```'
+            echo
+            echo "### Flash it"
+            echo
+            echo '```sh'
+            echo '# double-check /dev/sdX first — this wipes the target drive'
+            echo 'sudo dd if=boykisser-linux-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync'
+            echo '```'
+          } > release-notes.md
+          cat release-notes.md
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: Boykisser Linux ${{ steps.tag.outputs.tag }}
+          body_path: release-notes.md
           files: |
-            boykisser-linux-amd64.iso.part-*
+            boykisser-linux-amd64.iso.part*
             SHA256SUMS
-          body: |
-            ## Boykisser Linux ${{ steps.tag.outputs.tag }} :3
 
-            The ISO is split because GitHub caps release assets at ~2 GiB.
-
-            **Reassemble, verify, and flash:**
-            ```sh
-            cat boykisser-linux-amd64.iso.part-* > boykisser-linux-amd64.iso
-            sha256sum -c SHA256SUMS
-            sudo dd if=boykisser-linux-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync
-            ```
-
-            Debian 13 (trixie) · amd64 · UEFI + BIOS.

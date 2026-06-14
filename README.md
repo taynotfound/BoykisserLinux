@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="website/assets/boykisser.png" alt="Boykisser Linux" width="200">
+  <img src="boykisser_start.png" alt="Boykisser Linux" width="200">
 
   # Boykisser Linux :3
 
   **A gay, gimmicky, actually daily-drivable Debian distro. XFCE, but make it pink.**
 
   [Website](https://boykisser.taymaerz.de) ·
-  [Download](https://github.com/taynotfound/boykisser-linux/releases/latest) ·
+  [Download](https://github.com/taynotfound/BoykisserLinux/releases/latest) ·
   [Discord](https://discord.gg/3ZpwE9PPfP)
 </div>
 
@@ -44,11 +44,17 @@ The result lands at `boykisser-linux-amd64.iso`.
 ## Releases
 
 Tagged pushes (`v*`) trigger [the build workflow](.github/workflows/build.yml),
-which builds the ISO and publishes it to GitHub Releases. Assets are split into
-1.9 GiB parts to stay under GitHub's limit:
+which builds the ISO and publishes it two ways:
+
+- **Internet Archive** — the whole ISO as a single direct download plus an
+  auto-generated torrent, so there's nothing to reassemble. (Needs the
+  `IA_ACCESS_KEY` / `IA_SECRET_KEY` repo secrets; the step is skipped without
+  them.)
+- **GitHub Releases** — a fallback copy split into 1.9 GiB parts to stay under
+  GitHub's 2 GiB asset limit:
 
 ```sh
-cat boykisser-linux-amd64.iso.part-* > boykisser-linux-amd64.iso
+cat boykisser-linux-amd64.iso.part* > boykisser-linux-amd64.iso
 sha256sum -c SHA256SUMS
 sudo dd if=boykisser-linux-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync
 ```

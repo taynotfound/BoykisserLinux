@@ -32,7 +32,7 @@ ${p}       \\___________________/${r}
 
   ${s}Links${r}
     Site     ${w}https://boykisser.taymaerz.de${r}
-    Source   ${w}https://github.com/taynotfound/boykisser-linux${r}
+    Source   ${w}https://github.com/taynotfound/BoykisserLinux${r}
     Discord  ${w}https://discord.gg/3ZpwE9PPfP${r}
 
   ${d}Disclaimer: AI tooling helped build this OS. Everything here is${r}
