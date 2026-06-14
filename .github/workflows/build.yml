@@ -25,10 +25,21 @@ jobs:
 
       - name: Free up disk space
         run: |
-          sudo rm -rf /opt/hostedtoolcache /usr/local/lib/android \
-            /usr/share/dotnet /usr/share/swift /usr/local/.ghcup
+          echo "before:"; df -h /
+          sudo rm -rf \
+            /opt/hostedtoolcache \
+            /usr/local/lib/android \
+            /usr/share/dotnet \
+            /usr/share/swift \
+            /usr/local/.ghcup \
+            /usr/local/share/powershell \
+            /usr/local/share/chromium \
+            /usr/local/lib/node_modules \
+            /opt/ghc "$AGENT_TOOLSDIRECTORY" || true
+          sudo apt-get clean || true
           sudo docker image prune -af || true
-          df -h /
+          sudo docker builder prune -af || true
+          echo "after:"; df -h /
 
       - name: Build the builder image
         run: docker build -t boykisser-builder -f docker/Dockerfile.builder docker/
@@ -56,8 +67,13 @@ jobs:
         id: tag
         run: |
           tag="${{ github.event.inputs.release_tag }}"
-          [ -z "$tag" ] && tag="${GITHUB_REF_NAME}"
-          [ -z "$tag" ] && tag="nightly-$(date +%Y%m%d)"
+          if [ -z "$tag" ]; then
+            if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+              tag="${GITHUB_REF_NAME}"
+            else
+              tag="nightly-$(date +%Y%m%d)"
+            fi
+          fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "item=boykisser-linux-$tag" >> "$GITHUB_OUTPUT"
 
