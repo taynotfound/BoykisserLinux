@@ -1,0 +1,58 @@
+name: "Feature suggestion"
+description: "Suggest an app, theme tweak, or feature for Boykisser Linux."
+title: "[Idea]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got an idea to make Boykisser Linux cuter or more useful? Lay it on me. :3
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What's the idea?
+      description: Describe the feature, app, or change you'd like to see.
+      placeholder: "Ship <app> by default, add a pink GTK theme variant, ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does it solve?
+      description: Why is this worth doing? What does it make better?
+      placeholder: "Right now I have to install X manually every time because..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: What area is this about?
+      options:
+        - Theming / look & feel
+        - Bundled apps / packages
+        - Gaming
+        - Streaming / recording
+        - Installer (Calamares)
+        - Boot / Plymouth / GRUB
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Any workarounds you already use, or other ways to solve this.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this isn't already suggested.
+          required: true

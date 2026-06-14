@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discord
+    url: https://discord.gg/3ZpwE9PPfP
+    about: Quick questions, help, or just want to say hi? The Discord is the fastest way.
+  - name: Debian documentation
+    url: https://www.debian.org/doc/
+    about: Boykisser Linux is plain Debian under the paint — Debian's docs apply to most things.

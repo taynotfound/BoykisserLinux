@@ -1,0 +1,81 @@
+name: "Bug report"
+description: "Something in Boykisser Linux is broken or misbehaving."
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. :3
+        Please search the existing issues first — someone may have hit it already.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+      placeholder: "When I open X, the panel does Y instead of Z."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we trigger it ourselves?
+      placeholder: |
+        1. Boot the live ISO
+        2. Open Whisker menu
+        3. Click ...
+        4. See the error
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Where did it happen?
+      options:
+        - Live ISO (before installing)
+        - Installed system
+        - Calamares installer
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: iso-version
+    attributes:
+      label: ISO / release version
+      description: Which build are you on? (release tag, or the date you downloaded it)
+      placeholder: "v1.0.0 / nightly-20260614"
+    validations:
+      required: true
+
+  - type: textarea
+    id: hardware
+    attributes:
+      label: Hardware
+      description: CPU, GPU, RAM, and anything else relevant. `inxi -Fxz` output is welcome.
+      placeholder: "AMD Ryzen 5 5600, NVIDIA RTX 3060, 16 GB RAM"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Paste relevant logs or drag in screenshots. Code blocks are auto-rendered.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this isn't a duplicate.
+          required: true
+        - label: I'm aware this is a hobby distro and not affiliated with Debian.
+          required: false

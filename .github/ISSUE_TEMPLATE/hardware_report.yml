@@ -1,0 +1,62 @@
+name: "Hardware / compatibility report"
+description: "Report whether Boykisser Linux boots and works on your machine — good or bad."
+title: "[Hardware]: "
+labels: ["hardware"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        These reports help everyone know what works. Successes are just as useful as failures. :3
+
+  - type: dropdown
+    id: result
+    attributes:
+      label: How did it go?
+      options:
+        - Works great
+        - Works with some issues
+        - Boots but major problems
+        - Doesn't boot at all
+    validations:
+      required: true
+
+  - type: input
+    id: model
+    attributes:
+      label: Machine make / model
+      placeholder: "Lenovo ThinkPad T480 / custom desktop"
+    validations:
+      required: true
+
+  - type: textarea
+    id: specs
+    attributes:
+      label: Specs
+      description: CPU, GPU, RAM, storage, firmware (UEFI/legacy BIOS). `inxi -Fxz` output is ideal.
+      placeholder: "Intel i5-8250U, Intel UHD 620, 16 GB RAM, UEFI"
+    validations:
+      required: true
+
+  - type: textarea
+    id: works
+    attributes:
+      label: What worked
+      placeholder: "Wi-Fi, audio, brightness, suspend, external display..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: broken
+    attributes:
+      label: What didn't work
+      placeholder: "Wallpaper didn't set, NVIDIA needed the helper, no sound until reboot..."
+    validations:
+      required: false
+
+  - type: input
+    id: iso-version
+    attributes:
+      label: ISO / release version
+      placeholder: "v1.0.0 / nightly-20260614"
+    validations:
+      required: true
