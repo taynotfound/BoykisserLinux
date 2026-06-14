@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Install NVIDIA Drivers
+Comment=Install the proprietary NVIDIA driver (after installing Boykisser Linux) :3
+Exec=xfce4-terminal --title="NVIDIA Driver Setup" -e "boykisser-nvidia"
+Icon=nvidia-settings
+Terminal=false
+Categories=System;Settings;HardwareSettings;
+Keywords=nvidia;driver;gpu;graphics;

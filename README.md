@@ -1,0 +1,74 @@
+<div align="center">
+  <img src="website/assets/boykisser.png" alt="Boykisser Linux" width="200">
+
+  # Boykisser Linux :3
+
+  **A gay, gimmicky, actually daily-drivable Debian distro. XFCE, but make it pink.**
+
+  [Website](https://boykisser.taymaerz.de) ·
+  [Download](https://github.com/taynotfound/boykisser-linux/releases/latest) ·
+  [Discord](https://discord.gg/3ZpwE9PPfP)
+</div>
+
+---
+
+## What is this?
+
+Boykisser Linux is a custom [Debian 13 (trixie)](https://www.debian.org/) live
+ISO built with [live-build](https://wiki.debian.org/live-build) and installed
+with [Calamares](https://calamares.io/). It ships an XFCE desktop with a full
+Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
+
+## Features
+
+- 💅 Full Boykisser XFCE theme — pink accents, Tela-circle icons, light & dark, custom Plymouth splash and boot menu
+- 📦 Flatpak + Flathub out of the box (GNOME Software, Flatseal, Gear Lever)
+- 🎮 Steam, Heroic, GameMode, MangoHud — with 32-bit libs enabled
+- 🎥 OBS Studio with a working virtual camera (v4l2loopback)
+- 🌐 Firefox, VS Code Insiders, VLC, Discord
+- 🖥️ UEFI + BIOS, broad firmware, Nouveau for universal boot
+- 🟩 One-click helper to install proprietary NVIDIA drivers after setup
+
+## Build it yourself
+
+You need `podman` (or `docker`). The ISO is built inside a Debian container, so
+it works from any host.
+
+```sh
+./build.sh        # build the ISO
+./test-vm.sh      # boot it in QEMU
+```
+
+The result lands at `boykisser-linux-amd64.iso`.
+
+## Releases
+
+Tagged pushes (`v*`) trigger [the build workflow](.github/workflows/build.yml),
+which builds the ISO and publishes it to GitHub Releases. Assets are split into
+1.9 GiB parts to stay under GitHub's limit:
+
+```sh
+cat boykisser-linux-amd64.iso.part-* > boykisser-linux-amd64.iso
+sha256sum -c SHA256SUMS
+sudo dd if=boykisser-linux-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+```
+
+## Layout
+
+| Path | What |
+| --- | --- |
+| `auto/config` | live-build configuration |
+| `config/package-lists/` | what gets installed |
+| `config/hooks/normal/` | build-time setup (Flatpak, Steam, theme, ...) |
+| `config/includes.chroot/` | files overlaid onto the image |
+| `config/bootloaders/` | Boykisser boot splash + GRUB theme |
+| `docker/Dockerfile.builder` | the build container |
+
+## Disclaimer
+
+AI tooling helped build this OS. Everything is reviewed and tested by a human,
+but please read the code before running it. Run `./README.sh` for the cute
+version. :3
+
+Debian is a trademark of Software in the Public Interest, Inc. Boykisser Linux
+is an independent project and is not affiliated with or endorsed by Debian.

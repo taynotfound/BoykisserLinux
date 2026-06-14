@@ -1,0 +1,81 @@
+name: Build ISO
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag to publish the build under (e.g. v1.0.0)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /opt/hostedtoolcache /usr/local/lib/android /usr/share/dotnet /usr/share/swift
+          sudo docker image prune -af || true
+          df -h
+
+      - name: Build the builder image
+        run: docker build -t boykisser-builder -f docker/Dockerfile.builder docker/
+
+      - name: Build the live ISO
+        run: |
+          docker run --rm --privileged \
+            -v "$PWD":/build -w /build \
+            boykisser-builder -lc '
+              set -e
+              lb clean --purge || true
+              lb config
+              lb build
+            '
+
+      - name: Package the ISO
+        id: package
+        run: |
+          iso=$(ls -1 *.iso | head -n1)
+          mv -f "$iso" boykisser-linux-amd64.iso
+          sha256sum boykisser-linux-amd64.iso > SHA256SUMS
+          # GitHub release assets cap at ~2 GiB, so split into 1.9 GiB parts.
+          split -b 1900M boykisser-linux-amd64.iso boykisser-linux-amd64.iso.part-
+          rm -f boykisser-linux-amd64.iso
+          ls -lh boykisser-linux-amd64.iso.part-* SHA256SUMS
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          tag="${{ github.event.inputs.release_tag }}"
+          [ -z "$tag" ] && tag="${GITHUB_REF_NAME}"
+          [ -z "$tag" ] && tag="nightly-$(date +%Y%m%d)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Boykisser Linux ${{ steps.tag.outputs.tag }}
+          files: |
+            boykisser-linux-amd64.iso.part-*
+            SHA256SUMS
+          body: |
+            ## Boykisser Linux ${{ steps.tag.outputs.tag }} :3
+
+            The ISO is split because GitHub caps release assets at ~2 GiB.
+
+            **Reassemble, verify, and flash:**
+            ```sh
+            cat boykisser-linux-amd64.iso.part-* > boykisser-linux-amd64.iso
+            sha256sum -c SHA256SUMS
+            sudo dd if=boykisser-linux-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+            ```
+
+            Debian 13 (trixie) · amd64 · UEFI + BIOS.

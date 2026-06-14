@@ -1,0 +1,39 @@
+---
+componentName: boykisser
+
+# Window behaviour
+welcomeStyleCalamares: true
+welcomeExpandingLogo:  true
+windowExpanding:       normal
+windowSize:            18em,32em
+windowPlacement:       center
+
+# Navigation / sidebar style
+sidebar:    widget
+navigation: widget
+
+strings:
+    productName:         Boykisser Linux
+    shortProductName:    Boykisser
+    version:             13
+    shortVersion:        13
+    versionedName:       Boykisser Linux 13 (trixie) :3
+    shortVersionedName:  Boykisser 13
+    bootloaderEntryName:  Boykisser
+    productUrl:          https://example.invalid/boykisser
+    supportUrl:          https://example.invalid/boykisser
+    knownIssuesUrl:      https://example.invalid/boykisser
+    releaseNotesUrl:     https://example.invalid/boykisser
+
+images:
+    productLogo:    "logo.png"
+    productIcon:    "icon.png"
+    productWelcome: "logo.png"
+
+slideshow: "show.qml"
+
+style:
+    sidebarBackground:    "#241447"
+    sidebarText:          "#ffffff"
+    sidebarTextSelect:    "#ff5fa2"
+    sidebarTextHighlight: "#ff5fa2"

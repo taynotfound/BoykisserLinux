@@ -1,0 +1,6 @@
+/* Boykisser Linux — pink accent for libadwaita / GTK4 apps :3 */
+@define-color accent_bg_color #ff5fa2;
+@define-color accent_color #ff5fa2;
+@define-color accent_fg_color #ffffff;
+@define-color theme_selected_bg_color #ff5fa2;
+@define-color theme_selected_fg_color #ffffff;

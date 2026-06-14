@@ -1,0 +1,25 @@
+#!/bin/sh
+# Install Visual Studio Code - Insiders from the Microsoft apt repo.
+# Done as a hook (not config/archives) so ca-certificates is already present
+# and the HTTPS repo verifies correctly.
+set -e
+
+echo "Installing VS Code Insiders :3"
+
+install -d -m 0755 /etc/apt/keyrings
+if [ -f /usr/share/keyrings/microsoft.gpg ]; then
+	cp /usr/share/keyrings/microsoft.gpg /etc/apt/keyrings/microsoft.gpg
+fi
+
+cat > /etc/apt/sources.list.d/vscode.sources <<'EOF'
+Types: deb
+URIs: https://packages.microsoft.com/repos/code
+Suites: stable
+Components: main
+Architectures: amd64
+Signed-By: /etc/apt/keyrings/microsoft.gpg
+EOF
+
+apt-get update
+apt-get install -y --no-install-recommends code-insiders || \
+	echo "!! code-insiders install failed (continuing build)"

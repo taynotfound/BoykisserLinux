@@ -1,0 +1,12 @@
+PRETTY_NAME="Boykisser Linux :3"
+NAME="Boykisser Linux"
+VERSION_ID="13"
+VERSION="13 (trixie)"
+VERSION_CODENAME=trixie
+ID=boykisser
+ID_LIKE=debian
+HOME_URL="https://example.invalid/boykisser"
+SUPPORT_URL="https://example.invalid/boykisser"
+BUG_REPORT_URL="https://example.invalid/boykisser"
+ANSI_COLOR="1;35"
+LOGO=boykisser

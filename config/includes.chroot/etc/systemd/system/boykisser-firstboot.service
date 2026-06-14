@@ -1,0 +1,14 @@
+[Unit]
+Description=Boykisser Linux first-boot setup (Flatpak apps) :3
+After=network-online.target NetworkManager.service
+Wants=network-online.target
+ConditionPathExists=!/var/lib/boykisser-firstboot.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/boykisser-firstboot
+RemainAfterExit=yes
+TimeoutStartSec=infinity
+
+[Install]
+WantedBy=multi-user.target

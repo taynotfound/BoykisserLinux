@@ -1,0 +1,68 @@
+#!/bin/sh
+# Apply the Boykisser look: render wallpapers, set Plymouth theme, refresh caches.
+set -e
+
+echo "Applying the Boykisser theme uwu :3"
+
+# Branding artwork — all derived from the Boykisser logo set in /usr/share/boykisser
+mkdir -p /etc/calamares/branding/boykisser
+
+# Plymouth boot splash uses the cute Boykisser.
+if [ ! -f /usr/share/plymouth/themes/boykisser/splash.png ] && \
+   [ -f /usr/share/boykisser/start.png ]; then
+	cp /usr/share/boykisser/start.png \
+		/usr/share/plymouth/themes/boykisser/splash.png || true
+fi
+
+# Calamares installer: cute Boykisser logo + face icon + dark wallpaper
+if [ -f /usr/share/boykisser/start.png ]; then
+	cp /usr/share/boykisser/start.png /etc/calamares/branding/boykisser/logo.png || true
+elif [ -f /usr/share/boykisser/logo.png ]; then
+	cp /usr/share/boykisser/logo.png  /etc/calamares/branding/boykisser/logo.png  || true
+fi
+if [ -f /usr/share/boykisser/face.png ]; then
+	cp /usr/share/boykisser/face.png /etc/calamares/branding/boykisser/icon.png || true
+elif [ -f /usr/share/boykisser/badge.png ]; then
+	cp /usr/share/boykisser/badge.png /etc/calamares/branding/boykisser/icon.png || true
+fi
+if [ -f /usr/share/backgrounds/boykisser/boykisser1.png ]; then
+	cp /usr/share/backgrounds/boykisser/boykisser1.png \
+		/etc/calamares/branding/boykisser/background.png || true
+fi
+
+# Make the cute Boykisser the system logo / about icon too
+mkdir -p /usr/share/pixmaps
+cp /usr/share/boykisser/start.png /usr/share/pixmaps/boykisser.png 2>/dev/null || true
+
+# Boot splash
+if command -v plymouth-set-default-theme >/dev/null 2>&1; then
+	plymouth-set-default-theme boykisser || true
+fi
+update-initramfs -u || true
+
+# Refresh caches so everything shows up nicely
+gtk-update-icon-cache -f -q /usr/share/icons/Tela-circle-pink       2>/dev/null || true
+gtk-update-icon-cache -f -q /usr/share/icons/Tela-circle-pink-dark  2>/dev/null || true
+gtk-update-icon-cache -f -q /usr/share/icons/Tela-circle-pink-light 2>/dev/null || true
+gtk-update-icon-cache -f -q /usr/share/icons/Papirus      2>/dev/null || true
+gtk-update-icon-cache -f -q /usr/share/icons/Papirus-Dark 2>/dev/null || true
+update-desktop-database 2>/dev/null || true
+fc-cache -f 2>/dev/null || true
+
+# Boykisser terminal greeter — show fastfetch on interactive shells
+if [ -f /etc/bash.bashrc ] && ! grep -q 'BOYKISSER_FETCH' /etc/bash.bashrc; then
+	cat >> /etc/bash.bashrc <<'EOF'
+
+# Boykisser Linux greeter :3
+if [ -n "$PS1" ] && [ -z "$BOYKISSER_FETCH" ] && command -v fastfetch >/dev/null 2>&1; then
+	export BOYKISSER_FETCH=1
+	fastfetch
+fi
+EOF
+fi
+
+# Make GNOME Software behave as a store, not a full session updater on the live ISO
+mkdir -p /etc/xdg/autostart
+if [ -f /etc/xdg/autostart/gnome-software-service.desktop ]; then
+	echo "Hidden=true" >> /etc/xdg/autostart/gnome-software-service.desktop || true
+fi

@@ -1,0 +1,21 @@
+/* Boykisser Linux — pink accent for all GTK3 apps :3 */
+@define-color theme_selected_bg_color #ff5fa2;
+@define-color theme_selected_fg_color #ffffff;
+@define-color accent_bg_color #ff5fa2;
+@define-color accent_color #ff5fa2;
+@define-color accent_fg_color #ffffff;
+@define-color suggested_action #ff5fa2;
+
+button:checked,
+button.suggested-action,
+.suggested-action {
+	background-image: none;
+	background-color: #ff5fa2;
+	color: #ffffff;
+}
+
+progressbar progress,
+scale highlight,
+switch:checked {
+	background-color: #ff5fa2;
+}

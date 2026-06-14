@@ -1,0 +1,22 @@
+#!/bin/sh
+# Enable the services Boykisser Linux needs, and set the graphical target.
+set -e
+
+echo "Enabling services :3"
+
+systemctl set-default graphical.target || true
+
+# Display manager + core daemons
+systemctl enable lightdm.service        || true
+systemctl enable NetworkManager.service || true
+systemctl enable bluetooth.service      || true
+
+# First-boot helper that installs the Flatpak apps (Heroic, Discord, ...)
+systemctl enable boykisser-firstboot.service || true
+
+# Make sure NetworkManager (not ifupdown) manages networking in the live/installed system
+mkdir -p /etc/NetworkManager/conf.d
+cat > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf <<'EOF'
+[keyfile]
+unmanaged-devices=none
+EOF

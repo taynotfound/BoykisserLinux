@@ -1,0 +1,69 @@
+#!/bin/sh
+# Point Calamares at the Boykisser branding.
+set -e
+
+echo "Branding the Calamares installer :3"
+
+# Rebrand the launcher calamares-settings-debian copies to the Desktop.
+DEB_LAUNCHER=/usr/share/applications/calamares-install-debian.desktop
+if [ -f "$DEB_LAUNCHER" ]; then
+        sed -i \
+                -e 's/^Name=.*/Name=Install Boykisser Linux/' \
+                -e 's/^GenericName=.*/GenericName=System Installer/' \
+                -e 's/^Comment=.*/Comment=Install Boykisser Linux to your computer :3/' \
+                -e 's|^Icon=.*|Icon=/usr/share/boykisser/start.png|' \
+                "$DEB_LAUNCHER"
+fi
+
+for f in /etc/calamares/settings.conf /etc/calamares/settings-online.conf; do
+	[ -f "$f" ] || continue
+	if grep -q '^branding:' "$f"; then
+		sed -i 's/^branding:.*/branding: boykisser/' "$f"
+	else
+		echo "branding: boykisser" >> "$f"
+	fi
+done
+
+# If calamares-settings-debian didn't ship a settings.conf, write a sane one.
+if [ ! -f /etc/calamares/settings.conf ]; then
+	cat > /etc/calamares/settings.conf <<'EOF'
+---
+modules-search: [ local ]
+sequence:
+  - show:
+      - welcome
+      - locale
+      - keyboard
+      - partition
+      - users
+      - summary
+  - exec:
+      - partition
+      - mount
+      - unpackfs
+      - machineid
+      - fstab
+      - locale
+      - keyboard
+      - localecfg
+      - users
+      - networkcfg
+      - hwclock
+      - services-systemd
+      - bootloader-config
+      - grubcfg
+      - bootloader
+      - packages
+      - luksbootkeyfile
+      - plymouthcfg
+      - initramfscfg
+      - initramfs
+      - removeuser
+      - umount
+  - show:
+      - finished
+branding: boykisser
+prompt-install: true
+dont-chroot: false
+EOF
+fi

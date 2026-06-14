@@ -1,0 +1,26 @@
+# live-build artifacts
+*.iso
+*.img
+*.log
+.build/
+cache/
+chroot/
+chroot.files
+chroot.packages.*
+binary/
+binary.*
+live-image-*.files
+live-image-*.packages
+live-image-*.contents
+source/
+source.*
+.stage/
+config/binary
+config/bootstrap
+config/chroot
+config/common
+config/source
+config/package-lists/*.binary
+local/
+*.ovmf-vars.fd
+website/

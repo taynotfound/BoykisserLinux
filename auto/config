@@ -1,0 +1,30 @@
+#!/bin/sh
+# Boykisser Linux :3  —  live-build configuration
+
+set -e
+
+lb config noauto \
+	--mode debian \
+	--distribution trixie \
+	--archive-areas "main contrib non-free non-free-firmware" \
+	--architectures amd64 \
+	--linux-flavours amd64 \
+	--binary-images iso-hybrid \
+	--bootloaders "syslinux,grub-efi" \
+	--debian-installer none \
+	--apt-recommends true \
+	--apt-indices false \
+	--firmware-chroot true \
+	--firmware-binary true \
+	--updates true \
+	--security true \
+	--backports false \
+	--memtest none \
+	--win32-loader false \
+	--iso-application "Boykisser Linux" \
+	--iso-volume "BOYKISSER" \
+	--iso-preparer "Boykisser Linux Project" \
+	--iso-publisher "Boykisser Linux Project; https://boykisser.taymaerz.de" \
+	--bootappend-live "boot=live components quiet splash username=boykisser user-fullname=Boykisser hostname=boykisser noeject" \
+	--bootappend-live-failsafe "boot=live components memtest noapic noapm nodma nomce nolapic nomodeset nosmp nosplash vga=normal" \
+	"${@}"

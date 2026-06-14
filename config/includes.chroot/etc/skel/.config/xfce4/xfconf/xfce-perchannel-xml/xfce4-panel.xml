@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-panel" version="1.0">
+  <property name="configver" type="int" value="2"/>
+  <property name="dark-mode" type="bool" value="true"/>
+  <property name="panels" type="array">
+    <value type="int" value="1"/>
+    <property name="panel-1" type="empty">
+      <property name="position" type="string" value="p=6;x=0;y=0"/>
+      <property name="length" type="uint" value="100"/>
+      <property name="position-locked" type="bool" value="true"/>
+      <property name="icon-size" type="uint" value="22"/>
+      <property name="size" type="uint" value="38"/>
+      <property name="plugin-ids" type="array">
+        <value type="int" value="1"/>
+        <value type="int" value="2"/>
+        <value type="int" value="3"/>
+        <value type="int" value="4"/>
+        <value type="int" value="6"/>
+        <value type="int" value="7"/>
+        <value type="int" value="8"/>
+        <value type="int" value="9"/>
+        <value type="int" value="10"/>
+        <value type="int" value="11"/>
+      </property>
+      <property name="background-style" type="uint" value="1"/>
+      <property name="background-rgba" type="array">
+        <value type="double" value="0.141176"/>
+        <value type="double" value="0.078431"/>
+        <value type="double" value="0.278431"/>
+        <value type="double" value="0.92"/>
+      </property>
+    </property>
+  </property>
+  <property name="plugins" type="empty">
+    <!-- 1: Boykisser start menu (Whisker) -->
+    <property name="plugin-1" type="string" value="whiskermenu">
+      <property name="button-icon" type="string" value="/usr/share/boykisser/start.png"/>
+      <property name="button-title" type="string" value="Boykisser"/>
+      <property name="button-single-row" type="bool" value="true"/>
+      <property name="show-button-title" type="bool" value="true"/>
+      <property name="show-button-icon" type="bool" value="true"/>
+      <property name="show-command-settings" type="bool" value="true"/>
+      <property name="show-command-lockscreen" type="bool" value="true"/>
+      <property name="show-command-switchuser" type="bool" value="true"/>
+      <property name="show-command-logout" type="bool" value="true"/>
+      <property name="favorites" type="array">
+        <value type="string" value="firefox-esr.desktop"/>
+        <value type="string" value="org.gnome.Software.desktop"/>
+        <value type="string" value="code-insiders.desktop"/>
+        <value type="string" value="steam.desktop"/>
+        <value type="string" value="com.obsproject.Studio.desktop"/>
+        <value type="string" value="xfce4-terminal.desktop"/>
+        <value type="string" value="thunar.desktop"/>
+        <value type="string" value="boykisser-theme-toggle.desktop"/>
+        <value type="string" value="install-boykisser.desktop"/>
+      </property>
+    </property>
+    <!-- 2: window buttons -->
+    <property name="plugin-2" type="string" value="tasklist">
+      <property name="grouping" type="uint" value="1"/>
+      <property name="show-labels" type="bool" value="true"/>
+      <property name="flat-buttons" type="bool" value="true"/>
+    </property>
+    <!-- 3: spacer -->
+    <property name="plugin-3" type="string" value="separator">
+      <property name="expand" type="bool" value="true"/>
+      <property name="style" type="uint" value="0"/>
+    </property>
+    <!-- 4: system tray -->
+    <property name="plugin-4" type="string" value="systray">
+      <property name="square-icons" type="bool" value="true"/>
+      <property name="symbolic-icons" type="bool" value="true"/>
+    </property>
+    <!-- 6: audio -->
+    <property name="plugin-6" type="string" value="pulseaudio">
+      <property name="enable-keyboard-shortcuts" type="bool" value="true"/>
+      <property name="show-notifications" type="bool" value="true"/>
+    </property>
+    <!-- 7: power -->
+    <property name="plugin-7" type="string" value="power-manager-plugin"/>
+    <!-- 8: separator -->
+    <property name="plugin-8" type="string" value="separator">
+      <property name="style" type="uint" value="1"/>
+    </property>
+    <!-- 9: clock -->
+    <property name="plugin-9" type="string" value="clock">
+      <property name="digital-layout" type="uint" value="3"/>
+      <property name="digital-time-format" type="string" value="%a %d %b  %H:%M"/>
+      <property name="tooltip-format" type="string" value="%A %d %B %Y"/>
+    </property>
+    <!-- 10: separator -->
+    <property name="plugin-10" type="string" value="separator">
+      <property name="style" type="uint" value="0"/>
+    </property>
+    <!-- 11: logout/action buttons -->
+    <property name="plugin-11" type="string" value="actions">
+      <property name="appearance" type="uint" value="0"/>
+      <property name="items" type="array">
+        <value type="string" value="+lock-screen"/>
+        <value type="string" value="+logout"/>
+        <value type="string" value="-switch-user"/>
+        <value type="string" value="-suspend"/>
+        <value type="string" value="-hibernate"/>
+        <value type="string" value="+restart"/>
+        <value type="string" value="+shutdown"/>
+      </property>
+    </property>
+  </property>
+</channel>

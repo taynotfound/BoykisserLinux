@@ -1,0 +1,24 @@
+#!/bin/sh
+# Enable i386 multiarch and install Steam (+ 32-bit graphics libs).
+# Steam needs i386, so this must run as a hook (after the base is in place)
+# rather than from a plain package list.
+set -e
+
+echo "I-I-I'm installing Steam :3  (enabling i386 multiarch)"
+
+dpkg --add-architecture i386
+apt-get update
+
+# Steam itself
+apt-get install -y --no-install-recommends steam-installer || \
+	apt-get install -y --no-install-recommends steam || true
+
+# 32-bit Mesa + Vulkan for games
+apt-get install -y \
+	libgl1-mesa-dri:i386 \
+	mesa-vulkan-drivers:i386 \
+	libglx-mesa0:i386 || true
+
+# NVIDIA is intentionally NOT installed at build time (its DKMS module can't be
+# compiled against the live kernel). Users enable it post-install with the
+# "Install NVIDIA Drivers" launcher / boykisser-nvidia helper.

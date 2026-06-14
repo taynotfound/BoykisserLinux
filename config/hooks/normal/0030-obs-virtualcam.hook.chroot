@@ -1,0 +1,16 @@
+#!/bin/sh
+# Make the OBS Virtual Camera work out of the box via v4l2loopback.
+set -e
+
+echo "Setting up the OBS Virtual Camera :3"
+
+mkdir -p /etc/modules-load.d /etc/modprobe.d
+
+# Load the module at boot
+echo v4l2loopback > /etc/modules-load.d/v4l2loopback.conf
+
+# A single device labelled so browsers/Discord/etc. recognise it.
+# exclusive_caps=1 is required for Chromium/Firefox/Electron apps to list it.
+cat > /etc/modprobe.d/v4l2loopback.conf <<'EOF'
+options v4l2loopback devices=1 video_nr=10 card_label="OBS Virtual Camera" exclusive_caps=1
+EOF

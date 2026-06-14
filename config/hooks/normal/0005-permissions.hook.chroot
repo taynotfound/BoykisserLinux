@@ -1,0 +1,18 @@
+#!/bin/sh
+# Make our scripts and desktop launchers executable inside the image.
+set -e
+
+for f in \
+	/usr/local/bin/boykisser-firstboot \
+	/usr/local/bin/boykisser-theme \
+	/usr/local/bin/boykisser-theme-toggle \
+	/usr/local/bin/boykisser-nvidia \
+	/usr/local/bin/boykisser-wallpaper \
+	/usr/local/bin/install-boykisser
+do
+	[ -e "$f" ] && chmod 0755 "$f" || true
+done
+
+# Trust the desktop launcher that lives on the live user's Desktop
+[ -e /etc/skel/Desktop/install-boykisser.desktop ] && \
+	chmod 0755 /etc/skel/Desktop/install-boykisser.desktop || true

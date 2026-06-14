@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Boykisser Theme
+Comment=Apply the saved Boykisser look on login :3
+Exec=boykisser-theme
+OnlyShowIn=XFCE;
+NoDisplay=true
+X-XFCE-Autostart-Override=true

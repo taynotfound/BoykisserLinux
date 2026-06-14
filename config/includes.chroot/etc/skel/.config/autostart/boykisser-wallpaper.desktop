@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Boykisser Wallpaper
+Comment=Apply the Boykisser wallpaper to every monitor :3
+Exec=boykisser-wallpaper
+OnlyShowIn=XFCE;
+X-XFCE-Autostart-Phase=Application
+NoDisplay=true
+Terminal=false

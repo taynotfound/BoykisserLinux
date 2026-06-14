@@ -1,0 +1,13 @@
+#!/bin/sh
+# Final cleanup to keep the ISO lean.
+set -e
+
+echo "Tidying up :3"
+
+apt-get autoremove --purge -y || true
+apt-get clean || true
+
+rm -rf /tmp/* /var/tmp/* || true
+rm -rf /var/lib/apt/lists/* || true
+# Trim DKMS/build leftovers but keep installed modules
+rm -rf /var/cache/apt/archives/*.deb || true

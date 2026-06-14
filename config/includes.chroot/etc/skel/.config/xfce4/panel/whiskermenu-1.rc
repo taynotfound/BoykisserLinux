@@ -1,0 +1,60 @@
+button-title=Boykisser
+button-icon=/usr/share/boykisser/start.png
+button-single-row=true
+show-button-title=true
+show-button-icon=true
+show-generic-names=false
+show-tooltips=true
+hover-switch-category=true
+category-show-name=true
+load-hierarchy=false
+view-as-icons=false
+default-category=0
+recent-items-max=10
+favorites-in-recent=true
+position-search-alternate=true
+position-commands-alternate=false
+position-categories-alternate=true
+stay-on-focus-out=false
+confirm-session-command=true
+menu-width=500
+menu-height=600
+menu-opacity=98
+command-settings=xfce4-settings-manager
+show-command-settings=true
+command-lockscreen=xflock4
+show-command-lockscreen=true
+command-switchuser=dm-tool switch-to-greeter
+show-command-switchuser=true
+command-logout=xfce4-session-logout
+show-command-logout=true
+command-menueditor=menulibre
+show-command-menueditor=false
+command-profile=mugshot
+show-command-profile=false
+search-actions=5
+[action0]
+name=Man Pages
+pattern=#
+command=exo-open --launch TerminalEmulator man %s
+regex=false
+[action1]
+name=Web Search
+pattern=?
+command=exo-open --launch WebBrowser https://duckduckgo.com/?q=%u
+regex=false
+[action2]
+name=Wikipedia
+pattern=!w
+command=exo-open --launch WebBrowser https://en.wikipedia.org/wiki/Special:Search?search=%u
+regex=false
+[action3]
+name=Run in Terminal
+pattern=!
+command=exo-open --launch TerminalEmulator %s
+regex=false
+[action4]
+name=Open URI
+pattern=^(file|http|https):\/\/(.*)$
+command=exo-open \0
+regex=true

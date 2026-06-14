@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Install Boykisser Linux
+GenericName=System Installer
+Comment=Install Boykisser Linux to your computer :3
+Exec=install-boykisser
+Icon=/etc/calamares/branding/boykisser/icon.png
+Terminal=false
+StartupNotify=true
+Categories=System;Settings;
+Keywords=calamares;install;installer;boykisser;

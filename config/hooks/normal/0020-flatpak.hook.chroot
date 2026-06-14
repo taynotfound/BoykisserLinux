@@ -1,0 +1,8 @@
+#!/bin/sh
+# Wire up Flatpak + Flathub so the store works out of the box.
+set -e
+
+echo "Adding the Flathub remote :3"
+
+flatpak remote-add --if-not-exists flathub \
+	https://dl.flathub.org/repo/flathub.flatpakrepo

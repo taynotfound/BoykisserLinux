@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Boykisser Theme Toggle
+GenericName=Light/Dark switch
+Comment=Switch between the Boykisser light and dark themes :3
+Exec=boykisser-theme-toggle
+Icon=preferences-desktop-theme
+Terminal=false
+Categories=Settings;DesktopSettings;XFCE;
+Keywords=theme;dark;light;pink;boykisser;

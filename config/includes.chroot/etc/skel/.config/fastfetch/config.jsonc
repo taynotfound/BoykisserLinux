@@ -1,0 +1,49 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "type": "file",
+        "source": "/usr/share/boykisser/ascii.txt",
+        "color": {
+            "1": "38;2;255;95;162",
+            "2": "38;2;255;255;255",
+            "3": "38;2;255;142;200"
+        },
+        "padding": {
+            "top": 1,
+            "left": 2,
+            "right": 3
+        }
+    },
+    "display": {
+        "separator": "  ",
+        "color": {
+            "keys": "38;2;255;95;162",
+            "title": "38;2;255;142;200"
+        }
+    },
+    "modules": [
+        {
+            "type": "title",
+            "format": "{user-name}@{host-name}  :3"
+        },
+        {
+            "type": "custom",
+            "format": "\u001b[38;2;255;95;162m──────────── boykisser linux ────────────"
+        },
+        { "type": "os", "key": "  ", "keyColor": "38;2;255;95;162" },
+        { "type": "kernel", "key": "  ", "keyColor": "38;2;255;95;162" },
+        { "type": "uptime", "key": "  ", "keyColor": "38;2;255;142;200" },
+        { "type": "packages", "key": "  ", "keyColor": "38;2;255;142;200" },
+        { "type": "shell", "key": "  ", "keyColor": "38;2;255;95;162" },
+        { "type": "de", "key": "  ", "keyColor": "38;2;255;95;162" },
+        { "type": "wm", "key": "  ", "keyColor": "38;2;255;142;200" },
+        { "type": "terminal", "key": "  ", "keyColor": "38;2;255;142;200" },
+        "break",
+        { "type": "cpu", "key": "  ", "keyColor": "38;2;255;95;162" },
+        { "type": "gpu", "key": "  ", "keyColor": "38;2;255;95;162" },
+        { "type": "memory", "key": "  ", "keyColor": "38;2;255;142;200" },
+        { "type": "disk", "key": "  ", "keyColor": "38;2;255;142;200" },
+        "break",
+        { "type": "colors", "symbol": "circle" }
+    ]
+}
