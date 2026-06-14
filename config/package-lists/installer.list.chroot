@@ -1,0 +1,20 @@
+# Boykisser Linux — Calamares graphical installer
+# ---------------------------------------------------------------------------
+calamares
+calamares-settings-debian
+
+# Partitioning / install backends Calamares leans on
+gparted
+cryptsetup
+lvm2
+dosfstools
+e2fsprogs
+btrfs-progs
+os-prober
+sudo
+
+# Bootloader packages for the installed target (BIOS + UEFI)
+grub-pc-bin
+grub-efi-amd64-bin
+grub2-common
+efibootmgr

@@ -1,0 +1,44 @@
+# Boykisser Linux — daily-driver applications
+# ---------------------------------------------------------------------------
+
+# Web browser
+firefox-esr
+
+# Flatpak + storefront (Flathub wired up via hook, GNOME Software as the store)
+flatpak
+gnome-software
+gnome-software-plugin-flatpak
+
+# Streaming / recording — OBS + virtual camera support
+obs-studio
+v4l2loopback-dkms
+v4l-utils
+
+# Visual Studio Code Insiders is installed via a hook (config/hooks) so the
+# Microsoft apt repo can be added after ca-certificates is present in the chroot.
+
+# Build tools (needed by DKMS modules: nvidia, v4l2loopback)
+build-essential
+dkms
+
+# Multimedia codecs & players
+vlc
+gstreamer1.0-plugins-good
+gstreamer1.0-plugins-bad
+gstreamer1.0-plugins-ugly
+gstreamer1.0-libav
+ffmpeg
+
+# Gaming bits (Steam itself is installed via the i386 hook)
+gamemode
+mangohud
+mesa-utils
+mesa-vulkan-drivers
+vulkan-tools
+
+# NVIDIA detection only — the proprietary driver is NOT shipped (its DKMS
+# module can't build against the live kernel). Users run "Install NVIDIA
+# Drivers" / boykisser-nvidia on the installed system. nvidia-detect is
+# detection-only (no module build), firmware covers misc non-free firmware.
+nvidia-detect
+firmware-misc-nonfree

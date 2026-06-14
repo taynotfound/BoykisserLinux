@@ -1,0 +1,9 @@
+Explanation: Boykisser Linux — don't install GNU aspell dictionaries.
+Explanation: The dictionaries-common aspell-autobuildhash trigger is fragile in
+Explanation: a live-build chroot: it crashes (Undefined subroutine &main::subst)
+Explanation: while reporting a benign aspell warning, aborting the image build.
+Explanation: aspell/aspell-en are only Recommends (xfce4-dict, dictionaries-common),
+Explanation: so blocking them is safe. App spell-check uses hunspell (hunspell-en-us).
+Package: aspell aspell-en aspell-doc
+Pin: release *
+Pin-Priority: -1

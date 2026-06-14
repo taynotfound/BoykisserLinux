@@ -1,0 +1,79 @@
+// Boykisser Linux Plymouth splash :3
+
+Window.SetBackgroundTopColor(0.10, 0.06, 0.18);
+Window.SetBackgroundBottomColor(0.18, 0.08, 0.27);
+
+// --- cute boykisser ---
+logo.image  = Image("splash.png");
+logo.sprite = Sprite(logo.image);
+logo.width  = logo.image.GetWidth();
+logo.height = logo.image.GetHeight();
+logo.x = Window.GetX() + Window.GetWidth()  / 2 - logo.width  / 2;
+logo.y = Window.GetY() + Window.GetHeight() / 2 - logo.height / 2 - 30;
+logo.sprite.SetPosition(logo.x, logo.y, 0);
+
+// --- title text ---
+title.image  = Image.Text("Boykisser Linux  :3", 1.0, 0.37, 0.64, 1, "Sans Bold 22");
+title.sprite = Sprite(title.image);
+title.x = Window.GetX() + Window.GetWidth() / 2 - title.image.GetWidth() / 2;
+title.y = logo.y + logo.height + 6;
+title.sprite.SetPosition(title.x, title.y, 1);
+
+// --- animated loading dots ---
+progress = 0;
+dots.sprite = Sprite();
+dots.y = title.y + 44;
+
+fun refresh_callback() {
+    progress = progress + 1;
+
+    // gentle breathing on the boykisser
+    opacity = 0.80 + 0.20 * Math.Sin(progress / 18);
+    logo.sprite.SetOpacity(opacity);
+
+    // bouncing loading dots
+    n = Math.Int(progress / 12) % 4;
+    s = "";
+    i = 0;
+    while (i < n) { s = s + " ."; i = i + 1; }
+    dots.image  = Image.Text("loading" + s, 0.85, 0.55, 0.75);
+    dots.sprite.SetImage(dots.image);
+    dots.x = Window.GetX() + Window.GetWidth() / 2 - dots.image.GetWidth() / 2;
+    dots.sprite.SetPosition(dots.x, dots.y, 1);
+}
+Plymouth.SetRefreshFunction(refresh_callback);
+
+// --- boot message line ---
+message.sprite = Sprite();
+fun message_callback(text) {
+    message.image = Image.Text(text, 0.7, 0.7, 0.8);
+    message.sprite.SetImage(message.image);
+    message.sprite.SetPosition(
+        Window.GetX() + 20,
+        Window.GetY() + Window.GetHeight() - 36, 1);
+}
+Plymouth.SetMessageFunction(message_callback);
+
+// --- password prompt (encrypted installs) ---
+status = "normal";
+
+fun display_normal_callback() {
+    status = "normal";
+}
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+
+prompt_sprite = Sprite();
+prompt_sprite.SetPosition(Window.GetWidth() / 2 - 150, dots.y + 40, 1);
+
+fun StringBullets(n) {
+    s = "";
+    i = 0;
+    while (i < n) { s = s + "*"; i = i + 1; }
+    return s;
+}
+
+fun display_password_callback(prompt, bullets) {
+    text.image = Image.Text("Password: " + StringBullets(bullets), 1, 1, 1);
+    prompt_sprite.SetImage(text.image);
+}
+Plymouth.SetDisplayPasswordFunction(display_password_callback);

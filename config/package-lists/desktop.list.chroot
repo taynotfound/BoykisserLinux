@@ -1,0 +1,121 @@
+# Boykisser Linux — XFCE desktop + live system core
+# ---------------------------------------------------------------------------
+
+# Live system glue (boot/init/autologin)
+live-boot
+live-config
+live-config-systemd
+live-tools
+
+# Kernel + firmware (broad hardware support, old & new)
+linux-image-amd64
+linux-headers-amd64
+firmware-linux
+firmware-linux-nonfree
+firmware-misc-nonfree
+firmware-iwlwifi
+firmware-realtek
+firmware-atheros
+firmware-brcm80211
+intel-microcode
+amd64-microcode
+
+# Xorg + Wayland bits
+xorg
+xserver-xorg
+xserver-xorg-video-all
+xserver-xorg-input-all
+x11-xserver-utils
+xinit
+
+# XFCE desktop
+xfce4
+xfce4-goodies
+xfce4-terminal
+xfce4-whiskermenu-plugin
+xfce4-pulseaudio-plugin
+xfce4-notifyd
+xfce4-screenshooter
+xfce4-taskmanager
+xfce4-power-manager
+xfce4-clipman-plugin
+thunar
+thunar-archive-plugin
+thunar-volman
+tumbler
+
+# Display manager + greeter
+lightdm
+lightdm-gtk-greeter
+lightdm-gtk-greeter-settings
+
+# Audio (PipeWire stack)
+pipewire
+pipewire-pulse
+pipewire-audio
+wireplumber
+pavucontrol
+pulseaudio-utils
+
+# Networking
+network-manager
+network-manager-gnome
+network-manager-openvpn-gnome
+modemmanager
+blueman
+bluez
+
+# Disk / filesystem tools
+gvfs
+gvfs-backends
+gvfs-fuse
+udisks2
+ntfs-3g
+exfatprogs
+dosfstools
+e2fsprogs
+gparted
+baobab
+
+# Theming engines, icons & fonts
+plymouth
+plymouth-themes
+plymouth-label
+papirus-icon-theme
+gnome-themes-extra
+gtk2-engines-murrine
+librsvg2-common
+librsvg2-bin
+adwaita-qt
+qt6ct
+fonts-noto
+fonts-noto-color-emoji
+fonts-firacode
+fonts-cantarell
+fonts-font-awesome
+
+# Handy utilities
+file-roller
+mousepad
+ristretto
+xarchiver
+galculator
+gnome-disk-utility
+htop
+fastfetch
+curl
+wget
+git
+ca-certificates
+gnupg
+sudo
+zip
+unzip
+p7zip-full
+polkitd
+pkexec
+xdg-user-dirs
+xdg-user-dirs-gtk
+xdg-utils
+nano
+vim-tiny
