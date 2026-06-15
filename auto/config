@@ -3,6 +3,16 @@
 
 set -e
 
+# build.sh drops this marker for the slim "netinstall" variant. When present we
+# build without APT Recommends — the desktop's hard requirements are all listed
+# explicitly in config/package-lists, so dropping the (optional) Recommends is
+# the single biggest size lever and keeps the netinstall ISO under 1.2 GB.
+APT_RECOMMENDS=true
+if [ -e config/includes.chroot/etc/boykisser/netinstall ]; then
+	APT_RECOMMENDS=false
+	echo ":3 netinstall marker found — building without APT Recommends"
+fi
+
 lb config noauto \
 	--mode debian \
 	--distribution trixie \
@@ -12,7 +22,7 @@ lb config noauto \
 	--binary-images iso-hybrid \
 	--bootloaders "syslinux,grub-efi" \
 	--debian-installer none \
-	--apt-recommends true \
+	--apt-recommends "$APT_RECOMMENDS" \
 	--apt-indices false \
 	--firmware-chroot true \
 	--firmware-binary true \

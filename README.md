@@ -22,7 +22,9 @@ Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
 ## Features
 
 - 💅 Full Boykisser XFCE theme — pink accents, Tela-circle icons, light & dark, custom Plymouth splash and boot menu
-- 📦 Flatpak + Flathub out of the box (GNOME Software, Flatseal, Gear Lever)
+- 🖥️ Choose your desktop in the installer — XFCE by default, or pick **KDE Plasma** (fully pink Boykisser-themed, pulled from the net during install)
+- 🐲 Pink GRUB theme on the installed system, with the first entry (Boykisser) auto-selected
+- �📦 Flatpak + Flathub out of the box (GNOME Software, Flatseal, Gear Lever)
 - 🎮 Steam, Heroic, GameMode, MangoHud — with 32-bit libs enabled
 - 🎥 OBS Studio with a working virtual camera (v4l2loopback)
 - 🌐 Firefox, VS Code Insiders, VLC, Discord
@@ -46,11 +48,16 @@ The result lands at `boykisser-linux-amd64.iso` (or
 ### Full vs netinstall
 
 - **Full** — every app is in the squashfs; installs and runs fully offline.
-- **Netinstall** — a much smaller ISO with only the base desktop, browser and
-  store. On the first boot of the *installed* system it downloads the rest
-  (OBS, VLC, codecs, Steam, VS Code, gaming bits + Flatpaks) via
+- **Netinstall** — a much smaller ISO (kept under **1.2 GB**) with only the base
+  desktop, browser and store. It drops APT *Recommends* and the DKMS/build bits
+  from the squashfs, then downloads the rest (OBS, VLC, codecs, Steam, VS Code,
+  gaming bits + Flatpaks) on first boot of the *installed* system via
   `boykisser-postinstall-apps`, so it **needs an internet connection** to finish
   setup. You can also re-run `sudo boykisser-postinstall-apps` any time.
+
+> Picking **KDE Plasma** in the installer also needs an internet connection, on
+> both the full and netinstall ISOs — KDE is downloaded during install to keep
+> the images small. XFCE installs completely offline.
 
 ## Releases
 

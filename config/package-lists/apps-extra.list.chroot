@@ -10,6 +10,9 @@ v4l2loopback-dkms
 v4l-utils
 
 # Build tools (needed by DKMS modules: nvidia, v4l2loopback)
+# linux-headers-amd64 is here (not in desktop.list) so the slim netinstall, which
+# drops this whole list, doesn't carry the kernel headers it has no use for.
+linux-headers-amd64
 build-essential
 dkms
 

@@ -21,7 +21,9 @@ config/chroot
 config/common
 config/source
 config/package-lists/*.binary
-local/
+# live-build's root-level artifact dir only — anchored so it does NOT swallow
+# config/includes.chroot/usr/local/ (where the boykisser-* helper scripts live).
+/local/
 *.ovmf-vars.fd
 website/
 # netinstall build marker (created/removed by build.sh --netinstall)

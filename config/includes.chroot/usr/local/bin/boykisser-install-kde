@@ -1,0 +1,141 @@
+#!/bin/sh
+# Boykisser Linux — install KDE Plasma into the target system :3
+#
+# Called by the Calamares contextualprocess module when the user picks "KDE
+# Plasma" in the desktop chooser. It pulls KDE from the internet into the freshly
+# unpacked target root, keeps LightDM as the display manager, and makes Plasma
+# the default session. If there is no network, it leaves the (already installed)
+# XFCE desktop in place so the install still succeeds.
+#
+# Usage: boykisser-install-kde <target-root>
+set -e
+
+ROOT="${1:-/}"
+
+log() { echo "boykisser-install-kde: $*"; }
+
+# --- bail out gracefully if we can't reach the internet ----------------------
+if ! { command -v getent >/dev/null 2>&1 && getent hosts deb.debian.org >/dev/null 2>&1; } \
+   && ! ping -c1 -W3 deb.debian.org >/dev/null 2>&1; then
+	log "no internet — keeping XFCE (KDE needs a network connection)."
+	exit 0
+fi
+
+# --- make the target chroot-able ---------------------------------------------
+mounted=""
+mount_bind() {
+	# Only bind what isn't already mounted by Calamares.
+	if ! mountpoint -q "$ROOT/$1" 2>/dev/null; then
+		mkdir -p "$ROOT/$1" 2>/dev/null || true
+		if mount --bind "/$1" "$ROOT/$1" 2>/dev/null; then
+			mounted="$1 $mounted"
+		fi
+	fi
+}
+cleanup() {
+	for m in $mounted; do
+		umount -l "$ROOT/$m" 2>/dev/null || true
+	done
+}
+trap cleanup EXIT INT TERM
+
+mount_bind proc
+mount_bind sys
+mount_bind dev
+mount_bind dev/pts
+mount_bind run
+
+# DNS for apt inside the chroot.
+cp -f /etc/resolv.conf "$ROOT/etc/resolv.conf" 2>/dev/null || true
+
+# --- install KDE -------------------------------------------------------------
+# Preseed so adding KDE (which recommends SDDM) does NOT steal the default
+# display manager from LightDM.
+chroot "$ROOT" sh -c 'command -v debconf-set-selections >/dev/null 2>&1 && \
+	printf "%s\n%s\n" \
+	  "lightdm shared/default-x-display-manager select lightdm" \
+	  "sddm shared/default-x-display-manager select lightdm" \
+	  | debconf-set-selections' 2>/dev/null || true
+
+log "downloading KDE Plasma (this can take a while)…"
+if ! chroot "$ROOT" sh -c '
+		export DEBIAN_FRONTEND=noninteractive
+		apt-get update &&
+		apt-get install -y --no-install-recommends \
+			kde-plasma-desktop plasma-workspace plasma-nm \
+			konsole dolphin sddm-conf 2>/dev/null ||
+		apt-get install -y kde-plasma-desktop'
+then
+	log "KDE install failed — leaving XFCE in place."
+	exit 0
+fi
+
+# --- keep LightDM, make Plasma the default session ---------------------------
+# Force LightDM as the system display manager (KDE may have enabled SDDM).
+echo "/usr/sbin/lightdm" > "$ROOT/etc/X11/default-display-manager" 2>/dev/null || true
+chroot "$ROOT" systemctl disable sddm.service 2>/dev/null || true
+chroot "$ROOT" systemctl enable  lightdm.service 2>/dev/null || true
+
+# Pick the Plasma session file that actually exists (Plasma 6 = plasmax11).
+SESSION=plasma
+for s in plasmax11 plasma; do
+	if [ -f "$ROOT/usr/share/xsessions/$s.desktop" ]; then
+		SESSION="$s"
+		break
+	fi
+done
+
+mkdir -p "$ROOT/etc/lightdm/lightdm.conf.d"
+cat > "$ROOT/etc/lightdm/lightdm.conf.d/60-boykisser-kde.conf" <<EOF
+# Boykisser Linux — default to the KDE Plasma session (user chose KDE) :3
+[Seat:*]
+user-session=$SESSION
+EOF
+
+# --- brand KDE the Boykisser way ---------------------------------------------
+# Mirror the XFCE look on Plasma: pink (#ff5fa2) accent, dark Breeze, the
+# Tela-circle-pink-dark icon set and the Boykisser wallpaper. We set both a
+# system-wide default (/etc/xdg/kdeglobals, also covers /etc/skel for future
+# users) and the config of every account Calamares just created.
+WALLPAPER=""
+for w in \
+	/usr/share/backgrounds/boykisser/boykisser1.png \
+	/usr/share/backgrounds/boykisser/boykisser2.png \
+	/usr/share/backgrounds/boykisser/boykisser4.png
+do
+	[ -f "$ROOT$w" ] && { WALLPAPER="$w"; break; }
+done
+
+KDEGLOBALS_SRC=/usr/share/boykisser/kde/kdeglobals
+if [ -f "$ROOT$KDEGLOBALS_SRC" ]; then
+	log "applying the Boykisser KDE theme (pink + Tela-circle-pink-dark)…"
+
+	# System-wide defaults (and a copy into /etc/skel for any future users).
+	mkdir -p "$ROOT/etc/xdg" "$ROOT/etc/skel/.config"
+	cp -f "$ROOT$KDEGLOBALS_SRC" "$ROOT/etc/xdg/kdeglobals"
+	cp -f "$ROOT$KDEGLOBALS_SRC" "$ROOT/etc/skel/.config/kdeglobals"
+
+	# Per-account: kdeglobals + a Boykisser wallpaper on the desktop.
+	while IFS=: read -r uname _ uid _ _ uhome _; do
+		[ -n "$uid" ] || continue
+		[ "$uid" -ge 1000 ] && [ "$uid" -lt 60000 ] || continue
+		[ -d "$ROOT$uhome" ] || continue
+
+		mkdir -p "$ROOT$uhome/.config"
+		cp -f "$ROOT$KDEGLOBALS_SRC" "$ROOT$uhome/.config/kdeglobals"
+
+		if [ -n "$WALLPAPER" ]; then
+			cat > "$ROOT$uhome/.config/plasma-org.kde.plasma.desktop-appletsrc" <<EOF
+[Containments][1]
+wallpaperplugin=org.kde.image
+
+[Containments][1][Wallpaper][org.kde.image][General]
+Image=file://$WALLPAPER
+EOF
+		fi
+
+		chroot "$ROOT" chown -R "$uname:$uname" "$uhome/.config" 2>/dev/null || true
+	done < "$ROOT/etc/passwd"
+fi
+
+log "KDE Plasma installed; default session set to '$SESSION'. :3"

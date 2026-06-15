@@ -1,0 +1,68 @@
+#!/bin/sh
+# Boykisser Linux — finish the installed-system GRUB theme :3
+# theme.txt ships in includes.chroot; here we render a background image sized for
+# the menu and bake the *.pf2 fonts GRUB needs. grub-mkconfig auto-loadfonts any
+# *.pf2 it finds in the theme directory, so the installed system's update-grub
+# (run by the Calamares bootloader helper) picks these up with no extra wiring.
+set -e
+
+echo "Baking the installed-system GRUB theme :3"
+
+THEME_DIR=/boot/grub/themes/boykisser
+[ -d "$THEME_DIR" ] || exit 0
+
+# --- background ---------------------------------------------------------------
+# Reuse one of the Boykisser wallpapers. GRUB wants PNG; convert if we have a
+# tool, otherwise just copy a PNG wallpaper straight in.
+SRC=""
+for c in \
+	/usr/share/backgrounds/boykisser/boykisser1.png \
+	/usr/share/backgrounds/boykisser/boykisser2.png \
+	/usr/share/backgrounds/boykisser/boykisser4.png \
+	/usr/share/boykisser/logo-dark.png \
+	/usr/share/boykisser/logo.png
+do
+	[ -f "$c" ] && { SRC="$c"; break; }
+done
+
+if [ -n "$SRC" ]; then
+	if command -v convert >/dev/null 2>&1; then
+		# Fit onto a 1920x1080 dark canvas, centred — looks tidy at any res.
+		convert -size 1920x1080 xc:'#1a0e2e' \
+			\( "$SRC" -resize 1920x1080\> \) -gravity center -composite \
+			"$THEME_DIR/background.png" 2>/dev/null \
+			|| cp "$SRC" "$THEME_DIR/background.png"
+	else
+		cp "$SRC" "$THEME_DIR/background.png"
+	fi
+fi
+
+# --- fonts --------------------------------------------------------------------
+# Force the font family name to "Boykisser" so theme.txt can reference
+# "Boykisser Regular <size>" regardless of which TTF we find.
+TTF=""
+for c in \
+	/usr/share/fonts/truetype/firacode/FiraCode-Regular.ttf \
+	/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
+	/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf \
+	/usr/share/fonts/opentype/cantarell/Cantarell-Regular.otf
+do
+	[ -f "$c" ] && { TTF="$c"; break; }
+done
+
+FONTS_OK=0
+if command -v grub-mkfont >/dev/null 2>&1 && [ -n "$TTF" ]; then
+	if grub-mkfont -s 16 -n Boykisser -o "$THEME_DIR/boykisser16.pf2" "$TTF" 2>/dev/null \
+	&& grub-mkfont -s 28 -n Boykisser -o "$THEME_DIR/boykisser28.pf2" "$TTF" 2>/dev/null; then
+		FONTS_OK=1
+	fi
+fi
+
+if [ "$FONTS_OK" -ne 1 ]; then
+	echo "  (couldn't build pf2 fonts — falling back to GRUB's default font)"
+	# Ship GRUB's stock unicode font so the menu still has a glyph set...
+	[ -f /usr/share/grub/unicode.pf2 ] && cp /usr/share/grub/unicode.pf2 "$THEME_DIR/" || true
+	# ...and drop the explicit font references so GRUB uses its default.
+	sed -i '/-font[[:space:]]*=[[:space:]]*"Boykisser/d;/^title-font:/d;/^message-font:/d;/^terminal-font:/d' \
+		"$THEME_DIR/theme.txt" 2>/dev/null || true
+fi

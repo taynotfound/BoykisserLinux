@@ -24,4 +24,28 @@ echo "Running bootloader-config (offline)..."
 
 # Re-enable os-prober:
 sed -i "s/#GRUB_DISABLE_OS_PROBER=false/# OS_PROBER re-enabled by Boykisser Calamares installation:\nGRUB_DISABLE_OS_PROBER=false/g" $CHROOT/etc/default/grub
+
+# --- Boykisser GRUB tweaks for the installed system --------------------------
+# Auto-start the first menu entry (Boykisser) and apply the pink GRUB theme that
+# ships in the squashfs at /boot/grub/themes/boykisser. We rewrite the keys
+# idempotently so re-runs stay clean, then update-grub (below) bakes them in.
+GRUB_DEFAULTS="$CHROOT/etc/default/grub"
+THEME_TXT="/boot/grub/themes/boykisser/theme.txt"
+
+set_grub_key() {
+	key="$1"; val="$2"
+	# Drop any existing (commented or live) definition, then append ours.
+	sed -i "/^[#[:space:]]*${key}=/d" "$GRUB_DEFAULTS"
+	printf '%s=%s\n' "$key" "$val" >> "$GRUB_DEFAULTS"
+}
+
+set_grub_key GRUB_DEFAULT 0
+set_grub_key GRUB_TIMEOUT 5
+set_grub_key GRUB_TIMEOUT_STYLE menu
+set_grub_key GRUB_GFXMODE auto
+# Only point at the theme if it actually made it into the target.
+if [ -f "$CHROOT$THEME_TXT" ]; then
+	set_grub_key GRUB_THEME "\"$THEME_TXT\""
+fi
+
 chroot $CHROOT /usr/sbin/update-grub

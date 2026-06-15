@@ -8,8 +8,10 @@ live-config-systemd
 live-tools
 
 # Kernel + firmware (broad hardware support, old & new)
+# NOTE: linux-headers-amd64 lives in apps-extra.list.chroot — it is only needed
+# to build the DKMS modules (nvidia, v4l2loopback), which are themselves in the
+# extra list. The slim netinstall therefore ships no kernel headers.
 linux-image-amd64
-linux-headers-amd64
 firmware-linux
 firmware-linux-nonfree
 firmware-misc-nonfree

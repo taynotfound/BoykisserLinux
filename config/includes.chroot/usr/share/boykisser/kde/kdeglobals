@@ -1,0 +1,12 @@
+[General]
+# Boykisser pink (#ff5fa2) as the Plasma accent, dark to match the XFCE default.
+AccentColor=255,95,162
+accentColorFromWallpaper=false
+ColorScheme=BreezeDark
+
+[Icons]
+Theme=Tela-circle-pink-dark
+
+[KDE]
+widgetStyle=Breeze
+LookAndFeelPackage=org.kde.breezedark.desktop

@@ -42,6 +42,7 @@ sequence:
       - welcome
       - locale
       - keyboard
+      - packagechooser
       - partition
       - users
       - summary
@@ -62,6 +63,7 @@ sequence:
       - grubcfg
       - bootloader
       - packages
+      - contextualprocess
       - luksbootkeyfile
       - plymouthcfg
       - initramfscfg
@@ -75,3 +77,34 @@ prompt-install: true
 dont-chroot: false
 EOF
 fi
+
+# --- Boykisser desktop chooser (XFCE / KDE) -----------------------------------
+# Splice our two extra steps into whatever settings.conf is in place (the stock
+# calamares-settings-debian one, or the fallback above) without rewriting the
+# whole file — that keeps all of Debian's module/instance wiring intact. The
+# packagechooser step (show) lets the user pick XFCE or KDE; contextualprocess
+# (exec, right before umount so the target is still mounted) installs KDE when it
+# was chosen. If an anchor isn't found the splice is simply skipped, so a layout
+# change upstream degrades to "no chooser" instead of a broken installer.
+inject_step() {
+	# $1 = file, $2 = step to add, $3 = anchor regex, $4 = where: after|before
+	file="$1"; step="$2"; anchor="$3"; where="$4"
+	[ -f "$file" ] || return 0
+	grep -qE "^[[:space:]]*-[[:space:]]*${step}[[:space:]]*$" "$file" && return 0
+	awk -v step="$step" -v anchor="$anchor" -v where="$where" '
+		!done && $0 ~ anchor {
+			ind = $0; sub(/-.*/, "", ind)
+			if (where == "before") { print ind "- " step; print; done = 1; next }
+			else                   { print; print ind "- " step; done = 1; next }
+		}
+		{ print }
+	' "$file" > "$file.bk_tmp" && mv "$file.bk_tmp" "$file"
+}
+
+for SC in /etc/calamares/settings.conf /etc/calamares/settings-online.conf; do
+	[ -f "$SC" ] || continue
+	# Desktop chooser: after the first 'keyboard' entry (the show: step).
+	inject_step "$SC" packagechooser   '^[[:space:]]*-[[:space:]]*keyboard[[:space:]]*$' after
+	# KDE installer: just before the exec umount, so the target is still mounted.
+	inject_step "$SC" contextualprocess '^[[:space:]]*-[[:space:]]*umount[[:space:]]*$' before
+done

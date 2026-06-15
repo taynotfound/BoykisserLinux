@@ -40,7 +40,9 @@ if [ "$NETINSTALL" = "1" ]; then
 	echo ":3 building the SLIM netinstall variant (needs internet on first boot)"
 	# Keep the heavy apps out of the squashfs...
 	[ -f "$EXTRA_LIST" ] && mv -f "$EXTRA_LIST" "$EXTRA_LIST.disabled"
-	# ...and drop a marker the chroot hooks + first-boot service look for.
+	# ...and drop a marker the chroot hooks, the first-boot service AND auto/config
+	# look for. auto/config flips --apt-recommends off when it sees this marker,
+	# which is the single biggest size lever for keeping the slim ISO <= 1.2 GB.
 	mkdir -p "$(dirname "$MARKER")"
 	echo "netinstall" > "$MARKER"
 else

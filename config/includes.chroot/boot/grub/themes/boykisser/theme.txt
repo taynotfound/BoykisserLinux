@@ -1,0 +1,56 @@
+# Boykisser Linux — GRUB theme for the installed system :3
+# Pink to match Plymouth + the live boot menu. The background image and the
+# *.pf2 fonts are generated at build time by the 0055-grub-theme hook; if the
+# fonts can't be built the hook strips the *-font lines so GRUB falls back to
+# its default font and the menu still renders.
+
+desktop-image: "background.png"
+desktop-color: "#1a0e2e"
+title-text: ""
+title-color: "#ff5fa2"
+title-font: "Boykisser Regular 28"
+message-color: "#ff8ec8"
+message-font: "Boykisser Regular 16"
+terminal-font: "Boykisser Regular 16"
+
+# Help bar at the bottom
++ label {
+    top      = 100%-44
+    left     = 0
+    width    = 100%
+    height   = 20
+    text     = "Boykisser Linux :3   —   use the arrow keys, Enter to boot"
+    align    = "center"
+    color    = "#ff8ec8"
+    font     = "Boykisser Regular 16"
+}
+
+# Boot menu
++ boot_menu {
+    left                 = 25%
+    width                = 50%
+    top                  = 30%
+    height               = 50%
+    item_color           = "#d8c7ec"
+    item_font            = "Boykisser Regular 16"
+    selected_item_color  = "#ffffff"
+    selected_item_font   = "Boykisser Regular 16"
+    item_height          = 28
+    item_padding         = 6
+    item_spacing         = 6
+}
+
+# Countdown / timeout progress bar
++ progress_bar {
+    id           = "__timeout__"
+    left         = 25%
+    top          = 82%
+    height       = 16
+    width        = 50%
+    font         = "Boykisser Regular 16"
+    text_color   = "#1a0e2e"
+    fg_color     = "#ff5fa2"
+    bg_color     = "#3a2a52"
+    border_color = "#ff8ec8"
+    text         = "@TIMEOUT_NOTIFICATION_LONG@"
+}
