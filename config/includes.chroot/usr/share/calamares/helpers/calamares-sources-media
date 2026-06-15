@@ -1,5 +1,5 @@
 #!/bin/sh
-# Boykisser Linux — offline-friendly sources-media.
+# Boykisser Linux — sources-media (skip the live medium apt source).
 #
 # The stock Debian helper mounts the live medium as an apt source and runs
 # `apt-get update` against it. Our ISO carries no full package pool, so that

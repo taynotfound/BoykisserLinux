@@ -4,13 +4,114 @@ set -e
 
 echo "Branding the Calamares installer :3"
 
-# Make sure our offline-friendly Calamares helper overrides stay executable
-# (includes.chroot doesn't always preserve the +x bit). These replace the stock
-# Debian helpers that apt-get install grub-pc/grub-efi at install time and would
-# otherwise fail on an offline machine.
-for h in calamares-bootloader-config calamares-sources-media; do
-	[ -f "/usr/share/calamares/helpers/$h" ] && chmod 0755 "/usr/share/calamares/helpers/$h"
-done
+# Authoritatively (re)write our offline-friendly Calamares helpers.
+#
+# These REPLACE the stock helpers that calamares-settings-debian ships, which
+# run `apt-get install grub-pc`/`grub-efi` (bootloader-config) and
+# `apt-get update` against the live medium (sources-media).
+#
+# Why the stock bootloader-config fails: in the Calamares sequence, sources-media
+# runs (and we drop the live apt source) BEFORE bootloader-config, while the real
+# target apt sources are only written later by sources-final. So at the moment
+# stock calls `apt-get install grub-pc`, the target chroot has no usable apt
+# source and apt reports "grub-pc has no installation candidate" (it only knows
+# the name from grub-pc-bin's Replaces metadata). grub-pc DOES exist in trixie —
+# the problem is purely ordering. We sidestep it entirely: grub-pc-bin,
+# grub-efi-amd64-bin, grub2-common and grub-common are already in the squashfs,
+# so Calamares' own `bootloader` module (next in the sequence) runs grub-install
+# from them; our helper just re-enables os-prober and runs update-grub.
+#
+# We do this in the hook — not just via the includes.chroot overlay — because
+# the overlay can be clobbered by the package depending on build ordering, and
+# hooks always run AFTER package installation, so this is the last word.
+HELPER_DIR=/usr/share/calamares/helpers
+mkdir -p "$HELPER_DIR"
+
+cat > "$HELPER_DIR/calamares-bootloader-config" <<'BOOTLOADER_EOF'
+#!/bin/bash
+# Boykisser Linux — bootloader-config (no apt).
+#
+# The stock Debian helper runs `apt-get install grub-pc` (BIOS) or
+# `apt-get install grub-efi` (UEFI). That fails because sources-media (earlier in
+# the Calamares sequence) drops the live apt source and sources-final (which
+# writes the real one) only runs later — so apt has no candidate and aborts with
+# "grub-pc has no installation candidate". We don't need apt at all: the GRUB
+# platform packages (grub-pc-bin + grub-efi-amd64-bin + grub2-common +
+# grub-common) are already in the squashfs, so Calamares' own `bootloader` module
+# runs grub-install from them. Here we just re-enable os-prober and update-grub.
+
+CHROOT=$(mount | grep proc | grep calamares | awk '{print $3}' | sed -e "s#/proc##g")
+
+# Bail out gracefully if we couldn't resolve the target root.
+if [ -z "$CHROOT" ] || [ ! -d "$CHROOT/etc/default" ]; then
+    echo "bootloader-config: target root not found, skipping (offline)."
+    exit 0
+fi
+
+# Set secure initramfs permissions for full-disk-encryption installs. The
+# cryptsetup-initramfs/keyutils packages are shipped in the image already, so we
+# don't apt-get install anything.
+if [ "$(mount | grep "$CHROOT " | cut -c -16)" = "/dev/mapper/luks" ]; then
+    echo "UMASK=0077" > "$CHROOT/etc/initramfs-tools/conf.d/initramfs-permissions"
+fi
+
+echo "Running bootloader-config (offline)..."
+
+GRUB_DEFAULTS="$CHROOT/etc/default/grub"
+THEME_TXT="/boot/grub/themes/boykisser/theme.txt"
+
+# Make sure the file exists before we sed it (a minimal target may not have one).
+[ -f "$GRUB_DEFAULTS" ] || : > "$GRUB_DEFAULTS"
+
+# Re-enable os-prober:
+if grep -q '^#GRUB_DISABLE_OS_PROBER=false' "$GRUB_DEFAULTS"; then
+    sed -i "s/#GRUB_DISABLE_OS_PROBER=false/# OS_PROBER re-enabled by Boykisser Calamares installation:\nGRUB_DISABLE_OS_PROBER=false/g" "$GRUB_DEFAULTS"
+elif ! grep -q '^GRUB_DISABLE_OS_PROBER=' "$GRUB_DEFAULTS"; then
+    printf '%s\n' 'GRUB_DISABLE_OS_PROBER=false' >> "$GRUB_DEFAULTS"
+fi
+
+set_grub_key() {
+	key="$1"; val="$2"
+	sed -i "/^[#[:space:]]*${key}=/d" "$GRUB_DEFAULTS"
+	printf '%s=%s\n' "$key" "$val" >> "$GRUB_DEFAULTS"
+}
+
+set_grub_key GRUB_DEFAULT 0
+set_grub_key GRUB_TIMEOUT 5
+set_grub_key GRUB_TIMEOUT_STYLE menu
+set_grub_key GRUB_GFXMODE auto
+if [ -f "$CHROOT$THEME_TXT" ]; then
+	set_grub_key GRUB_THEME "\"$THEME_TXT\""
+fi
+
+chroot "$CHROOT" /usr/sbin/update-grub
+BOOTLOADER_EOF
+
+cat > "$HELPER_DIR/calamares-sources-media" <<'SOURCES_EOF'
+#!/bin/sh
+# Boykisser Linux — sources-media (skip the live medium apt source).
+#
+# The stock Debian helper mounts the live medium as an apt source and runs
+# `apt-get update` against it. Our ISO carries no full package pool, so that
+# `apt-get update` fails and aborts the installation. Because we never
+# apt-get install anything during the install (GRUB and friends are already in
+# the squashfs), we simply skip the media apt source entirely. The real apt
+# sources for the installed system are written later by `sources-final`.
+
+CHROOT=$(mount | grep proc | grep calamares | awk '{print $3}' | sed -e "s#/proc##g")
+
+# sources-media-unmount calls this with -u; nothing to undo.
+if [ "$1" = "-u" ]; then
+    exit 0
+fi
+
+# Drop the live-build base source so it doesn't leak onto the installed system.
+[ -n "$CHROOT" ] && rm -f "$CHROOT/etc/apt/sources.list.d/base.list"
+
+exit 0
+SOURCES_EOF
+
+chmod 0755 "$HELPER_DIR/calamares-bootloader-config" "$HELPER_DIR/calamares-sources-media"
 
 # Rebrand the launcher calamares-settings-debian copies to the Desktop.
 DEB_LAUNCHER=/usr/share/applications/calamares-install-debian.desktop
@@ -108,3 +209,35 @@ for SC in /etc/calamares/settings.conf /etc/calamares/settings-online.conf; do
 	# KDE installer: just before the exec umount, so the target is still mounted.
 	inject_step "$SC" contextualprocess '^[[:space:]]*-[[:space:]]*umount[[:space:]]*$' before
 done
+
+# --- Make the live-package cleanup non-fatal -----------------------------------
+# The stock calamares-settings-debian packages.conf hard-`remove`s the live-*
+# packages (live-boot, live-config, live-tools, live-task-*, calamares-settings-
+# debian). On an offline install apt-get can't always locate every one of those
+# names (apt-get update never ran against an online mirror), so it exits 100 and
+# Calamares aborts with "Package Manager error". Rewrite the module to use
+# `try_remove`, which ignores per-package failures, and skip the apt DB refresh.
+PKGCONF=/etc/calamares/modules/packages.conf
+if [ -f "$PKGCONF" ]; then
+	cat > "$PKGCONF" <<'EOF'
+---
+backend: apt
+
+# Never refresh the apt database here; the target may be offline.
+update_db: false
+
+operations:
+  # try_remove ignores packages that are missing or can't be located, so the
+  # live-system cleanup never aborts the installation.
+  - try_remove:
+      - 'live-boot'
+      - 'live-boot-doc'
+      - 'live-config'
+      - 'live-config-doc'
+      - 'live-config-systemd'
+      - 'live-tools'
+      - 'live-task-localisation'
+      - 'live-task-recommended'
+      - 'calamares-settings-debian'
+EOF
+fi

@@ -1,29 +1,36 @@
 #!/bin/bash
-# Boykisser Linux — offline-friendly bootloader-config.
+# Boykisser Linux — bootloader-config (no apt).
 #
 # The stock Debian helper runs `apt-get install grub-pc` (BIOS) or
-# `apt-get install grub-efi` (UEFI) here, which fails when the machine is
-# offline (the ISO ships no package pool) with "grub-pc doesn't exist".
+# `apt-get install grub-efi` (UEFI). That fails because sources-media (earlier in
+# the Calamares sequence) drops the live apt source and sources-final (which
+# writes the real one) only runs later — so apt has no candidate and aborts with
+# "grub-pc has no installation candidate". grub-pc DOES exist in trixie; the
+# problem is purely sequence ordering. We don't need apt at all: the GRUB
+# platform packages (grub-pc-bin + grub-efi-amd64-bin + grub2-common +
+# grub-common) are already in the squashfs, so Calamares' own `bootloader` module
+# runs grub-install from them. Here we just re-enable os-prober and update-grub.
 #
-# We instead ship the GRUB platform packages inside the squashfs
-# (grub-pc-bin + grub-efi-amd64-bin + grub2-common + grub-common), so they are
-# already present on the target after unpackfs. No apt access is needed: the
-# upstream `bootloader` module runs grub-install for the right platform, and we
-# just re-enable os-prober and refresh the menu here.
+# NOTE: this is also authoritatively rewritten by hooks/normal/0045-calamares so
+# the stock calamares-settings-debian helper can never win regardless of build
+# ordering. Keep the two in sync.
 
 CHROOT=$(mount | grep proc | grep calamares | awk '{print $3}' | sed -e "s#/proc##g")
+
+# Bail out gracefully if we couldn't resolve the target root.
+if [ -z "$CHROOT" ] || [ ! -d "$CHROOT/etc/default" ]; then
+    echo "bootloader-config: target root not found, skipping (offline)."
+    exit 0
+fi
 
 # Set secure initramfs permissions for full-disk-encryption installs. The
 # cryptsetup-initramfs/keyutils packages are shipped in the image already, so we
 # don't apt-get install anything.
-if [ "$(mount | grep $CHROOT" " | cut -c -16)" = "/dev/mapper/luks" ]; then
-    echo "UMASK=0077" > $CHROOT/etc/initramfs-tools/conf.d/initramfs-permissions
+if [ "$(mount | grep "$CHROOT " | cut -c -16)" = "/dev/mapper/luks" ]; then
+    echo "UMASK=0077" > "$CHROOT/etc/initramfs-tools/conf.d/initramfs-permissions"
 fi
 
 echo "Running bootloader-config (offline)..."
-
-# Re-enable os-prober:
-sed -i "s/#GRUB_DISABLE_OS_PROBER=false/# OS_PROBER re-enabled by Boykisser Calamares installation:\nGRUB_DISABLE_OS_PROBER=false/g" $CHROOT/etc/default/grub
 
 # --- Boykisser GRUB tweaks for the installed system --------------------------
 # Auto-start the first menu entry (Boykisser) and apply the pink GRUB theme that
@@ -31,6 +38,16 @@ sed -i "s/#GRUB_DISABLE_OS_PROBER=false/# OS_PROBER re-enabled by Boykisser Cala
 # idempotently so re-runs stay clean, then update-grub (below) bakes them in.
 GRUB_DEFAULTS="$CHROOT/etc/default/grub"
 THEME_TXT="/boot/grub/themes/boykisser/theme.txt"
+
+# Make sure the file exists before we sed it (a minimal target may not have one).
+[ -f "$GRUB_DEFAULTS" ] || : > "$GRUB_DEFAULTS"
+
+# Re-enable os-prober:
+if grep -q '^#GRUB_DISABLE_OS_PROBER=false' "$GRUB_DEFAULTS"; then
+    sed -i "s/#GRUB_DISABLE_OS_PROBER=false/# OS_PROBER re-enabled by Boykisser Calamares installation:\nGRUB_DISABLE_OS_PROBER=false/g" "$GRUB_DEFAULTS"
+elif ! grep -q '^GRUB_DISABLE_OS_PROBER=' "$GRUB_DEFAULTS"; then
+    printf '%s\n' 'GRUB_DISABLE_OS_PROBER=false' >> "$GRUB_DEFAULTS"
+fi
 
 set_grub_key() {
 	key="$1"; val="$2"
@@ -48,4 +65,4 @@ if [ -f "$CHROOT$THEME_TXT" ]; then
 	set_grub_key GRUB_THEME "\"$THEME_TXT\""
 fi
 
-chroot $CHROOT /usr/sbin/update-grub
+chroot "$CHROOT" /usr/sbin/update-grub
