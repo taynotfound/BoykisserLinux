@@ -1,0 +1,40 @@
+#!/bin/sh
+# Boykisser Linux theme switcher :3   —   usage: boykisser-theme [light|dark]
+# With no argument it re-applies the saved choice (default: dark).
+set -e
+
+CFG="${HOME}/.config/boykisser"
+mkdir -p "$CFG"
+
+MODE="$1"
+[ -z "$MODE" ] && MODE="$(cat "$CFG/mode" 2>/dev/null || echo dark)"
+
+case "$MODE" in
+	light)
+		MODE=light;  GTK="Adwaita";       ICONS="Tela-circle-pink-light";  WALL="boykisser2"; SCHEME="prefer-light";;
+	*)
+		MODE=dark;   GTK="Adwaita-dark";  ICONS="Tela-circle-pink-dark";   WALL="boykisser1"; SCHEME="prefer-dark";;
+esac
+
+echo "$MODE" > "$CFG/mode"
+
+xfconf-query -c xsettings -p /Net/ThemeName     -s "$GTK"   2>/dev/null || true
+xfconf-query -c xsettings -p /Net/IconThemeName -s "$ICONS" 2>/dev/null || true
+
+IMG="/usr/share/backgrounds/boykisser/${WALL}.png"
+[ -f "$IMG" ] || IMG="/usr/share/backgrounds/boykisser/${WALL}.jpg"
+
+# Apply to every existing backdrop property...
+xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image$' | while read -r prop; do
+	xfconf-query -c xfce4-desktop -p "$prop" -s "$IMG" 2>/dev/null || true
+done
+# ...and make sure at least the primary one exists.
+xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image \
+	-n -t string -s "$IMG" 2>/dev/null || true
+xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/image-style \
+	-n -t int -s 5 2>/dev/null || true
+
+# Hint GTK4/libadwaita apps about light/dark
+gsettings set org.gnome.desktop.interface color-scheme "$SCHEME" 2>/dev/null || true
+
+echo "Boykisser theme set to ${MODE} :3"

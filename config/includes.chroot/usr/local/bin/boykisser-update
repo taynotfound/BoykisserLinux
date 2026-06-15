@@ -1,0 +1,28 @@
+#!/bin/sh
+# boykisser-update :3  —  update everything in one cuddle.
+set -e
+
+PINK="\033[38;5;213m"; B="\033[1m"; R="\033[0m"
+printf "${PINK}${B}:3 updating Boykisser Linux...${R}\n"
+
+SUDO=""
+[ "$(id -u)" -ne 0 ] && SUDO="sudo"
+
+printf "${PINK}-> refreshing apt...${R}\n"
+$SUDO apt-get update
+
+printf "${PINK}-> upgrading packages...${R}\n"
+$SUDO apt-get -y full-upgrade
+
+if command -v flatpak >/dev/null 2>&1; then
+	printf "${PINK}-> updating Flatpaks...${R}\n"
+	flatpak update -y || true
+fi
+
+if command -v fwupdmgr >/dev/null 2>&1; then
+	printf "${PINK}-> checking firmware...${R}\n"
+	$SUDO fwupdmgr refresh --force >/dev/null 2>&1 || true
+	$SUDO fwupdmgr get-updates 2>/dev/null || true
+fi
+
+printf "${PINK}${B}:3 all up to date! mwah${R}\n"

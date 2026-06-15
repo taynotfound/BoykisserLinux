@@ -1,0 +1,64 @@
+#!/bin/sh
+# boykisser-doctor :3  —  a quick, friendly health check for your system.
+# Read-only: it never changes anything, just reports.
+
+PINK="\033[38;5;213m"; GREEN="\033[38;5;120m"; YELL="\033[38;5;222m"
+RED="\033[38;5;210m"; B="\033[1m"; R="\033[0m"
+
+ok()   { printf "  ${GREEN}✓${R} %s\n" "$1"; }
+warn() { printf "  ${YELL}!${R} %s\n" "$1"; }
+bad()  { printf "  ${RED}✗${R} %s\n" "$1"; }
+head() { printf "\n${PINK}${B}%s${R}\n" "$1"; }
+
+printf "${PINK}${B}:3 Boykisser Linux — health check${R}\n"
+
+head "System"
+if [ -f /etc/boykisser/version ]; then
+	printf "  %s\n" "$(cat /etc/boykisser/version)"
+fi
+ok "kernel $(uname -r)"
+ok "uptime$(uptime -p 2>/dev/null | sed 's/^up/ up/' || true)"
+
+head "Disk"
+USE=$(df -P / | awk 'NR==2{gsub("%","",$5); print $5}')
+LINE=$(df -h / | awk 'NR==2{print $3" used of "$2" ("$5")"}')
+if [ "${USE:-0}" -ge 90 ]; then bad "root filesystem almost full — $LINE (try: boykisser cleanup)"
+elif [ "${USE:-0}" -ge 75 ]; then warn "root filesystem getting full — $LINE"
+else ok "root filesystem: $LINE"; fi
+
+head "Memory"
+free -h 2>/dev/null | awk '/Mem:/{print "  RAM: "$3" used of "$2}'
+free -h 2>/dev/null | awk '/Swap:/{if($2!="0B")print "  Swap: "$3" used of "$2}'
+
+head "Packages"
+if command -v dpkg >/dev/null 2>&1; then
+	if dpkg -C >/dev/null 2>&1; then ok "no half-installed packages"
+	else bad "some packages are broken (try: sudo apt-get -f install)"; fi
+fi
+if command -v apt-get >/dev/null 2>&1; then
+	UPG=$(apt-get -s -o Debug::NoLocking=true upgrade 2>/dev/null | grep -c '^Inst' || echo 0)
+	if [ "${UPG:-0}" -gt 0 ]; then warn "$UPG updates available (run: boykisser update)"
+	else ok "system is up to date"; fi
+fi
+
+head "Services"
+FAILED=$(systemctl --failed --no-legend 2>/dev/null | awk '{print $1}')
+if [ -z "$FAILED" ]; then ok "no failed system services"
+else bad "failed services:"; for u in $FAILED; do printf "      - %s\n" "$u"; done; fi
+
+head "Network"
+if getent hosts deb.debian.org >/dev/null 2>&1; then ok "internet looks reachable"
+else warn "can't resolve deb.debian.org — check your connection"; fi
+
+head "Graphics"
+if command -v lspci >/dev/null 2>&1; then
+	lspci 2>/dev/null | grep -iE 'vga|3d|display' | sed 's/^[^ ]* /  GPU: /' | head -3
+fi
+if command -v nvidia-detect >/dev/null 2>&1; then
+	if lspci 2>/dev/null | grep -qi nvidia; then
+		if lsmod 2>/dev/null | grep -q '^nvidia'; then ok "NVIDIA proprietary driver loaded"
+		else warn "NVIDIA card without proprietary driver (try: boykisser nvidia)"; fi
+	fi
+fi
+
+printf "\n${PINK}${B}:3 checkup done — stay cute!${R}\n"

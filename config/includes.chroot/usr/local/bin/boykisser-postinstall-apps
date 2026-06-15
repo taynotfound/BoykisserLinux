@@ -1,0 +1,92 @@
+#!/bin/sh
+# boykisser-postinstall-apps :3
+# Installs the "heavy" Boykisser app set from the internet: OBS (+virtual
+# camera), VLC & codecs, gaming bits, Steam, VS Code Insiders, and the Flatpak
+# apps. The FULL ISO already ships these (via build hooks); this script is what
+# the slim "netinstall" image runs on first boot, and it's also handy to re-run
+# by hand:  sudo boykisser-postinstall-apps
+set -e
+
+if [ "$(id -u)" -ne 0 ]; then
+	echo "This needs root — re-running with sudo :3"
+	exec sudo "$0" "$@"
+fi
+
+export DEBIAN_FRONTEND=noninteractive
+
+say() { echo ":3 $*"; }
+
+# --- wait for the network -----------------------------------------------------
+say "waiting for the internet..."
+i=0
+while [ "$i" -lt 30 ]; do
+	if getent hosts deb.debian.org >/dev/null 2>&1; then break; fi
+	i=$((i + 1))
+	sleep 2
+done
+
+apt-get update || true
+
+# --- native apps --------------------------------------------------------------
+say "installing OBS, VLC, codecs and gaming bits..."
+apt-get install -y --no-install-recommends \
+	obs-studio v4l2loopback-dkms v4l-utils \
+	build-essential dkms \
+	vlc ffmpeg \
+	gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+	gstreamer1.0-plugins-ugly gstreamer1.0-libav \
+	gamemode mangohud mesa-utils mesa-vulkan-drivers vulkan-tools \
+	|| say "some native apps failed (continuing)"
+
+# --- OBS virtual camera -------------------------------------------------------
+say "wiring up the OBS virtual camera..."
+mkdir -p /etc/modules-load.d /etc/modprobe.d
+echo v4l2loopback > /etc/modules-load.d/v4l2loopback.conf
+cat > /etc/modprobe.d/v4l2loopback.conf <<'EOF'
+options v4l2loopback devices=1 video_nr=10 card_label="OBS Virtual Camera" exclusive_caps=1
+EOF
+modprobe v4l2loopback 2>/dev/null || true
+
+# --- VS Code Insiders ---------------------------------------------------------
+say "installing VS Code Insiders..."
+install -d -m 0755 /etc/apt/keyrings
+if [ -f /usr/share/keyrings/microsoft.gpg ]; then
+	cp /usr/share/keyrings/microsoft.gpg /etc/apt/keyrings/microsoft.gpg
+elif command -v curl >/dev/null 2>&1; then
+	curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+		| gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg || true
+fi
+cat > /etc/apt/sources.list.d/vscode.sources <<'EOF'
+Types: deb
+URIs: https://packages.microsoft.com/repos/code
+Suites: stable
+Components: main
+Architectures: amd64
+Signed-By: /etc/apt/keyrings/microsoft.gpg
+EOF
+apt-get update || true
+apt-get install -y --no-install-recommends code-insiders || say "VS Code failed (continuing)"
+
+# --- Steam (i386 multiarch) ---------------------------------------------------
+say "installing Steam..."
+dpkg --add-architecture i386
+apt-get update || true
+apt-get install -y --no-install-recommends steam-installer \
+	|| apt-get install -y --no-install-recommends steam || true
+apt-get install -y \
+	libgl1-mesa-dri:i386 mesa-vulkan-drivers:i386 libglx-mesa0:i386 || true
+
+# --- Flatpaks -----------------------------------------------------------------
+say "installing the Flatpak apps..."
+flatpak remote-add --if-not-exists flathub \
+	https://dl.flathub.org/repo/flathub.flatpakrepo || true
+for app in \
+	com.heroicgameslauncher.hgl \
+	com.discordapp.Discord \
+	com.github.tchx84.Flatseal \
+	it.mijorus.gearlever
+do
+	flatpak install -y --noninteractive flathub "$app" || say "  (failed) $app"
+done
+
+say "all done — enjoy your apps! :3"

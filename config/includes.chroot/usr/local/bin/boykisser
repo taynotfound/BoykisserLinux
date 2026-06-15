@@ -1,0 +1,41 @@
+#!/bin/sh
+# boykisser :3  —  the little control center for Boykisser Linux.
+# A friendly front door to all the boykisser-* helpers.
+set -e
+
+PINK="\033[38;5;213m"; B="\033[1m"; R="\033[0m"
+
+usage() {
+	printf "${PINK}${B}Boykisser Linux :3${R}\n\n"
+	printf "${B}usage:${R} boykisser <command>\n\n"
+	printf "  ${PINK}update${R}     update the whole system (apt + flatpak)\n"
+	printf "  ${PINK}cleanup${R}    free up disk space (old packages, caches, logs)\n"
+	printf "  ${PINK}doctor${R}     check the health of your system\n"
+	printf "  ${PINK}apps${R}       install the full app set (OBS, Steam, VS Code, ...)\n"
+	printf "  ${PINK}theme${R}      switch look:  boykisser theme [light|dark]\n"
+	printf "  ${PINK}wallpaper${R}  re-apply the Boykisser wallpaper\n"
+	printf "  ${PINK}nvidia${R}     install the proprietary NVIDIA driver\n"
+	printf "  ${PINK}welcome${R}    open the graphical welcome screen\n"
+	printf "  ${PINK}install${R}    install Boykisser Linux to your disk\n"
+	printf "  ${PINK}version${R}    show the Boykisser Linux version\n\n"
+}
+
+cmd="${1:-}"
+[ -n "$cmd" ] && shift || true
+
+case "$cmd" in
+	update)    exec boykisser-update "$@" ;;
+	cleanup)   exec boykisser-cleanup "$@" ;;
+	doctor)    exec boykisser-doctor "$@" ;;
+	apps)      exec boykisser-postinstall-apps "$@" ;;
+	theme)     exec boykisser-theme "$@" ;;
+	wallpaper) exec boykisser-wallpaper "$@" ;;
+	nvidia)    exec boykisser-nvidia "$@" ;;
+	welcome)   exec boykisser-welcome "$@" ;;
+	install)   exec install-boykisser "$@" ;;
+	version|--version|-v)
+		if [ -f /etc/boykisser/version ]; then cat /etc/boykisser/version
+		else echo "Boykisser Linux :3"; fi ;;
+	help|--help|-h|"") usage ;;
+	*) printf "unknown command: %s\n\n" "$cmd"; usage; exit 1 ;;
+esac

@@ -1,0 +1,70 @@
+#!/bin/sh
+# boykisser-welcome :3  —  a cute graphical welcome / control center.
+# Uses yad if available, falls back to zenity, then to a terminal menu.
+# Pass --autostart to show only once (writes a "seen" flag).
+
+SEEN="${HOME}/.config/boykisser/welcome-seen"
+
+if [ "$1" = "--autostart" ]; then
+	[ -f "$SEEN" ] && exit 0
+fi
+mkdir -p "${HOME}/.config/boykisser"
+touch "$SEEN"
+
+LOGO="/usr/share/boykisser/start.png"
+[ -f "$LOGO" ] || LOGO="/usr/share/boykisser/face.png"
+
+DISCORD="https://discord.gg/3ZpwE9PPfP"
+SITE="https://boykisser.taymaerz.de"
+
+open_url() { xdg-open "$1" >/dev/null 2>&1 & }
+
+run_yad() {
+	while :; do
+		choice=$(yad --title="Welcome to Boykisser Linux :3" \
+			--width=460 --height=320 --center --borders=16 \
+			--window-icon="$LOGO" --image="$LOGO" --image-on-top \
+			--text="<b>Welcome to Boykisser Linux!</b>\nA pink Debian XFCE spin. What would you like to do?" \
+			--button="Install to disk!1" \
+			--button="Get more apps!2" \
+			--button="Update system!3" \
+			--button="Switch theme!4" \
+			--button="Join Discord!5" \
+			--button="Close:0" 2>/dev/null)
+		rc=$?
+		case "$rc" in
+			1) install-boykisser ;;
+			2) exec x-terminal-emulator -e sh -c 'boykisser-postinstall-apps; echo; read -p "Press enter to close..." _' ;;
+			3) exec x-terminal-emulator -e sh -c 'boykisser-update; echo; read -p "Press enter to close..." _' ;;
+			4) boykisser-theme-toggle ;;
+			5) open_url "$DISCORD" ;;
+			*) break ;;
+		esac
+	done
+}
+
+run_zenity() {
+	choice=$(zenity --list --title="Welcome to Boykisser Linux :3" \
+		--width=440 --height=320 --text="What would you like to do?" \
+		--column="Action" \
+		"Install Boykisser Linux to disk" \
+		"Install more apps (OBS, Steam, VS Code...)" \
+		"Update the system" \
+		"Switch light/dark theme" \
+		"Join the Discord" 2>/dev/null) || exit 0
+	case "$choice" in
+		Install*disk)   install-boykisser ;;
+		Install*apps*)  x-terminal-emulator -e sh -c 'boykisser-postinstall-apps; read -p "done, enter to close " _' ;;
+		Update*)        x-terminal-emulator -e sh -c 'boykisser-update; read -p "done, enter to close " _' ;;
+		Switch*)        boykisser-theme-toggle ;;
+		Join*)          open_url "$DISCORD" ;;
+	esac
+}
+
+if command -v yad >/dev/null 2>&1; then
+	run_yad
+elif command -v zenity >/dev/null 2>&1; then
+	run_zenity
+else
+	boykisser help
+fi

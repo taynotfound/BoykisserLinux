@@ -1,0 +1,29 @@
+#!/bin/sh
+# boykisser-cleanup :3  —  reclaim disk space without breaking anything.
+set -e
+
+PINK="\033[38;5;213m"; B="\033[1m"; R="\033[0m"
+printf "${PINK}${B}:3 tidying up Boykisser Linux...${R}\n"
+
+SUDO=""
+[ "$(id -u)" -ne 0 ] && SUDO="sudo"
+
+printf "${PINK}-> removing unused packages...${R}\n"
+$SUDO apt-get -y autoremove --purge || true
+
+printf "${PINK}-> clearing the apt cache...${R}\n"
+$SUDO apt-get clean || true
+
+if command -v flatpak >/dev/null 2>&1; then
+	printf "${PINK}-> removing unused Flatpak runtimes...${R}\n"
+	flatpak uninstall --unused -y || true
+fi
+
+printf "${PINK}-> vacuuming old system logs (keep 2 weeks)...${R}\n"
+$SUDO journalctl --vacuum-time=2weeks >/dev/null 2>&1 || true
+
+printf "${PINK}-> clearing thumbnail cache...${R}\n"
+rm -rf "${HOME}/.cache/thumbnails/"* 2>/dev/null || true
+
+printf "${PINK}${B}:3 squeaky clean!${R}\n"
+df -h / | awk 'NR==1||/\/$/{print "   "$0}'
