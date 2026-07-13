@@ -30,6 +30,7 @@ jobs:
           SHORT_SHA="${SHA:0:7}"
           SHA_URL="${REPO_URL}/commit/${SHA}"
           BRANCH_URL="${REPO_URL}/tree/${BRANCH}"
+          TIMESTAMP=$(date -u '+%d %b %Y, %H:%M UTC')
 
           case $EVENT in
             push)
@@ -40,9 +41,9 @@ jobs:
               else
                 LINE2="\`${SHORT_SHA}\` [${COMMIT_MSG}](<${SHA_URL}>)"
               fi
-              MSG="$(printf '📦 **[%s](<%s>)** → [`%s`](<%s>)\n%s\n— [%s](<%s>)' \
+              MSG="$(printf '📦 **[%s](<%s>)** → [`%s`](<%s>)\n%s\n-# [%s](<%s>) · %s' \
                 "$REPO_SHORT" "$REPO_URL" "$BRANCH" "$BRANCH_URL" \
-                "$LINE2" "$ACTOR" "$ACTOR_URL")"
+                "$LINE2" "$ACTOR" "$ACTOR_URL" "$TIMESTAMP")"
               ;;
             pull_request)
               ACTION="${{ github.event.action }}"
@@ -51,39 +52,39 @@ jobs:
               PR_NUM="${{ github.event.pull_request.number }}"
               BASE="${{ github.event.pull_request.base.ref }}"
               HEAD="${{ github.event.pull_request.head.ref }}"
-              MSG="$(printf '🔀 **[%s](<%s>)** · PR %s\n[#%s %s](<%s>)\n`%s` → `%s` — [%s](<%s>)' \
+              MSG="$(printf '🔀 **[%s](<%s>)** · PR %s\n[#%s %s](<%s>)\n\`%s\` → \`%s\`\n-# [%s](<%s>) · %s' \
                 "$REPO_SHORT" "$REPO_URL" "$ACTION" \
                 "$PR_NUM" "$PR_TITLE" "$PR_URL" \
-                "$HEAD" "$BASE" "$ACTOR" "$ACTOR_URL")"
+                "$HEAD" "$BASE" "$ACTOR" "$ACTOR_URL" "$TIMESTAMP")"
               ;;
             issues)
               ACTION="${{ github.event.action }}"
               ISSUE_TITLE="${{ github.event.issue.title }}"
               ISSUE_URL="${{ github.event.issue.html_url }}"
               ISSUE_NUM="${{ github.event.issue.number }}"
-              MSG="$(printf '🐛 **[%s](<%s>)** · issue %s\n[#%s %s](<%s>)\n— [%s](<%s>)' \
+              MSG="$(printf '🐛 **[%s](<%s>)** · issue %s\n[#%s %s](<%s>)\n-# [%s](<%s>) · %s' \
                 "$REPO_SHORT" "$REPO_URL" "$ACTION" \
                 "$ISSUE_NUM" "$ISSUE_TITLE" "$ISSUE_URL" \
-                "$ACTOR" "$ACTOR_URL")"
+                "$ACTOR" "$ACTOR_URL" "$TIMESTAMP")"
               ;;
             release)
               TAG="${{ github.event.release.tag_name }}"
               REL_URL="${{ github.event.release.html_url }}"
               REL_NAME="${{ github.event.release.name }}"
-              MSG="$(printf '🚀 **[%s](<%s>)** · [%s — %s](<%s>)\n— [%s](<%s>)' \
+              MSG="$(printf '🚀 **[%s](<%s>)** · [%s — %s](<%s>)\n-# [%s](<%s>) · %s' \
                 "$REPO_SHORT" "$REPO_URL" "$TAG" "$REL_NAME" "$REL_URL" \
-                "$ACTOR" "$ACTOR_URL")"
+                "$ACTOR" "$ACTOR_URL" "$TIMESTAMP")"
               ;;
             watch)
-              MSG="$(printf '⭐ **[%s](<%s>)** got a star from [%s](<%s>)' \
-                "$REPO_SHORT" "$REPO_URL" "$ACTOR" "$ACTOR_URL")"
+              MSG="$(printf '⭐ **[%s](<%s>)** got a star\n-# [%s](<%s>) · %s' \
+                "$REPO_SHORT" "$REPO_URL" "$ACTOR" "$ACTOR_URL" "$TIMESTAMP")"
               ;;
             fork)
               FORK_URL="${{ github.event.forkee.html_url }}"
               FORK_FULL="${{ github.event.forkee.full_name }}"
-              MSG="$(printf '🍴 **[%s](<%s>)** forked by [%s](<%s>)\n→ [%s](<%s>)' \
-                "$REPO_SHORT" "$REPO_URL" "$ACTOR" "$ACTOR_URL" \
-                "$FORK_FULL" "$FORK_URL")"
+              MSG="$(printf '🍴 **[%s](<%s>)** was forked → [%s](<%s>)\n-# [%s](<%s>) · %s' \
+                "$REPO_SHORT" "$REPO_URL" "$FORK_FULL" "$FORK_URL" \
+                "$ACTOR" "$ACTOR_URL" "$TIMESTAMP")"
               ;;
             create)
               REF_TYPE="${{ github.event.ref_type }}"
@@ -93,20 +94,20 @@ jobs:
               else
                 REF_LINK="[\`${REF_NAME}\`](<${REPO_URL}/releases/tag/${REF_NAME}>)"
               fi
-              MSG="$(printf '🌿 **[%s](<%s>)** · new %s %s\n— [%s](<%s>)' \
+              MSG="$(printf '🌿 **[%s](<%s>)** · new %s %s\n-# [%s](<%s>) · %s' \
                 "$REPO_SHORT" "$REPO_URL" "$REF_TYPE" "$REF_LINK" \
-                "$ACTOR" "$ACTOR_URL")"
+                "$ACTOR" "$ACTOR_URL" "$TIMESTAMP")"
               ;;
             delete)
               REF_TYPE="${{ github.event.ref_type }}"
               REF_NAME="${{ github.event.ref }}"
-              MSG="$(printf '🗑️ **[%s](<%s>)** · deleted %s \`%s\`\n— [%s](<%s>)' \
+              MSG="$(printf '🗑️ **[%s](<%s>)** · deleted %s \`%s\`\n-# [%s](<%s>) · %s' \
                 "$REPO_SHORT" "$REPO_URL" "$REF_TYPE" "$REF_NAME" \
-                "$ACTOR" "$ACTOR_URL")"
+                "$ACTOR" "$ACTOR_URL" "$TIMESTAMP")"
               ;;
             *)
-              MSG="$(printf '⚡ **[%s](<%s>)** · %s by [%s](<%s>)' \
-                "$REPO_SHORT" "$REPO_URL" "$EVENT" "$ACTOR" "$ACTOR_URL")"
+              MSG="$(printf '⚡ **[%s](<%s>)** · %s\n-# [%s](<%s>) · %s' \
+                "$REPO_SHORT" "$REPO_URL" "$EVENT" "$ACTOR" "$ACTOR_URL" "$TIMESTAMP")"
               ;;
           esac
 
