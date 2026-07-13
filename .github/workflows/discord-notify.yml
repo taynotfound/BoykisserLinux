@@ -21,60 +21,115 @@ jobs:
           EVENT="${{ github.event_name }}"
           REPO="${{ github.repository }}"
           REPO_SHORT="${REPO##*/}"
+          REPO_URL="https://github.com/${REPO}"
           ACTOR="${{ github.actor }}"
+          ACTOR_URL="https://github.com/${ACTOR}"
           REF="${{ github.ref }}"
           BRANCH="${REF##refs/heads/}"
           SHA="${{ github.sha }}"
           SHORT_SHA="${SHA:0:7}"
+          SHA_URL="${REPO_URL}/commit/${SHA}"
+          BRANCH_URL="${REPO_URL}/tree/${BRANCH}"
 
           case $EVENT in
             push)
               COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -1)
-              MSG="📦 **${REPO_SHORT}** · \`${BRANCH}\`\n\`${SHORT_SHA}\` ${COMMIT_MSG}\n— ${ACTOR}"
+              COMMIT_URL="${{ github.event.head_commit.url }}"
+              ADDED="${{ github.event.commits[0].added }}"
+              COUNT="${{ github.event.size }}"
+              if [ "$COUNT" -gt 1 ] 2>/dev/null; then
+                COMMIT_LINE="[\`${SHORT_SHA}\`](${SHA_URL}) ${COMMIT_MSG} (+${COUNT} commits)"
+              else
+                COMMIT_LINE="[\`${SHORT_SHA}\`](${SHA_URL}) ${COMMIT_MSG}"
+              fi
+              PAYLOAD=$(jq -n \
+                --arg content "📦 **[${REPO_SHORT}](${REPO_URL})** → [\`${BRANCH}\`](${BRANCH_URL})\n${COMMIT_LINE}\n— [${ACTOR}](${ACTOR_URL})" \
+                --arg username "foxbot" \
+                --arg avatar "https://github.com/taynotfound.png" \
+                '{username: $username, avatar_url: $avatar, content: $content}')
               ;;
             pull_request)
               ACTION="${{ github.event.action }}"
               PR_TITLE="${{ github.event.pull_request.title }}"
               PR_URL="${{ github.event.pull_request.html_url }}"
-              MSG="🔀 **${REPO_SHORT}** · PR ${ACTION}\n[${PR_TITLE}](${PR_URL})\n— ${ACTOR}"
+              PR_NUM="${{ github.event.pull_request.number }}"
+              BASE="${{ github.event.pull_request.base.ref }}"
+              HEAD="${{ github.event.pull_request.head.ref }}"
+              PAYLOAD=$(jq -n \
+                --arg content "🔀 **[${REPO_SHORT}](${REPO_URL})** · PR ${ACTION}\n[#${PR_NUM} ${PR_TITLE}](${PR_URL})\n\`${HEAD}\` → \`${BASE}\` — [${ACTOR}](${ACTOR_URL})" \
+                --arg username "foxbot" \
+                --arg avatar "https://github.com/taynotfound.png" \
+                '{username: $username, avatar_url: $avatar, content: $content}')
               ;;
             issues)
               ACTION="${{ github.event.action }}"
               ISSUE_TITLE="${{ github.event.issue.title }}"
               ISSUE_URL="${{ github.event.issue.html_url }}"
-              MSG="🐛 **${REPO_SHORT}** · issue ${ACTION}\n[${ISSUE_TITLE}](${ISSUE_URL})\n— ${ACTOR}"
+              ISSUE_NUM="${{ github.event.issue.number }}"
+              PAYLOAD=$(jq -n \
+                --arg content "🐛 **[${REPO_SHORT}](${REPO_URL})** · issue ${ACTION}\n[#${ISSUE_NUM} ${ISSUE_TITLE}](${ISSUE_URL})\n— [${ACTOR}](${ACTOR_URL})" \
+                --arg username "foxbot" \
+                --arg avatar "https://github.com/taynotfound.png" \
+                '{username: $username, avatar_url: $avatar, content: $content}')
               ;;
             release)
               TAG="${{ github.event.release.tag_name }}"
               REL_URL="${{ github.event.release.html_url }}"
-              MSG="🚀 **${REPO_SHORT}** · released [${TAG}](${REL_URL})\n— ${ACTOR}"
+              REL_NAME="${{ github.event.release.name }}"
+              PAYLOAD=$(jq -n \
+                --arg content "🚀 **[${REPO_SHORT}](${REPO_URL})** · new release\n[${TAG} — ${REL_NAME}](${REL_URL})\n— [${ACTOR}](${ACTOR_URL})" \
+                --arg username "foxbot" \
+                --arg avatar "https://github.com/taynotfound.png" \
+                '{username: $username, avatar_url: $avatar, content: $content}')
               ;;
             watch)
-              MSG="⭐ **${REPO_SHORT}** got a star from ${ACTOR}"
+              PAYLOAD=$(jq -n \
+                --arg content "⭐ **[${REPO_SHORT}](${REPO_URL})** got a star from [${ACTOR}](${ACTOR_URL})" \
+                --arg username "foxbot" \
+                --arg avatar "https://github.com/taynotfound.png" \
+                '{username: $username, avatar_url: $avatar, content: $content}')
               ;;
             fork)
               FORK_URL="${{ github.event.forkee.html_url }}"
-              MSG="🍴 **${REPO_SHORT}** was forked by ${ACTOR}"
+              FORK_FULL="${{ github.event.forkee.full_name }}"
+              PAYLOAD=$(jq -n \
+                --arg content "🍴 **[${REPO_SHORT}](${REPO_URL})** was forked → [${FORK_FULL}](${FORK_URL})\nby [${ACTOR}](${ACTOR_URL})" \
+                --arg username "foxbot" \
+                --arg avatar "https://github.com/taynotfound.png" \
+                '{username: $username, avatar_url: $avatar, content: $content}')
               ;;
             create)
               REF_TYPE="${{ github.event.ref_type }}"
               REF_NAME="${{ github.event.ref }}"
-              MSG="🌿 **${REPO_SHORT}** · new ${REF_TYPE} \`${REF_NAME}\`\n— ${ACTOR}"
+              if [ "$REF_TYPE" = "branch" ]; then
+                REF_LINK="[\`${REF_NAME}\`](${REPO_URL}/tree/${REF_NAME})"
+              else
+                REF_LINK="[\`${REF_NAME}\`](${REPO_URL}/releases/tag/${REF_NAME})"
+              fi
+              PAYLOAD=$(jq -n \
+                --arg content "🌿 **[${REPO_SHORT}](${REPO_URL})** · new ${REF_TYPE} ${REF_LINK}\n— [${ACTOR}](${ACTOR_URL})" \
+                --arg username "foxbot" \
+                --arg avatar "https://github.com/taynotfound.png" \
+                '{username: $username, avatar_url: $avatar, content: $content}')
               ;;
             delete)
               REF_TYPE="${{ github.event.ref_type }}"
               REF_NAME="${{ github.event.ref }}"
-              MSG="🗑️ **${REPO_SHORT}** · deleted ${REF_TYPE} \`${REF_NAME}\`\n— ${ACTOR}"
+              PAYLOAD=$(jq -n \
+                --arg content "🗑️ **[${REPO_SHORT}](${REPO_URL})** · deleted ${REF_TYPE} \`${REF_NAME}\`\n— [${ACTOR}](${ACTOR_URL})" \
+                --arg username "foxbot" \
+                --arg avatar "https://github.com/taynotfound.png" \
+                '{username: $username, avatar_url: $avatar, content: $content}')
               ;;
             *)
-              MSG="⚡ **${REPO_SHORT}** · ${EVENT} by ${ACTOR}"
+              PAYLOAD=$(jq -n \
+                --arg content "⚡ **[${REPO_SHORT}](${REPO_URL})** · ${EVENT} by [${ACTOR}](${ACTOR_URL})" \
+                --arg username "foxbot" \
+                --arg avatar "https://github.com/taynotfound.png" \
+                '{username: $username, avatar_url: $avatar, content: $content}')
               ;;
           esac
 
           curl -s -X POST "$DISCORD_WEBHOOK" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"username\": \"foxbot\",
-              \"avatar_url\": \"https://avatars.githubusercontent.com/u/taynotfound\",
-              \"content\": \"$(echo "$MSG" | sed 's/"/\\"/g')\"
-            }"
+            -d "$PAYLOAD"
