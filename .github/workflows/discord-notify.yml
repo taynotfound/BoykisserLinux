@@ -20,20 +20,61 @@ jobs:
         run: |
           EVENT="${{ github.event_name }}"
           REPO="${{ github.repository }}"
+          REPO_SHORT="${REPO##*/}"
           ACTOR="${{ github.actor }}"
           REF="${{ github.ref }}"
-          RUN_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          BRANCH="${REF##refs/heads/}"
+          SHA="${{ github.sha }}"
+          SHORT_SHA="${SHA:0:7}"
+
           case $EVENT in
-            push) TITLE="📦 Push to $REPO"; DESC="**$ACTOR** pushed to \`${REF##refs/heads/}\`"; COLOR=5793266 ;;
-            pull_request) TITLE="🔀 Pull Request — $REPO"; DESC="**$ACTOR** ${{ github.event.action }} PR: ${{ github.event.pull_request.title }}"; COLOR=16776960; RUN_URL="${{ github.event.pull_request.html_url }}" ;;
-            issues) TITLE="🐛 Issue — $REPO"; DESC="**$ACTOR** ${{ github.event.action }}: ${{ github.event.issue.title }}"; COLOR=16711680; RUN_URL="${{ github.event.issue.html_url }}" ;;
-            release) TITLE="🚀 Release — $REPO"; DESC="**$ACTOR** released: ${{ github.event.release.tag_name }}"; COLOR=65280; RUN_URL="${{ github.event.release.html_url }}" ;;
-            watch) TITLE="⭐ Star — $REPO"; DESC="**$ACTOR** starred the repository"; COLOR=16744448 ;;
-            fork) TITLE="🍴 Fork — $REPO"; DESC="**$ACTOR** forked the repository"; COLOR=9699539 ;;
-            create) TITLE="🌿 Created — $REPO"; DESC="**$ACTOR** created ${{ github.event.ref_type }}: \`${{ github.event.ref }}\`"; COLOR=3066993 ;;
-            delete) TITLE="🗑️ Deleted — $REPO"; DESC="**$ACTOR** deleted ${{ github.event.ref_type }}: \`${{ github.event.ref }}\`"; COLOR=15158332 ;;
-            *) TITLE="⚡ $EVENT — $REPO"; DESC="**$ACTOR** triggered: $EVENT"; COLOR=10070709 ;;
+            push)
+              COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -1)
+              MSG="📦 **${REPO_SHORT}** · \`${BRANCH}\`\n\`${SHORT_SHA}\` ${COMMIT_MSG}\n— ${ACTOR}"
+              ;;
+            pull_request)
+              ACTION="${{ github.event.action }}"
+              PR_TITLE="${{ github.event.pull_request.title }}"
+              PR_URL="${{ github.event.pull_request.html_url }}"
+              MSG="🔀 **${REPO_SHORT}** · PR ${ACTION}\n[${PR_TITLE}](${PR_URL})\n— ${ACTOR}"
+              ;;
+            issues)
+              ACTION="${{ github.event.action }}"
+              ISSUE_TITLE="${{ github.event.issue.title }}"
+              ISSUE_URL="${{ github.event.issue.html_url }}"
+              MSG="🐛 **${REPO_SHORT}** · issue ${ACTION}\n[${ISSUE_TITLE}](${ISSUE_URL})\n— ${ACTOR}"
+              ;;
+            release)
+              TAG="${{ github.event.release.tag_name }}"
+              REL_URL="${{ github.event.release.html_url }}"
+              MSG="🚀 **${REPO_SHORT}** · released [${TAG}](${REL_URL})\n— ${ACTOR}"
+              ;;
+            watch)
+              MSG="⭐ **${REPO_SHORT}** got a star from ${ACTOR}"
+              ;;
+            fork)
+              FORK_URL="${{ github.event.forkee.html_url }}"
+              MSG="🍴 **${REPO_SHORT}** was forked by ${ACTOR}"
+              ;;
+            create)
+              REF_TYPE="${{ github.event.ref_type }}"
+              REF_NAME="${{ github.event.ref }}"
+              MSG="🌿 **${REPO_SHORT}** · new ${REF_TYPE} \`${REF_NAME}\`\n— ${ACTOR}"
+              ;;
+            delete)
+              REF_TYPE="${{ github.event.ref_type }}"
+              REF_NAME="${{ github.event.ref }}"
+              MSG="🗑️ **${REPO_SHORT}** · deleted ${REF_TYPE} \`${REF_NAME}\`\n— ${ACTOR}"
+              ;;
+            *)
+              MSG="⚡ **${REPO_SHORT}** · ${EVENT} by ${ACTOR}"
+              ;;
           esac
+
           curl -s -X POST "$DISCORD_WEBHOOK" \
             -H "Content-Type: application/json" \
-            -d "{\"embeds\":[{\"title\":\"$TITLE\",\"description\":\"$DESC\",\"color\":$COLOR,\"url\":\"$RUN_URL\",\"fields\":[{\"name\":\"Repo\",\"value\":\"[$REPO](https://github.com/$REPO)\",\"inline\":true},{\"name\":\"Actor\",\"value\":\"$ACTOR\",\"inline\":true}],\"footer\":{\"text\":\"github actions\"}}]}"
+            -d "{
+              \"username\": \"foxbot\",
+              \"avatar_url\": \"https://avatars.githubusercontent.com/u/taynotfound\",
+              \"content\": \"$(echo "$MSG" | sed 's/"/\\"/g')\"
+            }"
