@@ -1,0 +1,39 @@
+name: Discord Notifications
+
+on:
+  push:
+  pull_request:
+  issues:
+  release:
+  create:
+  delete:
+  fork:
+  watch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK: "https://discord.com/api/webhooks/1259597370014830593/Et-f9-kMZ8KMURQKz88Ux40iPsGnV700-aUIlxPuVY3SzEoqZMQALEQB2ZDgSt6fOnH_"
+        run: |
+          EVENT="${{ github.event_name }}"
+          REPO="${{ github.repository }}"
+          ACTOR="${{ github.actor }}"
+          REF="${{ github.ref }}"
+          RUN_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          case $EVENT in
+            push) TITLE="📦 Push to $REPO"; DESC="**$ACTOR** pushed to \`${REF##refs/heads/}\`"; COLOR=5793266 ;;
+            pull_request) TITLE="🔀 Pull Request — $REPO"; DESC="**$ACTOR** ${{ github.event.action }} PR: ${{ github.event.pull_request.title }}"; COLOR=16776960; RUN_URL="${{ github.event.pull_request.html_url }}" ;;
+            issues) TITLE="🐛 Issue — $REPO"; DESC="**$ACTOR** ${{ github.event.action }}: ${{ github.event.issue.title }}"; COLOR=16711680; RUN_URL="${{ github.event.issue.html_url }}" ;;
+            release) TITLE="🚀 Release — $REPO"; DESC="**$ACTOR** released: ${{ github.event.release.tag_name }}"; COLOR=65280; RUN_URL="${{ github.event.release.html_url }}" ;;
+            watch) TITLE="⭐ Star — $REPO"; DESC="**$ACTOR** starred the repository"; COLOR=16744448 ;;
+            fork) TITLE="🍴 Fork — $REPO"; DESC="**$ACTOR** forked the repository"; COLOR=9699539 ;;
+            create) TITLE="🌿 Created — $REPO"; DESC="**$ACTOR** created ${{ github.event.ref_type }}: \`${{ github.event.ref }}\`"; COLOR=3066993 ;;
+            delete) TITLE="🗑️ Deleted — $REPO"; DESC="**$ACTOR** deleted ${{ github.event.ref_type }}: \`${{ github.event.ref }}\`"; COLOR=15158332 ;;
+            *) TITLE="⚡ $EVENT — $REPO"; DESC="**$ACTOR** triggered: $EVENT"; COLOR=10070709 ;;
+          esac
+          curl -s -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"$TITLE\",\"description\":\"$DESC\",\"color\":$COLOR,\"url\":\"$RUN_URL\",\"fields\":[{\"name\":\"Repo\",\"value\":\"[$REPO](https://github.com/$REPO)\",\"inline\":true},{\"name\":\"Actor\",\"value\":\"$ACTOR\",\"inline\":true}],\"footer\":{\"text\":\"github actions\"}}]}"
