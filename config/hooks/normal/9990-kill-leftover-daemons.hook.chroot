@@ -1,0 +1,40 @@
+#!/bin/sh
+# Boykisser Linux — kill daemons left running inside the build chroot :3
+#
+# Some packages/hooks start long-lived daemons during the chroot stage
+# (gpg-agent, dirmngr, dbus, packagekitd, ...). live-build's final
+# "lb chroot_sysfs remove" then fails with "umount: /build/chroot/sys:
+# target is busy" and aborts the whole build AFTER everything else worked.
+# This hook runs last and stops the well-known offenders by NAME only —
+# a broad "kill everything in the chroot" pass is too risky (it can take
+# down the build driver's own shell).
+
+# Never fail the build from here.
+set +e
+
+# Ask gpg's daemons to quit nicely first.
+command -v gpgconf >/dev/null 2>&1 && gpgconf --kill all >/dev/null 2>&1
+
+MYROOT=$(readlink /proc/self/root 2>/dev/null)
+
+kill_by_name() {
+	name="$1"
+	for d in /proc/[0-9]*; do
+		pid=${d#/proc/}
+		[ "$pid" = "$$" ] && continue
+		# Only processes rooted in THIS chroot.
+		[ "$(readlink "$d/root" 2>/dev/null)" = "$MYROOT" ] || continue
+		comm=$(cat "$d/comm" 2>/dev/null)
+		[ "$comm" = "$name" ] || continue
+		kill "$pid" 2>/dev/null
+		sleep 1
+		[ -d "$d" ] && kill -9 "$pid" 2>/dev/null
+	done
+}
+
+for daemon in gpg-agent dirmngr keyboxd scdaemon dbus-daemon packagekitd \
+              polkitd fontconfig cups-browsed avahi-daemon; do
+	kill_by_name "$daemon"
+done
+
+exit 0

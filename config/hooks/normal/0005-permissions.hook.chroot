@@ -15,6 +15,7 @@ for f in \
 	/usr/local/bin/boykisser-welcome \
 	/usr/local/bin/boykisser-postinstall-apps \
 	/usr/local/bin/boykisser-install-kde \
+	/usr/local/bin/boykisser-live-cleanup \
 	/usr/local/bin/install-boykisser
 do
 	[ -e "$f" ] && chmod 0755 "$f" || true
