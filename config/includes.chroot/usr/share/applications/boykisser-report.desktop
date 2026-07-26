@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Report a Problem
-Comment=Send a bug or error report to the Boykisser Linux team :3
+Comment=Report a bug on GitHub — pre-filled with your system info :3
 Exec=boykisser-report
 Icon=dialog-warning
 Terminal=false
