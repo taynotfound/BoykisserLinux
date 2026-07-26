@@ -13,6 +13,16 @@ SUDO=""
 printf "${PINK}-> refreshing apt...${R}\n"
 $SUDO apt-get update
 
+# Snapshot before upgrading, so a bad update can be rolled back with
+# "sudo timeshift --restore". Skipped in the live session (no persistence)
+# and until the user has run timeshift once to configure it.
+if command -v timeshift >/dev/null 2>&1 && [ ! -d /run/live ] \
+   && [ -f /etc/timeshift/timeshift.json ]; then
+	printf "${PINK}-> creating a safety snapshot (timeshift)...${R}\n"
+	$SUDO timeshift --create --comments "boykisser-update $(date +%F)" --scripted \
+		|| printf "${PINK}   (snapshot failed — continuing without it)${R}\n"
+fi
+
 printf "${PINK}-> upgrading packages...${R}\n"
 $SUDO apt-get -y full-upgrade
 

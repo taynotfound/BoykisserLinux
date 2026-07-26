@@ -102,6 +102,7 @@ unattended-upgrades
 fwupd
 power-profiles-daemon
 ufw
+timeshift
 
 # Handy utilities
 file-roller
