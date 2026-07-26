@@ -1,0 +1,81 @@
+#!/bin/sh
+# boykisser-presets :3  —  one-click Flatpak app preset groups.
+# Pick preset groups (Art, Social, Office, Music) and get them installed from
+# Flathub. GUI (yad checklist) when available, terminal menu otherwise.
+# Usage: boykisser-presets [art|social|office|music ...]
+
+FLATHUB="https://dl.flathub.org/repo/flathub.flatpakrepo"
+
+apps_for() {
+	case "$1" in
+		art)    echo "org.kde.krita org.gimp.GIMP org.inkscape.Inkscape" ;;
+		social) echo "com.discordapp.Discord org.signal.Signal org.telegram.desktop" ;;
+		office) echo "org.libreoffice.LibreOffice md.obsidian.Obsidian org.mozilla.Thunderbird" ;;
+		music)  echo "com.spotify.Client org.strawberrymusicplayer.strawberry" ;;
+		*)      return 1 ;;
+	esac
+}
+
+label_for() {
+	case "$1" in
+		art)    echo "Art & Design (Krita, GIMP, Inkscape)" ;;
+		social) echo "Social (Discord, Signal, Telegram)" ;;
+		office) echo "Office (LibreOffice, Obsidian, Thunderbird)" ;;
+		music)  echo "Music (Spotify, Strawberry)" ;;
+	esac
+}
+
+install_presets() {
+	[ -n "$1" ] || { echo "nothing selected :3"; return 0; }
+	if ! command -v flatpak >/dev/null 2>&1; then
+		echo "!! flatpak is not installed" >&2; return 1
+	fi
+	flatpak remote-add --if-not-exists flathub "$FLATHUB" 2>/dev/null \
+		|| sudo flatpak remote-add --if-not-exists flathub "$FLATHUB" || true
+	rc=0
+	for group in $1; do
+		echo ":3 installing preset '$group'..."
+		for app in $(apps_for "$group"); do
+			flatpak install -y --noninteractive flathub "$app" \
+				|| { echo "!! $app failed — skipped"; rc=1; }
+		done
+	done
+	[ "$rc" = 0 ] && echo ":3 all done!" || echo ":3 done (some apps failed — rerun later)"
+	return 0
+}
+
+# --- non-interactive: groups on the command line -------------------------------
+if [ $# -gt 0 ]; then
+	sel=""
+	for g in "$@"; do
+		apps_for "$g" >/dev/null || { echo "unknown preset: $g (art|social|office|music)" >&2; exit 1; }
+		sel="$sel $g"
+	done
+	install_presets "$sel"
+	exit $?
+fi
+
+# --- GUI ------------------------------------------------------------------------
+if command -v yad >/dev/null 2>&1 && [ -n "$DISPLAY$WAYLAND_DISPLAY" ]; then
+	choice=$(yad --list --checklist --title="App presets :3" \
+		--width=520 --height=320 --center --borders=12 \
+		--text="<b>Pick your app presets</b>\nEverything installs from Flathub." \
+		--column="Install":CHK --column="Preset" --column=id --hide-column=3 --no-headers \
+		FALSE "$(label_for art)" art \
+		FALSE "$(label_for social)" social \
+		FALSE "$(label_for office)" office \
+		FALSE "$(label_for music)" music \
+		--button="Install:0" --button="Cancel:1" 2>/dev/null) || exit 0
+	sel=$(printf '%s\n' "$choice" | awk -F'|' '$1=="TRUE"{printf "%s ", $3}')
+	[ -n "$sel" ] || exit 0
+	x-terminal-emulator -e sh -c "boykisser-presets $sel; echo; read -p 'Press enter to close...' _" 2>/dev/null \
+		|| install_presets "$sel"
+	exit 0
+fi
+
+# --- terminal fallback -----------------------------------------------------------
+echo "App presets :3  — pick any (space-separated): art social office music"
+for g in art social office music; do printf "  %-7s %s\n" "$g" "$(label_for "$g")"; done
+printf "presets> "
+read -r sel
+install_presets "$sel"

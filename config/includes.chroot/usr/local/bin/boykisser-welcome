@@ -42,6 +42,7 @@ run_yad() {
 			"$([ "$NET_OK" = 0 ] && echo dialog-ok || echo network-wireless)" "Connect to the internet" "net" \
 			"$([ "$LIVE" = 0 ] && echo drive-harddisk || echo dialog-ok)" "Install Boykisser Linux to disk" "install" \
 			"$(st $APPS_OK)" "Get the full app set (OBS, Steam, VS Code...)" "apps" \
+			"system-software-install" "Install app presets (Art, Social, Office, Music)" "presets" \
 			"preferences-desktop-theme" "Switch light / dark theme" "theme" \
 			"$([ "$NVIDIA_NEEDED" = 0 ] && echo video-display || echo dialog-ok)" "Install NVIDIA drivers" "nvidia" \
 			"system-software-update" "Update the system" "update" \
@@ -53,6 +54,7 @@ run_yad() {
 			net)     nm-connection-editor >/dev/null 2>&1 & ;;
 			install) install-boykisser ;;
 			apps)    x-terminal-emulator -e sh -c 'boykisser-postinstall-apps; echo; read -p "Press enter to close..." _' ;;
+			presets) boykisser-presets & ;;
 			update)  x-terminal-emulator -e sh -c 'boykisser-update; echo; read -p "Press enter to close..." _' ;;
 			theme)   boykisser-theme-toggle ;;
 			nvidia)  x-terminal-emulator -e sh -c 'boykisser-nvidia; echo; read -p "Press enter to close..." _' ;;
