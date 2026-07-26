@@ -19,6 +19,7 @@ pkgs_for() {
 		gaming)    echo "steam-installer lutris gamemode mangohud" ;;
 		streaming) echo "obs-studio kdenlive audacity" ;;
 		dev)       echo "git build-essential python3-pip python3-venv nodejs npm podman" ;;
+		office)    echo "libreoffice libreoffice-gtk3 thunderbird evince" ;;
 	esac
 }
 
