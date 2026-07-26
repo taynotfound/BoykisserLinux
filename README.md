@@ -32,8 +32,16 @@ Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
 - 🟩 One-click helper to install proprietary NVIDIA drivers after setup
 - 🔒 Automatic security updates (unattended-upgrades) on the installed system
 - ⚡ zram compressed swap + power-profiles-daemon for snappy laptops
-- �️ ufw firewall enabled by default (deny incoming, allow outgoing)
-- �🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box- 🐛 Built-in error reporting — `boykisser report` (or "Report a Problem" in the menu) opens a pre-filled GitHub issue with your system info
+- 🛡️ ufw firewall enabled by default (deny incoming, allow outgoing)
+- 🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box
+- 🐛 Built-in error reporting — `boykisser report` (or "Report a Problem" in the menu) opens a pre-filled GitHub issue with your system info
+- 📦 Optional app bundles in the installer — Gaming, Streaming & Creation, Development
+- 🌍 Language chooser in the live boot menu (German, French, Spanish, Italian, Portuguese, Polish, Dutch)
+- 👋 First-login welcome checklist that walks you through setup
+- ⏳ Timeshift snapshots before every `boykisser update` (once configured)
+- 🌙 Night light (redshift) and weekly SSD TRIM out of the box
+- 🚀 `boykisser kernel` installs the newest kernel from trixie-backports
+
 ## Build it yourself
 
 You need `podman` (or `docker`). The ISO is built inside a Debian container, so
