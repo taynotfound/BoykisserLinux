@@ -19,25 +19,45 @@ SITE="https://boykisser.taymaerz.de"
 
 open_url() { xdg-open "$1" >/dev/null 2>&1 & }
 
+# --- little status probes for the checklist ------------------------------------
+st() { [ "$1" = 0 ] && echo "✅" || echo "⬜"; }
+NET_OK=1;    getent hosts deb.debian.org >/dev/null 2>&1 && NET_OK=0
+LIVE=1;      [ -d /run/live ] && LIVE=0
+APPS_OK=1;   command -v obs >/dev/null 2>&1 || flatpak info com.discordapp.Discord >/dev/null 2>&1 && APPS_OK=0
+NVIDIA_NEEDED=1
+lspci 2>/dev/null | grep -qi nvidia && ! lsmod 2>/dev/null | grep -q '^nvidia' && NVIDIA_NEEDED=0
+
 run_yad() {
 	while :; do
-		choice=$(yad --title="Welcome to Boykisser Linux :3" \
-			--width=460 --height=320 --center --borders=16 \
+		if [ "$LIVE" = 0 ]; then
+			HDR="<b>Welcome to Boykisser Linux!</b>\nYou're in the <b>live session</b> — try things out, then install! :3"
+		else
+			HDR="<b>Welcome to Boykisser Linux!</b>\nA few steps to make it purr:"
+		fi
+		choice=$(yad --list --title="Welcome to Boykisser Linux :3" \
+			--width=560 --height=420 --center --borders=16 \
 			--window-icon="$LOGO" --image="$LOGO" --image-on-top \
-			--text="<b>Welcome to Boykisser Linux!</b>\nA pink Debian XFCE spin. What would you like to do?" \
-			--button="Install to disk!1" \
-			--button="Get more apps!2" \
-			--button="Update system!3" \
-			--button="Switch theme!4" \
-			--button="Join Discord!5" \
-			--button="Close:0" 2>/dev/null)
-		rc=$?
-		case "$rc" in
-			1) install-boykisser ;;
-			2) exec x-terminal-emulator -e sh -c 'boykisser-postinstall-apps; echo; read -p "Press enter to close..." _' ;;
-			3) exec x-terminal-emulator -e sh -c 'boykisser-update; echo; read -p "Press enter to close..." _' ;;
-			4) boykisser-theme-toggle ;;
-			5) open_url "$DISCORD" ;;
+			--text="$HDR" \
+			--column="":IMG --column="Step" --column="what" --hide-column=3 --no-headers \
+			"$([ "$NET_OK" = 0 ] && echo dialog-ok || echo network-wireless)" "Connect to the internet" "net" \
+			"$([ "$LIVE" = 0 ] && echo drive-harddisk || echo dialog-ok)" "Install Boykisser Linux to disk" "install" \
+			"$(st $APPS_OK)" "Get the full app set (OBS, Steam, VS Code...)" "apps" \
+			"preferences-desktop-theme" "Switch light / dark theme" "theme" \
+			"$([ "$NVIDIA_NEEDED" = 0 ] && echo video-display || echo dialog-ok)" "Install NVIDIA drivers" "nvidia" \
+			"system-software-update" "Update the system" "update" \
+			"tools-report-bug" "Report a problem" "report" \
+			"internet-group-chat" "Join the Discord" "discord" \
+			--button="Do it!:0" --button="Close:1" 2>/dev/null) || break
+		action=$(printf '%s' "$choice" | awk -F'|' '{print $3}')
+		case "$action" in
+			net)     nm-connection-editor >/dev/null 2>&1 & ;;
+			install) install-boykisser ;;
+			apps)    x-terminal-emulator -e sh -c 'boykisser-postinstall-apps; echo; read -p "Press enter to close..." _' ;;
+			update)  x-terminal-emulator -e sh -c 'boykisser-update; echo; read -p "Press enter to close..." _' ;;
+			theme)   boykisser-theme-toggle ;;
+			nvidia)  x-terminal-emulator -e sh -c 'boykisser-nvidia; echo; read -p "Press enter to close..." _' ;;
+			report)  boykisser-report ;;
+			discord) open_url "$DISCORD" ;;
 			*) break ;;
 		esac
 	done
