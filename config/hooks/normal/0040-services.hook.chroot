@@ -17,6 +17,12 @@ systemctl enable boykisser-firstboot.service || true
 # Compressed RAM swap (config in /etc/default/zramswap)
 systemctl enable zramswap.service || true
 
+# Printing + laptop power profiles + firewall (packages may be absent on the
+# netinstall squashfs — enabling a missing unit is harmless with || true)
+systemctl enable cups.service || true
+systemctl enable power-profiles-daemon.service || true
+systemctl enable ufw.service || true
+
 # No background apt work in the LIVE session (wasted bandwidth on read-only
 # media). boykisser-live-cleanup unmasks these on the installed system, where
 # unattended-upgrades then delivers automatic security updates.

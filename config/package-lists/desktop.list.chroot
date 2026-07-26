@@ -101,6 +101,7 @@ zram-tools
 unattended-upgrades
 fwupd
 power-profiles-daemon
+ufw
 
 # Handy utilities
 file-roller

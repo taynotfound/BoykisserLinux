@@ -8,7 +8,9 @@ ConditionPathExists=!/var/lib/boykisser-firstboot.done
 Type=oneshot
 ExecStart=/usr/local/bin/boykisser-firstboot
 RemainAfterExit=yes
-TimeoutStartSec=infinity
+# generous but finite — an offline machine must not hang boot forever
+TimeoutStartSec=1800
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target

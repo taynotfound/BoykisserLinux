@@ -5,6 +5,8 @@ set -e
 PINK="\033[38;5;213m"; B="\033[1m"; R="\033[0m"
 printf "${PINK}${B}:3 updating Boykisser Linux...${R}\n"
 
+export DEBIAN_FRONTEND=noninteractive
+
 SUDO=""
 [ "$(id -u)" -ne 0 ] && SUDO="sudo"
 

@@ -45,6 +45,11 @@ head "Services"
 FAILED=$(systemctl --failed --no-legend 2>/dev/null | awk '{print $1}')
 if [ -z "$FAILED" ]; then ok "no failed system services"
 else bad "failed services:"; for u in $FAILED; do printf "      - %s\n" "$u"; done; fi
+if systemctl is-active ufw >/dev/null 2>&1; then ok "firewall (ufw) is active"
+else warn "firewall (ufw) is not active"; fi
+if systemctl is-active cups >/dev/null 2>&1; then ok "printing (cups) is running"
+else warn "printing (cups) is not running"; fi
+if swapon --show 2>/dev/null | grep -q zram; then ok "zram compressed swap is on"; fi
 
 head "Network"
 if getent hosts deb.debian.org >/dev/null 2>&1; then ok "internet looks reachable"

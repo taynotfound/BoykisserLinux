@@ -32,7 +32,8 @@ Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
 - 🟩 One-click helper to install proprietary NVIDIA drivers after setup
 - 🔒 Automatic security updates (unattended-upgrades) on the installed system
 - ⚡ zram compressed swap + power-profiles-daemon for snappy laptops
-- 🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box
+- �️ ufw firewall enabled by default (deny incoming, allow outgoing)
+- �🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box
 
 ## Build it yourself
 
