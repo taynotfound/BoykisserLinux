@@ -1,0 +1,42 @@
+#!/bin/sh
+# boykisser-autologin :3  —  turn LightDM autologin on or off.
+# Usage: boykisser-autologin [on [user]|off|status]
+set -e
+
+CONF=/etc/lightdm/lightdm.conf.d/60-boykisser-autologin.conf
+
+status() {
+	if [ -f "$CONF" ]; then
+		user=$(sed -n 's/^autologin-user=//p' "$CONF")
+		echo "autologin: ON (user: ${user:-?})"
+	else
+		echo "autologin: off"
+	fi
+}
+
+case "${1:-status}" in
+	status) status; exit 0 ;;
+	on)
+		if [ -d /run/live ]; then
+			echo "!! you're in the live session — autologin is already handled there." >&2
+			exit 1
+		fi
+		user="${2:-$(logname 2>/dev/null || echo "$SUDO_USER")}"
+		[ -n "$user" ] || { echo "!! couldn't figure out the user — pass it: boykisser autologin on <user>" >&2; exit 1; }
+		id "$user" >/dev/null 2>&1 || { echo "!! no such user: $user" >&2; exit 1; }
+		sudo mkdir -p /etc/lightdm/lightdm.conf.d
+		printf '[Seat:*]\nautologin-user=%s\nautologin-user-timeout=0\n' "$user" | sudo tee "$CONF" >/dev/null
+		sudo groupadd -f autologin
+		sudo usermod -aG autologin "$user"
+		echo ":3 autologin enabled for $user (takes effect next boot)"
+		echo "   heads-up: anyone with the machine gets straight to your desktop!"
+		;;
+	off)
+		sudo rm -f "$CONF"
+		echo ":3 autologin disabled (takes effect next boot)"
+		;;
+	*)
+		echo "usage: boykisser-autologin [on [user]|off|status]" >&2
+		exit 1
+		;;
+esac
