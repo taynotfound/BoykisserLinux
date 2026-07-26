@@ -8,6 +8,7 @@ PINK="\033[38;5;213m"; B="\033[1m"; R="\033[0m"
 usage() {
 	printf "${PINK}${B}Boykisser Linux :3${R}\n\n"
 	printf "${B}usage:${R} boykisser <command>\n\n"
+	printf "  ${PINK}center${R}     open the graphical Boykisser Center\n"
 	printf "  ${PINK}update${R}     update the whole system (apt + flatpak)\n"
 	printf "  ${PINK}cleanup${R}    free up disk space (old packages, caches, logs)\n"
 	printf "  ${PINK}doctor${R}     check the health of your system\n"
@@ -30,6 +31,7 @@ cmd="${1:-}"
 [ -n "$cmd" ] && shift || true
 
 case "$cmd" in
+	center)    exec boykisser-center "$@" ;;
 	update)    exec boykisser-update "$@" ;;
 	cleanup)   exec boykisser-cleanup "$@" ;;
 	doctor)    exec boykisser-doctor "$@" ;;

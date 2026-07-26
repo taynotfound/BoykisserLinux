@@ -109,6 +109,10 @@ timeshift
 # simple GUI file backups (Timeshift covers system snapshots)
 deja-dup
 
+# Boykisser Center (GTK3 control center app)
+python3-gi
+gir1.2-gtk-3.0
+
 # Handy utilities
 file-roller
 mousepad

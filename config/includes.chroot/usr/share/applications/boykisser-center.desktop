@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Boykisser Center
+Comment=Updates, apps, themes, drivers — everything in one pink place :3
+Exec=boykisser-center
+Icon=/usr/share/boykisser/face.png
+Terminal=false
+Categories=Settings;
+Keywords=control;center;settings;update;apps;boykisser;

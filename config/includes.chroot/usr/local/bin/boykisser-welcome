@@ -49,6 +49,7 @@ run_yad() {
 			"system-software-update" "Update the system" "update" \
 			"tools-report-bug" "Report a problem" "report" \
 			"internet-group-chat" "Join the Discord" "discord" \
+			"preferences-system" "Open the Boykisser Center (all the tools)" "center" \
 			--button="Do it!:0" --button="Close:1" 2>/dev/null) || break
 		action=$(printf '%s' "$choice" | awk -F'|' '{print $3}')
 		case "$action" in
@@ -62,6 +63,7 @@ run_yad() {
 			nvidia)  x-terminal-emulator -e sh -c 'boykisser-nvidia; echo; read -p "Press enter to close..." _' ;;
 			report)  boykisser-report ;;
 			discord) open_url "$DISCORD" ;;
+			center)  boykisser-center >/dev/null 2>&1 & ;;
 			*) break ;;
 		esac
 	done
