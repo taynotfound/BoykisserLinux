@@ -24,6 +24,11 @@ gstreamer1.0-plugins-ugly
 gstreamer1.0-libav
 ffmpeg
 
+# Printing
+cups
+system-config-printer
+printer-driver-gutenprint
+
 # Gaming bits (Steam itself is installed via the i386 hook)
 gamemode
 mangohud

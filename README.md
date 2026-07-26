@@ -24,12 +24,15 @@ Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
 - 💅 Full Boykisser XFCE theme — pink accents, Tela-circle icons, light & dark, custom Plymouth splash and boot menu
 - 🖥️ Choose your desktop in the installer — XFCE by default, or pick **KDE Plasma** (fully pink Boykisser-themed, pulled from the net during install)
 - 🐲 Pink GRUB theme on the installed system, with the first entry (Boykisser) auto-selected
-- �📦 Flatpak + Flathub out of the box (GNOME Software, Flatseal, Gear Lever)
+- 📦 Flatpak + Flathub out of the box (GNOME Software, Flatseal, Gear Lever)
 - 🎮 Steam, Heroic, GameMode, MangoHud — with 32-bit libs enabled
 - 🎥 OBS Studio with a working virtual camera (v4l2loopback)
 - 🌐 Firefox, VS Code Insiders, VLC, Discord
 - 🖥️ UEFI + BIOS, broad firmware, Nouveau for universal boot
 - 🟩 One-click helper to install proprietary NVIDIA drivers after setup
+- 🔒 Automatic security updates (unattended-upgrades) on the installed system
+- ⚡ zram compressed swap + power-profiles-daemon for snappy laptops
+- 🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box
 
 ## Build it yourself
 
@@ -59,6 +62,25 @@ The result lands at `boykisser-linux-amd64.iso` (or
 > both the full and netinstall ISOs — KDE is downloaded during install to keep
 > the images small. XFCE installs completely offline.
 
+### Automatic weekly rebuilds
+
+The live image keeps itself fresh two ways:
+
+- **CI:** [the build workflow](.github/workflows/build.yml) runs every Monday
+  (03:00 UTC) and publishes a rolling `weekly-YYYYMMDD` prerelease with the
+  current trixie kernel and security updates baked in.
+- **Locally:** `tools/bk-autobuild.sh` rebuilds the ISO only when Debian ships
+  a new `linux-image-amd64`. Wire it up as a weekly systemd user timer:
+
+  ```sh
+  ./tools/bk-autobuild.sh --install-timer   # enable the weekly timer
+  ./tools/bk-autobuild.sh --check           # just ask if a rebuild is due
+  ./tools/bk-autobuild.sh --force           # rebuild right now
+  ./tools/bk-autobuild.sh --uninstall-timer # remove the timer
+  ```
+
+  State lives in `.autobuild-state`, logs in `autobuild.log` (both gitignored).
+
 ## Releases
 
 Tagged pushes (`v*`) trigger [the build workflow](.github/workflows/build.yml),
@@ -76,6 +98,9 @@ cat boykisser-linux-amd64.iso.part* > boykisser-linux-amd64.iso
 sha256sum -c SHA256SUMS
 sudo dd if=boykisser-linux-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync
 ```
+
+The live session logs in automatically; if you ever get a login prompt, the
+live user is `boykisser` with password `live`.
 
 ## Layout
 

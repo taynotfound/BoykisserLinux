@@ -14,6 +14,14 @@ systemctl enable bluetooth.service      || true
 # First-boot helper that installs the Flatpak apps (Heroic, Discord, ...)
 systemctl enable boykisser-firstboot.service || true
 
+# Compressed RAM swap (config in /etc/default/zramswap)
+systemctl enable zramswap.service || true
+
+# No background apt work in the LIVE session (wasted bandwidth on read-only
+# media). boykisser-live-cleanup unmasks these on the installed system, where
+# unattended-upgrades then delivers automatic security updates.
+systemctl mask apt-daily.timer apt-daily-upgrade.timer unattended-upgrades.service || true
+
 # Make sure NetworkManager (not ifupdown) manages networking in the live/installed system
 mkdir -p /etc/NetworkManager/conf.d
 cat > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf <<'EOF'

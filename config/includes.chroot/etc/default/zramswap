@@ -1,0 +1,5 @@
+# Boykisser Linux :3 — compressed RAM swap for a snappier system
+# zstd is fast + compresses well; 25% of RAM is a safe default.
+ALGO=zstd
+PERCENT=25
+PRIORITY=100

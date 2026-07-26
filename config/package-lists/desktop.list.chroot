@@ -96,6 +96,12 @@ fonts-firacode
 fonts-cantarell
 fonts-font-awesome
 
+# System health & maintenance
+zram-tools
+unattended-upgrades
+fwupd
+power-profiles-daemon
+
 # Handy utilities
 file-roller
 mousepad
