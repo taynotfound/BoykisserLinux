@@ -35,6 +35,7 @@ Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
 - 🛡️ ufw firewall enabled by default (deny incoming, allow outgoing)
 - 🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box
 - 🐛 Built-in error reporting — `boykisser report` (or "Report a Problem" in the menu) opens a pre-filled GitHub issue with your system info
+- 🎛️ **Boykisser Center** — a full GTK control center GUI (`boykisser center`) with system status and one-click tiles for updates, apps, themes, drivers and more
 - 📦 Optional app bundles in the installer — Gaming, Streaming & Creation, Development, Office
 - 🧩 `boykisser presets` — one-click Flatpak preset groups (Art, Social, Office, Music)
 - 🌐 `boykisser browser` — pick Firefox, LibreWolf, Brave or Chromium
