@@ -106,6 +106,8 @@ fwupd
 power-profiles-daemon
 ufw
 timeshift
+# simple GUI file backups (Timeshift covers system snapshots)
+deja-dup
 
 # Handy utilities
 file-roller
