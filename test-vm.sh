@@ -4,9 +4,33 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-ISO="${1:-$HERE/boykisser-linux-amd64.iso}"
-[ "${1:-}" = "--bios" ] && { MODE=bios; ISO="$HERE/boykisser-linux-amd64.iso"; } || MODE=uefi
-[ "${2:-}" = "--bios" ] && MODE=bios
+ISO="$HERE/boykisser-linux-amd64.iso"
+MODE=uefi
+RAM=4096
+CPUS=4
+
+usage() {
+	echo "usage: $0 [iso] [--bios] [--ram MB] [--cpus N]"
+	exit 0
+}
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+		--bios) MODE=bios ;;
+		--ram)  RAM="$2"; shift ;;
+		--cpus) CPUS="$2"; shift ;;
+		-h|--help) usage ;;
+		*)      ISO="$1" ;;
+	esac
+	shift
+done
+
+# Don't ask QEMU for more than the host can give.
+AVAIL_MB=$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo 2>/dev/null || echo "$RAM")
+if [ "$RAM" -gt "$AVAIL_MB" ]; then
+	RAM=$(( AVAIL_MB > 2048 ? AVAIL_MB - 512 : 2048 ))
+	echo ":3 (not enough free RAM — using ${RAM} MB instead)"
+fi
 
 if [ ! -f "$ISO" ]; then
 	echo "!! ISO not found: $ISO  (run ./build.sh first)" >&2
@@ -30,8 +54,8 @@ for c in \
 done
 
 COMMON=(
-	-m 4096
-	-smp 4
+	-m "$RAM"
+	-smp "$CPUS"
 	-machine q35
 	"${ACCEL[@]}"
 	-vga virtio

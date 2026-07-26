@@ -1,0 +1,79 @@
+#!/bin/sh
+# boykisser-report :3  —  send a bug/error report to the Boykisser Linux team.
+#
+# POSTs to the website's report endpoint (which forwards to the team's Discord
+# via a server-side webhook — the webhook itself is never shipped in the ISO).
+#
+# Usage:
+#   boykisser-report                       interactive (GUI if available, else prompts)
+#   boykisser-report "something broke"     one-shot with a message
+#   boykisser-report --no-sysinfo "..."    don't attach system info
+
+ENDPOINT="${BOYKISSER_REPORT_URL:-https://boykisser.taymaerz.de/api/report}"
+
+PINK="\033[38;5;213m"; B="\033[1m"; R="\033[0m"
+say() { printf "${PINK}%s${R}\n" "$1"; }
+
+SYSINFO=1
+[ "${1:-}" = "--no-sysinfo" ] && { SYSINFO=0; shift; }
+MSG="${1:-}"
+
+# --- collect the message -------------------------------------------------------
+if [ -z "$MSG" ]; then
+	if command -v yad >/dev/null 2>&1 && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+		MSG=$(yad --form --title="Report a problem :3" --window-icon=dialog-warning \
+			--text="Tell us what went wrong. No personal data is sent —\nonly your text and (optionally) basic system info." \
+			--field="What happened?:TXT" "" \
+			--button="Send report:0" --button="Cancel:1" 2>/dev/null) || exit 0
+		MSG=$(printf '%s' "$MSG" | sed 's/|*$//')
+	else
+		say ":3 What went wrong? (end with an empty line)"
+		MSG=""
+		while IFS= read -r line; do
+			[ -z "$line" ] && break
+			MSG="$MSG$line
+"
+		done
+	fi
+fi
+[ -z "$(printf '%s' "$MSG" | tr -d '[:space:]')" ] && { say "nothing to send — bye! :3"; exit 0; }
+
+# --- optional system info (nothing personally identifying) ---------------------
+INFO=""
+if [ "$SYSINFO" = 1 ]; then
+	VER=$(head -n1 /etc/boykisser/version 2>/dev/null || echo "unknown")
+	VARIANT=$(cat /etc/boykisser/variant 2>/dev/null || echo "unknown")
+	KERNEL=$(uname -r)
+	DE="${XDG_CURRENT_DESKTOP:-unknown}"
+	MEM=$(awk '/MemTotal/{printf "%.1f GiB", $2/1048576}' /proc/meminfo 2>/dev/null)
+	GPU=$(lspci 2>/dev/null | grep -iE 'vga|3d' | head -1 | sed 's/^[^:]*: //')
+	FAILED=$(systemctl --failed --no-legend 2>/dev/null | awk '{print $1}' | tr '\n' ' ')
+	INFO="version: $VER | variant: $VARIANT | kernel: $KERNEL | de: $DE | ram: $MEM | gpu: ${GPU:-?} | failed-units: ${FAILED:-none}"
+fi
+
+# --- send it --------------------------------------------------------------------
+if ! command -v curl >/dev/null 2>&1; then
+	say "!! curl is missing — can't send. Please report at:"
+	say "   https://github.com/taynotfound/BoykisserLinux/issues"
+	exit 1
+fi
+
+# Build the JSON safely (escape backslashes, quotes, newlines).
+esc() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\\n$//'; }
+BODY=$(printf '{"message":"%s","sysinfo":"%s"}' "$(esc "$MSG")" "$(esc "$INFO")")
+
+say ":3 sending your report..."
+HTTP=$(curl -sS -o /tmp/bk-report-resp.$$ -w '%{http_code}' \
+	-X POST -H 'Content-Type: application/json' \
+	--max-time 20 -d "$BODY" "$ENDPOINT" 2>/dev/null || echo 000)
+rm -f /tmp/bk-report-resp.$$
+
+if [ "$HTTP" = "200" ] || [ "$HTTP" = "204" ]; then
+	say ":3 report sent — thank you so much! mwah"
+	command -v notify-send >/dev/null 2>&1 && notify-send "Boykisser Linux" "Report sent — thank you! :3" || true
+else
+	say "!! couldn't send the report (HTTP $HTTP)."
+	say "   Please report it here instead:"
+	say "   https://github.com/taynotfound/BoykisserLinux/issues"
+	exit 1
+fi

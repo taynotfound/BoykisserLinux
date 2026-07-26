@@ -33,8 +33,7 @@ Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
 - 🔒 Automatic security updates (unattended-upgrades) on the installed system
 - ⚡ zram compressed swap + power-profiles-daemon for snappy laptops
 - �️ ufw firewall enabled by default (deny incoming, allow outgoing)
-- �🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box
-
+- �🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box- 🐛 Built-in error reporting — `boykisser report` (or "Report a Problem" in the menu) sends a report straight to the team
 ## Build it yourself
 
 You need `podman` (or `docker`). The ISO is built inside a Debian container, so
@@ -113,6 +112,24 @@ live user is `boykisser` with password `live`.
 | `config/includes.chroot/` | files overlaid onto the image |
 | `config/bootloaders/` | Boykisser boot splash + GRUB theme |
 | `docker/Dockerfile.builder` | the build container |
+| `tools/` | maintainer helpers (weekly auto-rebuild) |
+| `website/api/` | error-report proxy (Cloudflare Worker) |
+
+## Error reporting
+
+`boykisser report` (also "Report a Problem" in the app menu) sends the user's
+description plus basic, non-personal system info to
+`https://boykisser.taymaerz.de/api/report`, a small Cloudflare Worker
+([website/api/report-worker.js](website/api/report-worker.js)) that forwards it
+to the team's Discord channel. The Discord webhook lives only as a server-side
+secret — see [website/api/README.md](website/api/README.md) for deployment.
+
+## Known limitations
+
+- The proprietary NVIDIA driver isn't in the live session (DKMS can't build
+  against the live kernel) — install it after setup with `boykisser nvidia`.
+- Picking KDE in the installer needs internet; XFCE installs fully offline.
+- The netinstall ISO needs internet on first boot to fetch the heavy apps.
 
 ## Disclaimer
 

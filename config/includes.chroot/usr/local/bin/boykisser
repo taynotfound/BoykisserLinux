@@ -15,6 +15,7 @@ usage() {
 	printf "  ${PINK}theme${R}      switch look:  boykisser theme [light|dark]\n"
 	printf "  ${PINK}wallpaper${R}  re-apply the Boykisser wallpaper\n"
 	printf "  ${PINK}nvidia${R}     install the proprietary NVIDIA driver\n"
+	printf "  ${PINK}report${R}     report a bug/error to the team\n"
 	printf "  ${PINK}welcome${R}    open the graphical welcome screen\n"
 	printf "  ${PINK}install${R}    install Boykisser Linux to your disk\n"
 	printf "  ${PINK}version${R}    show the Boykisser Linux version\n\n"
@@ -31,6 +32,7 @@ case "$cmd" in
 	theme)     exec boykisser-theme "$@" ;;
 	wallpaper) exec boykisser-wallpaper "$@" ;;
 	nvidia)    exec boykisser-nvidia "$@" ;;
+	report)    exec boykisser-report "$@" ;;
 	welcome)   exec boykisser-welcome "$@" ;;
 	install)   exec install-boykisser "$@" ;;
 	version|--version|-v)
