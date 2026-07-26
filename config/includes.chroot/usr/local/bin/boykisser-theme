@@ -18,11 +18,25 @@ esac
 
 echo "$MODE" > "$CFG/mode"
 
-xfconf-query -c xsettings -p /Net/ThemeName     -s "$GTK"   2>/dev/null || true
-xfconf-query -c xsettings -p /Net/IconThemeName -s "$ICONS" 2>/dev/null || true
-
 IMG="/usr/share/backgrounds/boykisser/${WALL}.png"
 [ -f "$IMG" ] || IMG="/usr/share/backgrounds/boykisser/${WALL}.jpg"
+
+# --- KDE Plasma ----------------------------------------------------------------
+if [ "${XDG_CURRENT_DESKTOP#*KDE}" != "$XDG_CURRENT_DESKTOP" ] && command -v lookandfeeltool >/dev/null 2>&1; then
+	if [ "$MODE" = light ]; then LNF="org.kde.breeze.desktop"; else LNF="org.kde.breezedark.desktop"; fi
+	lookandfeeltool -a "$LNF" 2>/dev/null || true
+	command -v kwriteconfig6 >/dev/null 2>&1 && \
+		kwriteconfig6 --file kdeglobals --group General --group Icons --key Theme "$ICONS" 2>/dev/null || true
+	command -v plasma-apply-wallpaperimage >/dev/null 2>&1 && \
+		plasma-apply-wallpaperimage "$IMG" 2>/dev/null || true
+	gsettings set org.gnome.desktop.interface color-scheme "$SCHEME" 2>/dev/null || true
+	echo "Boykisser theme set to ${MODE} (KDE) :3"
+	exit 0
+fi
+
+# --- XFCE ------------------------------------------------------------------------
+xfconf-query -c xsettings -p /Net/ThemeName     -s "$GTK"   2>/dev/null || true
+xfconf-query -c xsettings -p /Net/IconThemeName -s "$ICONS" 2>/dev/null || true
 
 # Apply to every existing backdrop property...
 xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image$' | while read -r prop; do
