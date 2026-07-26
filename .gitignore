@@ -32,3 +32,6 @@ config/package-lists/*.disabled
 # weekly auto-rebuild state (tools/bk-autobuild.sh)
 .autobuild-state
 autobuild.log
+
+# local build log (build.sh)
+build.log

@@ -15,11 +15,14 @@ NAME="boykisser-linux"
 # codecs, Steam, VS Code, gaming bits + Flatpaks) from the internet on first
 # boot via boykisser-postinstall-apps. Needs an internet connection to finish.
 NETINSTALL="${NETINSTALL:-0}"
+CLEAN_MODE="${CLEAN_MODE:-normal}"   # normal | purge | fast
 LB_ARGS=()
 for arg in "$@"; do
 	case "$arg" in
 		--netinstall) NETINSTALL=1 ;;
 		--full)       NETINSTALL=0 ;;
+		--clean)      CLEAN_MODE=purge ;;   # deep clean: also wipes the package cache
+		--fast)       CLEAN_MODE=fast ;;    # incremental: keep the chroot, rebuild binary only
 		*)            LB_ARGS+=("$arg") ;;
 	esac
 done
@@ -64,24 +67,37 @@ $ENGINE build -t "$IMAGE" -f docker/Dockerfile.builder docker/
 
 # --- run live-build inside the container --------------------------------------
 echo ":3 starting the live-build run (this takes a while, go get a snack)..."
+# Cleaning strategy (the package cache in cache/ makes rebuilds MUCH faster):
+#   normal (default)  lb clean          — fresh chroot+binary, keeps downloaded debs
+#   purge  (--clean)  lb clean --purge  — everything from scratch, incl. the deb cache
+#   fast   (--fast)   lb clean --binary — keep the built chroot, regenerate the ISO only
+#                     (use after tweaking includes.binary/bootloaders; NOT after
+#                     changing package lists or chroot hooks)
+case "$CLEAN_MODE" in
+	purge) CLEAN_CMD="lb clean --purge" ;;
+	fast)  CLEAN_CMD="lb clean --binary" ;;
+	*)     CLEAN_CMD="lb clean" ;;
+esac
+echo ":3 clean mode: $CLEAN_MODE ($CLEAN_CMD)"
 # Only allocate a TTY when we have one (the weekly auto-rebuild timer doesn't).
 TTY_FLAGS="-i"
 [ -t 0 ] && TTY_FLAGS="-it"
 $ENGINE run --rm $TTY_FLAGS \
 	--privileged \
 	--name "${NAME}-build" \
+	-e CLEAN_CMD="$CLEAN_CMD" \
 	-v "$HERE":/build:Z \
 	-w /build \
 	"$IMAGE" \
 	-lc '
 		set -e
-		echo ":3 cleaning previous build state..."
-		lb clean --purge || true
+		echo ":3 cleaning previous build state ($CLEAN_CMD)..."
+		$CLEAN_CMD || true
 		echo ":3 lb config..."
 		lb config
 		echo ":3 lb build..."
 		lb build
-	'
+	' 2>&1 | tee build.log
 
 # --- report -------------------------------------------------------------------
 ISO="$(ls -1 "$HERE"/live-image-*.iso 2>/dev/null | head -n1 || true)"

@@ -42,8 +42,15 @@ it works from any host.
 ```sh
 ./build.sh        # build the full ISO
 ./build.sh --netinstall   # build the slim ISO (pulls apps from the net on first boot)
+./build.sh --fast # incremental: keep the chroot, regenerate the ISO only
+./build.sh --clean        # deep clean, also wipes the package cache
 ./test-vm.sh      # boot it in QEMU
 ```
+
+Rebuilds reuse the downloaded packages in `cache/` (much faster); pass
+`--clean` to start truly from scratch. `--fast` is for bootloader/ISO-level
+tweaks only — after changing package lists or chroot hooks, do a normal build.
+The full build log is written to `build.log`.
 
 The result lands at `boykisser-linux-amd64.iso` (or
 `boykisser-linux-netinstall-amd64.iso` for the slim build).

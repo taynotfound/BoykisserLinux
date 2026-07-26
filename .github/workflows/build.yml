@@ -25,6 +25,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
@@ -39,6 +40,19 @@ jobs:
             item_suffix: "-netinstall"
     steps:
       - uses: actions/checkout@v4
+
+      - name: Restore the live-build package cache
+        uses: actions/cache@v4
+        with:
+          # Downloaded .debs only (not the unpacked bootstrap) — saves re-fetching
+          # ~2 GB of packages from the Debian mirrors on every run.
+          path: |
+            cache/packages.bootstrap
+            cache/packages.chroot
+            cache/packages.binary
+          key: lb-debs-${{ matrix.variant }}-${{ hashFiles('config/package-lists/**', 'config/archives/**', 'auto/config') }}
+          restore-keys: |
+            lb-debs-${{ matrix.variant }}-
 
       - name: Free up disk space
         run: |
@@ -77,10 +91,15 @@ jobs:
             -v "$PWD":/build -w /build \
             boykisser-builder -lc '
               set -e
-              lb clean --purge || true
+              # plain clean keeps cache/packages.* (restored above) so apt
+              # reuses the cached .debs instead of re-downloading everything
+              lb clean || true
               lb config
               lb build
             '
+          # the container runs as root — make the cache readable for the
+          # post-job cache save step
+          sudo chmod -R a+rX cache/packages.* 2>/dev/null || true
 
       - name: Name and checksum the ISO
         id: iso
