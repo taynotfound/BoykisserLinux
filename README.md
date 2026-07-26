@@ -35,10 +35,14 @@ Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
 - 🛡️ ufw firewall enabled by default (deny incoming, allow outgoing)
 - 🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box
 - 🐛 Built-in error reporting — `boykisser report` (or "Report a Problem" in the menu) opens a pre-filled GitHub issue with your system info
-- 📦 Optional app bundles in the installer — Gaming, Streaming & Creation, Development
+- 📦 Optional app bundles in the installer — Gaming, Streaming & Creation, Development, Office
+- 🧩 `boykisser presets` — one-click Flatpak preset groups (Art, Social, Office, Music)
+- 🌐 `boykisser browser` — pick Firefox, LibreWolf, Brave or Chromium
+- 🧹 `boykisser debloat` — remove app groups you don't want
+- 🔓 `boykisser autologin` — toggle passwordless login on installed systems
+- 💾 Deja Dup for file backups + Timeshift snapshots before every `boykisser update` (once configured)
 - 🌍 Language chooser in the live boot menu (German, French, Spanish, Italian, Portuguese, Polish, Dutch)
 - 👋 First-login welcome checklist that walks you through setup
-- ⏳ Timeshift snapshots before every `boykisser update` (once configured)
 - 🌙 Night light (redshift) and weekly SSD TRIM out of the box
 - 🚀 `boykisser kernel` installs the newest kernel from trixie-backports
 
