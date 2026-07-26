@@ -144,6 +144,7 @@ sequence:
       - locale
       - keyboard
       - packagechooser
+      - packagechooser@bundles
       - partition
       - users
       - summary
@@ -164,6 +165,7 @@ sequence:
       - grubcfg
       - bootloader
       - packages
+      - contextualprocess@bundles
       - contextualprocess
       - luksbootkeyfile
       - plymouthcfg
@@ -176,6 +178,13 @@ sequence:
 branding: boykisser
 prompt-install: true
 dont-chroot: false
+instances:
+  - id: bundles
+    module: packagechooser
+    config: packagechooser-bundles.conf
+  - id: bundles
+    module: contextualprocess
+    config: contextualprocess-bundles.conf
 EOF
 fi
 
@@ -206,8 +215,34 @@ for SC in /etc/calamares/settings.conf /etc/calamares/settings-online.conf; do
 	[ -f "$SC" ] || continue
 	# Desktop chooser: after the first 'keyboard' entry (the show: step).
 	inject_step "$SC" packagechooser   '^[[:space:]]*-[[:space:]]*keyboard[[:space:]]*$' after
-	# KDE installer: just before the exec umount, so the target is still mounted.
+	# App bundles chooser: right after the desktop chooser.
+	inject_step "$SC" 'packagechooser@bundles' '^[[:space:]]*-[[:space:]]*packagechooser[[:space:]]*$' after
+	# Bundle installer: before the desktop contextualprocess (target still mounted).
 	inject_step "$SC" contextualprocess '^[[:space:]]*-[[:space:]]*umount[[:space:]]*$' before
+	inject_step "$SC" 'contextualprocess@bundles' '^[[:space:]]*-[[:space:]]*contextualprocess[[:space:]]*$' before
+	# Register the instanced modules (append the block if there is none yet;
+	# otherwise slot our entries right under the existing instances: key).
+	if ! grep -q 'packagechooser-bundles.conf' "$SC"; then
+		if grep -q '^instances:' "$SC"; then
+			sed -i '/^instances:/a\
+  - id: bundles\
+    module: packagechooser\
+    config: packagechooser-bundles.conf\
+  - id: bundles\
+    module: contextualprocess\
+    config: contextualprocess-bundles.conf' "$SC"
+		else
+			cat >> "$SC" <<'EOF'
+instances:
+  - id: bundles
+    module: packagechooser
+    config: packagechooser-bundles.conf
+  - id: bundles
+    module: contextualprocess
+    config: contextualprocess-bundles.conf
+EOF
+		fi
+	fi
 done
 
 # --- Make the live-package cleanup non-fatal -----------------------------------
@@ -253,4 +288,4 @@ packagechooser_packagechooser:
           timeout: 600
 EOF
 
-chmod 0755 /usr/local/bin/boykisser-live-cleanup 2>/dev/null || true
+chmod 0755 /usr/local/bin/boykisser-live-cleanup /usr/local/bin/boykisser-install-bundles 2>/dev/null || true
