@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Night Light
+Comment=Warm colors in the evening (redshift) :3
+Exec=redshift-gtk
+Icon=redshift
+Terminal=false
+X-XFCE-Autostart-Phase=Application
+OnlyShowIn=XFCE;

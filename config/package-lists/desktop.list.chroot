@@ -133,3 +133,6 @@ vim-tiny
 # Boykisser goodies — desktop widget + dialogs for the welcome/control center
 conky-all
 yad
+
+# Night light (time-based, config in ~/.config/redshift.conf)
+redshift-gtk
