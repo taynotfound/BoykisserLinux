@@ -3,6 +3,11 @@ name: Build ISO
 on:
   push:
     tags: ["v*"]
+  schedule:
+    # Weekly automatic rebuild (Mondays 03:00 UTC) so the live image always
+    # ships the current trixie kernel + security updates. Published as a
+    # rolling "weekly" release.
+    - cron: "0 3 * * 1"
   workflow_dispatch:
     inputs:
       release_tag:
@@ -92,6 +97,8 @@ jobs:
           if [ -z "$tag" ]; then
             if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
               tag="${GITHUB_REF_NAME}"
+            elif [ "${{ github.event_name }}" = "schedule" ]; then
+              tag="weekly-$(date +%Y%m%d)"
             else
               tag="nightly-$(date +%Y%m%d)"
             fi
@@ -209,11 +216,19 @@ jobs:
           if [ -z "$tag" ]; then
             if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
               tag="${GITHUB_REF_NAME}"
+            elif [ "${{ github.event_name }}" = "schedule" ]; then
+              tag="weekly-$(date +%Y%m%d)"
             else
               tag="nightly-$(date +%Y%m%d)"
             fi
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          # weekly/nightly builds are prereleases; only v* tags are stable
+          if [[ "$tag" == v* ]]; then
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Combine checksums and release notes
         env:
@@ -244,6 +259,7 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: Boykisser Linux ${{ steps.tag.outputs.tag }}
+          prerelease: ${{ steps.tag.outputs.prerelease }}
           body_path: dist/release-notes.md
           files: |
             dist/boykisser-linux-amd64.iso.part*

@@ -64,7 +64,10 @@ $ENGINE build -t "$IMAGE" -f docker/Dockerfile.builder docker/
 
 # --- run live-build inside the container --------------------------------------
 echo ":3 starting the live-build run (this takes a while, go get a snack)..."
-$ENGINE run --rm -it \
+# Only allocate a TTY when we have one (the weekly auto-rebuild timer doesn't).
+TTY_FLAGS="-i"
+[ -t 0 ] && TTY_FLAGS="-it"
+$ENGINE run --rm $TTY_FLAGS \
 	--privileged \
 	--name "${NAME}-build" \
 	-v "$HERE":/build:Z \
@@ -81,7 +84,7 @@ $ENGINE run --rm -it \
 	'
 
 # --- report -------------------------------------------------------------------
-ISO="$(ls -1 "$HERE"/*.iso 2>/dev/null | head -n1 || true)"
+ISO="$(ls -1 "$HERE"/live-image-*.iso 2>/dev/null | head -n1 || true)"
 if [ -n "$ISO" ]; then
 	# Give a friendly stable name (slim builds get a -netinstall suffix)
 	if [ "$NETINSTALL" = "1" ]; then
