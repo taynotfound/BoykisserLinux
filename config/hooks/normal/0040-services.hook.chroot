@@ -23,6 +23,9 @@ systemctl enable cups.service || true
 systemctl enable power-profiles-daemon.service || true
 systemctl enable ufw.service || true
 
+# Weekly TRIM for SSDs (no-op on spinning disks)
+systemctl enable fstrim.timer || true
+
 # No background apt work in the LIVE session (wasted bandwidth on read-only
 # media). boykisser-live-cleanup unmasks these on the installed system, where
 # unattended-upgrades then delivers automatic security updates.
