@@ -1,0 +1,62 @@
+#!/bin/sh
+# Boykisser Linux — add a language submenu to the boot menus :3
+# Runs after live-build generated the binary payload; appends localized live
+# entries (locale + keyboard) to both GRUB (UEFI) and isolinux (BIOS).
+# live-config generates the chosen locale at boot (locales= / keyboard-layouts=).
+set -e
+
+echo "Adding language boot entries :3"
+
+# kernel/initrd names as generated in binary/live/
+KERNEL="$(ls binary/live/vmlinuz-* 2>/dev/null | head -n1 | sed 's|binary||')"
+INITRD="$(ls binary/live/initrd.img-* 2>/dev/null | head -n1 | sed 's|binary||')"
+[ -n "$KERNEL" ] || { echo "  (no kernel found — skipping)"; exit 0; }
+
+APPEND="boot=live components quiet splash username=boykisser user-fullname=Boykisser hostname=boykisser noeject"
+
+# lang | label | locale | kbd
+LANGS="
+de|Deutsch|de_DE.UTF-8|de
+fr|Français|fr_FR.UTF-8|fr
+es|Español|es_ES.UTF-8|es
+it|Italiano|it_IT.UTF-8|it
+pt|Português (Brasil)|pt_BR.UTF-8|br
+pl|Polski|pl_PL.UTF-8|pl
+nl|Nederlands|nl_NL.UTF-8|nl
+"
+
+# --- GRUB (UEFI) ---------------------------------------------------------------
+GRUB=binary/boot/grub/grub.cfg
+if [ -f "$GRUB" ]; then
+	{
+		echo ""
+		echo "submenu 'Live system in another language ...' --hotkey=t {"
+		echo "        source /boot/grub/theme.cfg"
+		printf '%s\n' "$LANGS" | while IFS='|' read -r code label locale kbd; do
+			[ -z "$code" ] && continue
+			echo "        menuentry \"Live system — $label\" {"
+			echo "                linux  $KERNEL $APPEND locales=$locale keyboard-layouts=$kbd findiso=\${iso_path}"
+			echo "                initrd $INITRD"
+			echo "        }"
+		done
+		echo "}"
+	} >> "$GRUB"
+	echo "  grub: language submenu added"
+fi
+
+# --- isolinux (BIOS) -------------------------------------------------------------
+ISO=binary/isolinux/live.cfg
+if [ -f "$ISO" ]; then
+	{
+		printf '%s\n' "$LANGS" | while IFS='|' read -r code label locale kbd; do
+			[ -z "$code" ] && continue
+			echo ""
+			echo "label live-$code"
+			echo "	menu label ^Live ($label)"
+			echo "	linux $KERNEL"
+			echo "	initrd $INITRD"
+			echo "	append $APPEND locales=$locale keyboard-layouts=$kbd"
+		done
+	} >> "$ISO"
+	echo "  isolinux: language entries added"
+fi
