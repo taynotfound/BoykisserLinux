@@ -14,6 +14,7 @@ usage() {
 	printf "  ${PINK}apps${R}       install the full app set (OBS, Steam, VS Code, ...)\n"
 	printf "  ${PINK}presets${R}    install app preset groups (Art, Social, Office, Music)\n"
 	printf "  ${PINK}browser${R}    pick a browser (Firefox, LibreWolf, Brave, Chromium)\n"
+	printf "  ${PINK}debloat${R}    remove app groups you don't want (Steam, OBS, ...)\n"
 	printf "  ${PINK}theme${R}      switch look:  boykisser theme [light|dark]\n"
 	printf "  ${PINK}wallpaper${R}  re-apply the Boykisser wallpaper\n"
 	printf "  ${PINK}nvidia${R}     install the proprietary NVIDIA driver\n"
@@ -34,6 +35,7 @@ case "$cmd" in
 	apps)      exec boykisser-postinstall-apps "$@" ;;
 	presets)   exec boykisser-presets "$@" ;;
 	browser)   exec boykisser-browser "$@" ;;
+	debloat)   exec boykisser-debloat "$@" ;;
 	theme)     exec boykisser-theme "$@" ;;
 	wallpaper) exec boykisser-wallpaper "$@" ;;
 	nvidia)    exec boykisser-nvidia "$@" ;;
