@@ -43,6 +43,7 @@ run_yad() {
 			"$([ "$LIVE" = 0 ] && echo drive-harddisk || echo dialog-ok)" "Install Boykisser Linux to disk" "install" \
 			"$(st $APPS_OK)" "Get the full app set (OBS, Steam, VS Code...)" "apps" \
 			"system-software-install" "Install app presets (Art, Social, Office, Music)" "presets" \
+			"web-browser" "Pick a browser (LibreWolf, Brave, Chromium...)" "browser" \
 			"preferences-desktop-theme" "Switch light / dark theme" "theme" \
 			"$([ "$NVIDIA_NEEDED" = 0 ] && echo video-display || echo dialog-ok)" "Install NVIDIA drivers" "nvidia" \
 			"system-software-update" "Update the system" "update" \
@@ -55,6 +56,7 @@ run_yad() {
 			install) install-boykisser ;;
 			apps)    x-terminal-emulator -e sh -c 'boykisser-postinstall-apps; echo; read -p "Press enter to close..." _' ;;
 			presets) boykisser-presets & ;;
+			browser) boykisser-browser & ;;
 			update)  x-terminal-emulator -e sh -c 'boykisser-update; echo; read -p "Press enter to close..." _' ;;
 			theme)   boykisser-theme-toggle ;;
 			nvidia)  x-terminal-emulator -e sh -c 'boykisser-nvidia; echo; read -p "Press enter to close..." _' ;;
