@@ -35,6 +35,6 @@ lb config noauto \
 	--iso-volume "BOYKISSER" \
 	--iso-preparer "Boykisser Linux Project" \
 	--iso-publisher "Boykisser Linux Project; https://boykisser.taymaerz.de" \
-	--bootappend-live "boot=live components quiet splash username=boykisser user-fullname=Boykisser hostname=boykisser user-default-groups=audio,cdrom,dip,floppy,video,plugdev,netdev,powerdev,scanner,bluetooth,autologin user-password=live noeject" \
+	--bootappend-live "boot=live components quiet splash username=boykisser user-fullname=Boykisser hostname=boykisser user-default-groups=audio,cdrom,dip,floppy,video,plugdev,netdev,powerdev,scanner,bluetooth,autologin,nopasswdlogin user-password=live noeject" \
 	--bootappend-live-failsafe "boot=live components memtest noapic noapm nodma nomce nolapic nomodeset nosmp nosplash vga=normal" \
 	"${@}"

@@ -1,9 +1,11 @@
 #!/bin/sh
 set -e
-# ponytail: lightdm autologin for live session. the user configures normal boot autologin via calamares.
+# ponytail: lightdm autologin for live session
 mkdir -p /etc/lightdm/lightdm.conf.d
 cat > /etc/lightdm/lightdm.conf.d/live-autologin.conf <<LIVE_EOF
 [Seat:*]
 autologin-user=boykisser
 autologin-user-timeout=0
 LIVE_EOF
+groupadd -f nopasswdlogin
+usermod -aG nopasswdlogin boykisser
