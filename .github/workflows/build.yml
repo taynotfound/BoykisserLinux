@@ -40,6 +40,8 @@ jobs:
             item_suffix: "-netinstall"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need full history to extract changelog diffs between tags
 
       - name: Restore the live-build package cache
         uses: actions/cache@v4
@@ -222,6 +224,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need git history for changelog
+
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -257,7 +263,7 @@ jobs:
           # One SHA256SUMS covering both ISOs.
           cat SHA256SUMS-* > SHA256SUMS
           rm -f SHA256SUMS-*
-          # Compose the release notes: shared header + full + netinstall fragments.
+          # Compose the release notes: shared header + full + netinstall fragments + commit log
           {
             echo "## Boykisser Linux ${TAG} :3"
             echo
@@ -268,6 +274,16 @@ jobs:
             echo
             [ -f release-notes-full.md ] && cat release-notes-full.md
             [ -f release-notes-netinstall.md ] && cat release-notes-netinstall.md
+            echo "### Changelog"
+            echo
+            # ponytail: naive commit log from previous tag; misses PR grouping but skips fetching heavy action deps
+            prev_tag=$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || echo "")
+            if [ -n "$prev_tag" ]; then
+              git log "${prev_tag}..${GITHUB_SHA}" --pretty=format:"* %s" --no-merges | grep -v "^* bump" || echo "* Routine updates."
+            else
+              echo "* Initial or untracked changes."
+            fi
+            echo
           } > release-notes.md
           rm -f release-notes-full.md release-notes-netinstall.md
           echo "=== files to publish ==="; ls -lh
