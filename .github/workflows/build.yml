@@ -262,7 +262,11 @@ jobs:
           cat SHA256SUMS-* > SHA256SUMS
           rm -f SHA256SUMS-*
           {
-            echo "## Boykisser Linux ${TAG} :3"
+            echo '<div align="center">'
+            echo '  <img src="https://raw.githubusercontent.com/taynotfound/BoykisserLinux/main/config/includes.chroot/usr/share/boykisser/logo.png" alt="Boykisser Linux Logo" width="200"/>'
+            echo "  <h2>Boykisser Linux ${TAG} :3</h2>"
+            echo "  <p>Debian 13 (trixie) · amd64 · UEFI + legacy BIOS.</p>"
+            echo '</div>'
             echo
             echo "### Changelog"
             echo
@@ -274,8 +278,6 @@ jobs:
             fi
             echo
             echo "<details><summary><b>Installation Instructions & Mirror Links</b></summary>"
-            echo
-            echo "Debian 13 (trixie) · amd64 · UEFI + legacy BIOS."
             echo
             echo "Two flavours below — grab the **full** ISO for an offline daily driver, or the **netinstall** ISO for a tiny download that pulls apps on first boot."
             echo
