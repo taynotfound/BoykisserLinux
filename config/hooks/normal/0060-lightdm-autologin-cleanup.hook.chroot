@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+# ponytail: cleanup live session autologin file so it doesn't bleed into installed system
+rm -f /etc/lightdm/lightdm.conf.d/live-autologin.conf
