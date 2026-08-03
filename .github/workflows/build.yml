@@ -165,9 +165,13 @@ jobs:
 
       - name: Split ISO for the GitHub fallback
         run: |
-          split -b 1900M -d "${{ matrix.iso }}" "${{ matrix.iso }}.part"
-          rm -f "${{ matrix.iso }}"
-          ls -lh "${{ matrix.iso }}".part* "SHA256SUMS-${{ matrix.variant }}"
+          if [ "${{ matrix.variant }}" = "full" ]; then
+            split -b 1900M -d "${{ matrix.iso }}" "${{ matrix.iso }}.part"
+            rm -f "${{ matrix.iso }}"
+            ls -lh "${{ matrix.iso }}".part* "SHA256SUMS-${{ matrix.variant }}"
+          else
+            ls -lh "${{ matrix.iso }}" "SHA256SUMS-${{ matrix.variant }}"
+          fi
 
       - name: Write release-notes fragment
         env:
@@ -178,6 +182,7 @@ jobs:
           TORRENT_URL: ${{ steps.ia.outputs.torrent_url }}
           ITEM_URL: ${{ steps.ia.outputs.item_url }}
           SIZE: ${{ steps.iso.outputs.size }}
+          TAG: ${{ steps.tag.outputs.tag || github.event.inputs.release_tag }}
         run: |
           if [ "$VARIANT" = "netinstall" ]; then
             heading="### Netinstall ISO — slim, needs internet on first boot (~${SIZE})"
@@ -197,6 +202,13 @@ jobs:
               echo "- **Mirror page:** ${ITEM_URL}"
               echo
             fi
+            
+          if [ "$VARIANT" = "netinstall" ]; then
+            echo "GitHub fallback (direct download):"
+            echo
+            echo "- **[Download ${ISO}](https://github.com/${{ github.repository }}/releases/download/${TAG}/${ISO})**"
+            echo
+          else
             echo "GitHub fallback (split parts — reassemble first):"
             echo
             echo '```sh'
@@ -206,6 +218,7 @@ jobs:
             echo "sudo dd if=${ISO} of=/dev/sdX bs=4M status=progress oflag=sync"
             echo '```'
             echo
+          fi
           } > "release-notes-${VARIANT}.md"
           cat "release-notes-${VARIANT}.md"
 
@@ -216,6 +229,7 @@ jobs:
           retention-days: 1
           if-no-files-found: error
           path: |
+            ${{ matrix.iso }}
             ${{ matrix.iso }}.part*
             SHA256SUMS-${{ matrix.variant }}
             release-notes-${{ matrix.variant }}.md
@@ -256,7 +270,7 @@ jobs:
 
       - name: Combine checksums and release notes
         env:
-          TAG: ${{ steps.tag.outputs.tag }}
+          TAG: ${{ steps.tag.outputs.tag || github.event.inputs.release_tag }}
         run: |
           cd dist
           cat SHA256SUMS-* > SHA256SUMS
@@ -297,6 +311,6 @@ jobs:
           body_path: dist/release-notes.md
           files: |
             dist/boykisser-linux-amd64.iso.part*
-            dist/boykisser-linux-netinstall-amd64.iso.part*
+            dist/boykisser-linux-netinstall-amd64.iso
             dist/SHA256SUMS
 
