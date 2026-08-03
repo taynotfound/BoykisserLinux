@@ -259,23 +259,13 @@ jobs:
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
           cd dist
-          # One SHA256SUMS covering both ISOs.
           cat SHA256SUMS-* > SHA256SUMS
           rm -f SHA256SUMS-*
-          # Compose the release notes: shared header + full + netinstall fragments + commit log
           {
             echo "## Boykisser Linux ${TAG} :3"
             echo
-            echo "Debian 13 (trixie) · amd64 · UEFI + legacy BIOS."
-            echo
-            echo "Two flavours below — grab the **full** ISO for an offline daily driver,"
-            echo "or the **netinstall** ISO for a tiny download that pulls apps on first boot."
-            echo
-            [ -f release-notes-full.md ] && cat release-notes-full.md
-            [ -f release-notes-netinstall.md ] && cat release-notes-netinstall.md
             echo "### Changelog"
             echo
-            # ponytail: naive commit log from previous tag; misses PR grouping but skips fetching heavy action deps
             prev_tag=$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || echo "")
             if [ -n "$prev_tag" ]; then
               git log "${prev_tag}..${GITHUB_SHA}" --pretty=format:"* %s" --no-merges | grep -v "^* bump" || echo "* Routine updates."
@@ -283,9 +273,17 @@ jobs:
               echo "* Initial or untracked changes."
             fi
             echo
+            echo "<details><summary><b>Installation Instructions & Mirror Links</b></summary>"
+            echo
+            echo "Debian 13 (trixie) · amd64 · UEFI + legacy BIOS."
+            echo
+            echo "Two flavours below — grab the **full** ISO for an offline daily driver, or the **netinstall** ISO for a tiny download that pulls apps on first boot."
+            echo
+            [ -f release-notes-full.md ] && cat release-notes-full.md
+            [ -f release-notes-netinstall.md ] && cat release-notes-netinstall.md
+            echo "</details>"
           } > release-notes.md
           rm -f release-notes-full.md release-notes-netinstall.md
-          echo "=== files to publish ==="; ls -lh
           echo "=== notes ==="; cat release-notes.md
 
       - name: Publish release
