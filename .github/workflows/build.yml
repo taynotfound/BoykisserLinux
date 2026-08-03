@@ -3,17 +3,18 @@ name: Build ISO
 on:
   push:
     tags: ["v*"]
-  schedule:
-    # Weekly automatic rebuild (Mondays 03:00 UTC) so the live image always
-    # ships the current trixie kernel + security updates. Published as a
-    # rolling "weekly" release.
-    - cron: "0 3 * * 1"
   workflow_dispatch:
     inputs:
       release_tag:
         description: "Tag to publish the build under (e.g. v1.0.0). Blank = nightly-DATE."
         required: false
         default: ""
+  workflow_call:
+    inputs:
+      release_tag:
+        description: "Tag passed from calling workflow"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -114,12 +115,11 @@ jobs:
       - name: Resolve tag
         id: tag
         run: |
-          tag="${{ github.event.inputs.release_tag }}"
+          # Use caller input, then dispatch input, then tag, then nightly fallback
+          tag="${{ inputs.release_tag || github.event.inputs.release_tag }}"
           if [ -z "$tag" ]; then
             if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
               tag="${GITHUB_REF_NAME}"
-            elif [ "${{ github.event_name }}" = "schedule" ]; then
-              tag="weekly-$(date +%Y%m%d)"
             else
               tag="nightly-$(date +%Y%m%d)"
             fi
@@ -237,12 +237,11 @@ jobs:
       - name: Resolve tag
         id: tag
         run: |
-          tag="${{ github.event.inputs.release_tag }}"
+          # Use caller input, then dispatch input, then tag, then nightly fallback
+          tag="${{ inputs.release_tag || github.event.inputs.release_tag }}"
           if [ -z "$tag" ]; then
             if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
               tag="${GITHUB_REF_NAME}"
-            elif [ "${{ github.event_name }}" = "schedule" ]; then
-              tag="weekly-$(date +%Y%m%d)"
             else
               tag="nightly-$(date +%Y%m%d)"
             fi
