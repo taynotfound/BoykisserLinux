@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Send Discord notification
         env:
-          DISCORD_WEBHOOK: "https://discord.com/api/webhooks/1259597370014830593/Et-f9-kMZ8KMURQKz88Ux40iPsGnV700-aUIlxPuVY3SzEoqZMQALEQB2ZDgSt6fOnH_"
+          DISCORD_WEBHOOK: "https://discord.com/api/webhooks/1534656113591713974/EGf5CYyQ0fSKN4L_4Ecb5yysTjjHogFhlDV6ZoWqIuqXJnrTIVZLmz-n4WqJfe6M3o07"
         run: |
           EVENT="${{ github.event_name }}"
           REPO="${{ github.repository }}"
