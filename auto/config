@@ -8,14 +8,9 @@ set -e
 # explicitly in config/package-lists, so dropping the (optional) Recommends is
 # the single biggest size lever and keeps the netinstall ISO under 1.2 GB.
 APT_RECOMMENDS=true
-BOOTLOADERS="syslinux,grub-efi"
 if [ -e config/includes.chroot/etc/boykisser/netinstall ]; then
 	APT_RECOMMENDS=false
-	# ponytail: netinstall = "lite" for ancient BIOS boxes too — drop grub-efi so
-	# the ISO is plain BIOS isolinux (crusty firmware chainloads it cleanly;
-	# hybrid + grub-efi is what dumps old ThinkPads at the `grub> ls` prompt).
-	BOOTLOADERS="syslinux"
-	echo ":3 netinstall/lite marker — no APT Recommends, BIOS-only syslinux"
+	echo ":3 netinstall marker found — building without APT Recommends"
 fi
 
 lb config noauto \
@@ -25,7 +20,7 @@ lb config noauto \
 	--architectures amd64 \
 	--linux-flavours amd64 \
 	--binary-images iso-hybrid \
-	--bootloaders "$BOOTLOADERS" \
+	--bootloaders "syslinux,grub-efi" \
 	--debian-installer none \
 	--apt-recommends "$APT_RECOMMENDS" \
 	--apt-indices false \
