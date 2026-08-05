@@ -12,6 +12,14 @@
 
 ---
 
+## Repositories
+
+| Repo | What |
+|---|---|
+| **[BoykisserLinux](https://github.com/taynotfound/BoykisserLinux)** ← you are here | ISO build config, live-build, CI, release workflow |
+| **[boykisser-tools](https://github.com/taynotfound/boykisser-tools)** | All `boykisser-*` scripts and the control center — update independently of the ISO |
+| **[boykisser-web](https://github.com/taynotfound/boykisser-web)** | Website & docs at [boykisser.taymaerz.de](https://boykisser.taymaerz.de) |
+
 ## What is this?
 
 Boykisser Linux is a custom [Debian 13 (trixie)](https://www.debian.org/) live
