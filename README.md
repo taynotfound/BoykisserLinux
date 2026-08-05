@@ -38,5 +38,8 @@ git tag v1.2.3 && git push origin v1.2.3
 
 ## Part of Boykisser Linux
 
-- Distro: [taynotfound/BoykisserLinux](https://github.com/taynotfound/BoykisserLinux)
-- Website: [boykisser.taymaerz.de](https://boykisser.taymaerz.de)
+| Repo | What |
+|---|---|
+| **[BoykisserLinux](https://github.com/taynotfound/BoykisserLinux)** | ISO build config — fetches this `.deb` at build time |
+| **[boykisser-tools](https://github.com/taynotfound/boykisser-tools)** ← you are here | Scripts & control center |
+| **[boykisser-web](https://github.com/taynotfound/boykisser-web)** | Website & docs |
