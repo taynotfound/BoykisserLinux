@@ -1,0 +1,60 @@
+#!/bin/sh
+# Boykisser Linux first-boot setup.
+# On an INSTALLED system this installs the Flatpak apps (Heroic, Discord,
+# Flatseal, Gearlever). On the live ISO it only makes sure Flathub is wired up
+# so we don't pull gigabytes into RAM.
+set -e
+
+LOG=/var/log/boykisser-firstboot.log
+exec >>"$LOG" 2>&1
+echo "=== boykisser-firstboot $(date) ==="
+
+# Always make sure the Flathub remote exists.
+flatpak remote-add --if-not-exists flathub \
+	https://dl.flathub.org/repo/flathub.flatpakrepo || true
+
+# Don't download big apps into a live (RAM-backed) session.
+if grep -qw "boot=live" /proc/cmdline 2>/dev/null; then
+	echo "Live session detected — skipping heavy Flatpak installs. :3"
+	exit 0
+fi
+
+# Wait for DNS/network (~60s max)
+i=0
+while [ "$i" -lt 30 ]; do
+	if getent hosts dl.flathub.org >/dev/null 2>&1; then break; fi
+	i=$((i + 1))
+	sleep 2
+done
+
+# On the slim "netinstall" image, pull the whole heavy app set (OBS, VLC, Steam,
+# VS Code, gaming bits + Flatpaks). This is the bit that needs the internet.
+if [ -e /etc/boykisser/netinstall ]; then
+	echo "netinstall image — fetching the full Boykisser app set..."
+	/usr/local/bin/boykisser-postinstall-apps || \
+		echo "  (postinstall-apps failed, will retry next boot)"
+	# Only mark done if the marker is gone or apps landed; retry otherwise.
+	if command -v obs >/dev/null 2>&1 || command -v code-insiders >/dev/null 2>&1; then
+		touch /var/lib/boykisser-firstboot.done
+		systemctl disable boykisser-firstboot.service || true
+		echo "netinstall first-boot setup complete :3"
+	fi
+	exit 0
+fi
+
+APPS="com.heroicgameslauncher.hgl \
+      com.discordapp.Discord \
+      com.github.tchx84.Flatseal \
+      it.mijorus.gearlever"
+
+for app in $APPS; do
+	echo "Installing $app ..."
+	flatpak install -y --noninteractive flathub "$app" || \
+		echo "  (failed, will retry next boot) $app"
+done
+
+# Mark done so the service deactivates itself.
+mkdir -p /var/lib
+touch /var/lib/boykisser-firstboot.done
+systemctl disable boykisser-firstboot.service || true
+echo "first-boot setup complete :3"

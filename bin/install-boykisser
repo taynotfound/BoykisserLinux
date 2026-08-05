@@ -1,0 +1,8 @@
+#!/bin/sh
+# Launch the Boykisser Linux (Calamares) installer with the right privileges. :3
+if command -v pkexec >/dev/null 2>&1; then
+	exec pkexec env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" \
+		QT_QPA_PLATFORM=xcb calamares -d
+else
+	exec sudo -E calamares -d
+fi

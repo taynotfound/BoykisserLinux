@@ -1,0 +1,30 @@
+name: Build and release .deb
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build .deb
+        run: |
+          sudo apt-get install -y devscripts debhelper
+          chmod +x bin/boykisser* debian/rules
+          dpkg-buildpackage -us -uc -b
+          mv ../boykisser-tools_*.deb boykisser-tools.deb
+          ls -lh boykisser-tools.deb
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: boykisser-tools.deb
+          name: boykisser-tools ${{ github.ref_name }}
+          body: "Tools update — install with `boykisser update` or `sudo dpkg -i boykisser-tools.deb`"

@@ -1,0 +1,56 @@
+#!/bin/sh
+# Boykisser Linux — install the proprietary NVIDIA driver after install. :3
+# Done on the installed system so DKMS builds against the right kernel headers.
+set -e
+
+YELLOW='\033[1;33m'; PINK='\033[1;35m'; RESET='\033[0m'
+
+printf "${PINK}=== Boykisser Linux — NVIDIA driver setup :3 ===${RESET}\n\n"
+
+if [ "$(id -u)" -ne 0 ]; then
+	echo "Need root — re-running with sudo..."
+	exec sudo "$0" "$@"
+fi
+
+# Refuse to run from the live session (no persistent kernel/headers there).
+if grep -qw "boot=live" /proc/cmdline 2>/dev/null; then
+	printf "${YELLOW}You're in the live session.${RESET}\n"
+	echo "Install Boykisser Linux to disk first, then run this. :3"
+	exit 1
+fi
+
+echo "Detecting your GPU..."
+if command -v nvidia-detect >/dev/null 2>&1; then
+	nvidia-detect || true
+	echo ""
+fi
+
+printf "This will install: ${PINK}nvidia-driver${RESET} (+ DKMS, headers, 32-bit libs for Steam).\n"
+printf "Proceed? [y/N] "
+read -r ans
+case "$ans" in
+	y|Y|yes|YES) ;;
+	*) echo "Aborted. :3"; exit 0 ;;
+esac
+
+# Make sure contrib/non-free are enabled (Boykisser ships them, but be safe).
+if ! grep -rqE 'non-free' /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null; then
+	sed -i 's/ main$/ main contrib non-free non-free-firmware/' /etc/apt/sources.list || true
+fi
+
+dpkg --add-architecture i386
+apt-get update
+
+# Headers for the *running* kernel so DKMS can build.
+apt-get install -y linux-headers-amd64 || true
+
+# The driver (pulls nvidia-kernel-dkms, builds the module here).
+if apt-get install -y nvidia-driver nvidia-detect nvidia-settings; then
+	# 32-bit userspace for Steam / Proton.
+	apt-get install -y nvidia-driver-libs:i386 || true
+	printf "\n${PINK}NVIDIA driver installed! Reboot to load it. :3${RESET}\n"
+else
+	printf "\n${YELLOW}Driver install failed.${RESET} Check 'nvidia-detect' output —\n"
+	echo "older GPUs may need a legacy driver (e.g. nvidia-tesla-470-driver)."
+	exit 1
+fi
