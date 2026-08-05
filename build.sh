@@ -15,12 +15,14 @@ NAME="boykisser-linux"
 # codecs, Steam, VS Code, gaming bits + Flatpaks) from the internet on first
 # boot via boykisser-postinstall-apps. Needs an internet connection to finish.
 NETINSTALL="${NETINSTALL:-0}"
+LITE="${LITE:-0}"
 CLEAN_MODE="${CLEAN_MODE:-normal}"   # normal | purge | fast
 LB_ARGS=()
 for arg in "$@"; do
 	case "$arg" in
 		--netinstall) NETINSTALL=1 ;;
-		--full)       NETINSTALL=0 ;;
+		--full)       NETINSTALL=0; LITE=0 ;;
+		--lite)       LITE=1 ;;
 		--clean)      CLEAN_MODE=purge ;;   # deep clean: also wipes the package cache
 		--fast)       CLEAN_MODE=fast ;;    # incremental: keep the chroot, rebuild binary only
 		*)            LB_ARGS+=("$arg") ;;
@@ -30,16 +32,22 @@ set -- "${LB_ARGS[@]+"${LB_ARGS[@]}"}"
 
 EXTRA_LIST="$HERE/config/package-lists/apps-extra.list.chroot"
 MARKER="$HERE/config/includes.chroot/etc/boykisser/netinstall"
+LITE_MARKER="$HERE/config/includes.chroot/etc/boykisser/lite"
 
 restore_variant() {
-	# Always undo the netinstall tweaks so the working tree stays clean.
+	# Always undo the netinstall/lite tweaks so the working tree stays clean.
 	[ -f "$EXTRA_LIST.disabled" ] && mv -f "$EXTRA_LIST.disabled" "$EXTRA_LIST"
-	rm -f "$MARKER"
+	rm -f "$MARKER" "$LITE_MARKER"
 }
 trap restore_variant EXIT
 restore_variant
 
-if [ "$NETINSTALL" = "1" ]; then
+if [ "$LITE" = "1" ]; then
+	echo ":3 building the LITE variant for ancient BIOS boxes (syslinux only, no heavy apps)"
+	[ -f "$EXTRA_LIST" ] && mv -f "$EXTRA_LIST" "$EXTRA_LIST.disabled"
+	mkdir -p "$(dirname "$LITE_MARKER")"
+	echo "lite" > "$LITE_MARKER"
+elif [ "$NETINSTALL" = "1" ]; then
 	echo ":3 building the SLIM netinstall variant (needs internet on first boot)"
 	# Keep the heavy apps out of the squashfs...
 	[ -f "$EXTRA_LIST" ] && mv -f "$EXTRA_LIST" "$EXTRA_LIST.disabled"
@@ -103,7 +111,9 @@ $ENGINE run --rm $TTY_FLAGS \
 ISO="$(ls -1 "$HERE"/live-image-*.iso 2>/dev/null | head -n1 || true)"
 if [ -n "$ISO" ]; then
 	# Give a friendly stable name (slim builds get a -netinstall suffix)
-	if [ "$NETINSTALL" = "1" ]; then
+	if [ "$LITE" = "1" ]; then
+		FINAL="$HERE/boykisser-linux-lite-amd64.iso"
+	elif [ "$NETINSTALL" = "1" ]; then
 		FINAL="$HERE/boykisser-linux-netinstall-amd64.iso"
 	else
 		FINAL="$HERE/boykisser-linux-amd64.iso"
