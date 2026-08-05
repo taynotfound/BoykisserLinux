@@ -105,6 +105,18 @@ jobs:
           mkdir -p config/includes.chroot/etc/boykisser
           echo "lite" > config/includes.chroot/etc/boykisser/lite
 
+      - name: Fetch latest boykisser-tools
+        run: |
+          url=$(curl -fsSL https://api.github.com/repos/taynotfound/boykisser-tools/releases/latest \
+            | grep -o '"browser_download_url":"[^"]*\.deb"' | cut -d'"' -f4)
+          if [ -n "$url" ]; then
+            mkdir -p config/packages.chroot
+            curl -fsSL "$url" -o config/packages.chroot/boykisser-tools.deb
+            echo ":3 fetched boykisser-tools: $(ls -lh config/packages.chroot/boykisser-tools.deb)"
+          else
+            echo "::warning::boykisser-tools release not found — skipping"
+          fi
+
       - name: Build the live ISO (${{ matrix.variant }})
         run: |
           docker run --rm --privileged \
@@ -224,20 +236,9 @@ jobs:
             fi
             
           if [ "$VARIANT" = "netinstall" ] || [ "$VARIANT" = "lite" ]; then
-            echo "GitHub fallback (direct download):"
-            echo
             echo "- **[Download ${ISO}](https://github.com/${{ github.repository }}/releases/download/${TAG}/${ISO})**"
-            echo
           else
-            echo "GitHub fallback (split parts — reassemble first):"
-            echo
-            echo '```sh'
-            echo "cat ${ISO}.part* > ${ISO}"
-            echo 'sha256sum -c SHA256SUMS'
-            echo "# double-check /dev/sdX first — this wipes the target drive"
-            echo "sudo dd if=${ISO} of=/dev/sdX bs=4M status=progress oflag=sync"
-            echo '```'
-            echo
+            echo "Parts: download all \`.part*\` files + \`SHA256SUMS\`, then \`cat boykisser-linux-amd64.iso.part* > boykisser-linux-amd64.iso && sha256sum -c SHA256SUMS\`. Full guide: [boykisser.taymaerz.de/docs.html#downloading](https://boykisser.taymaerz.de/docs.html#downloading)"
           fi
           } > "release-notes-${VARIANT}.md"
           cat "release-notes-${VARIANT}.md"

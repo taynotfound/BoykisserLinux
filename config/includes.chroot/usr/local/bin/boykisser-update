@@ -26,6 +26,24 @@ fi
 printf "${PINK}-> upgrading packages...${R}\n"
 $SUDO apt-get -y full-upgrade
 
+# Pull latest boykisser-tools .deb from GitHub releases if newer than installed.
+# ponytail: version-string compare, good enough for v1.2.3 tags
+_tools_update() {
+	command -v curl >/dev/null 2>&1 || return
+	[ -d /run/live ] && return
+	latest=$(curl -fsSL "https://api.github.com/repos/taynotfound/boykisser-tools/releases/latest" \
+		2>/dev/null | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
+	[ -z "$latest" ] && return
+	installed=$(dpkg-query -W -f='${Version}' boykisser-tools 2>/dev/null || echo "none")
+	[ "$installed" = "${latest#v}" ] && return
+	printf "${PINK}-> updating boykisser-tools ${installed} → ${latest}...${R}\n"
+	tmp=$(mktemp --suffix=.deb)
+	curl -fsSL "https://github.com/taynotfound/boykisser-tools/releases/download/${latest}/boykisser-tools.deb" \
+		-o "$tmp" && $SUDO dpkg -i "$tmp" || true
+	rm -f "$tmp"
+}
+_tools_update
+
 if command -v flatpak >/dev/null 2>&1; then
 	printf "${PINK}-> updating Flatpaks...${R}\n"
 	flatpak update -y || true
