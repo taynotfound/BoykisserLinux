@@ -26,16 +26,20 @@ stamp() {
 	set_int  "$base/color-style" 0
 }
 
+# Fix wallpaper: apply() now returns 0 only when xfdesktop was successfully
+# reloaded (or already set), so we can exit early.
 apply() {
+	applied=0
 	# 1) Update every backdrop xfconf already knows about.
 	xfconf-query -c "$CHAN" -l 2>/dev/null | grep -E '/(last-image|image-path)$' | while read -r prop; do
-		xfconf-query -c "$CHAN" -p "$prop" -s "$WALL" 2>/dev/null
+		xfconf-query -c "$CHAN" -p "$prop" -s "$WALL" 2>/dev/null && applied=1
 	done
 
 	# 2) Seed a full backdrop for every connected output (covers fresh monitors).
 	if command -v xrandr >/dev/null 2>&1; then
 		for mon in $(xrandr 2>/dev/null | awk '/ connected/{print $1}'); do
 			stamp "/backdrop/screen0/monitor$mon/workspace0"
+			applied=1
 		done
 	fi
 
@@ -43,7 +47,10 @@ apply() {
 	stamp "/backdrop/screen0/monitor0/workspace0"
 	stamp "/backdrop/screen0/monitorVirtual-1/workspace0"
 
-	xfdesktop --reload >/dev/null 2>&1 || true
+	if xfdesktop --reload >/dev/null 2>&1; then
+		return 0
+	fi
+	return 1
 }
 
 set_bool /backdrop/single-workspace-mode true
@@ -52,7 +59,7 @@ set_bool /backdrop/single-workspace-mode true
 # session, then stop once things have settled.
 n=0
 while [ "$n" -lt 30 ]; do
-	apply
+	apply && break
 	n=$((n + 1))
 	sleep 2
 done

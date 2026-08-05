@@ -1,8 +1,8 @@
 #!/bin/sh
-# boykisser-debloat :3  —  strip the apps you don't want.
+# boykisser-debloat :3   -   strip the apps you don't want.
 # A checklist of removable app groups; picks are purged with apt (and Steam's
 # flatpak-free friends removed where relevant). Nothing here touches the
-# desktop, drivers or system plumbing — only end-user apps.
+# desktop, drivers or system plumbing  -  only end-user apps.
 # Usage: boykisser-debloat [gaming|obs|vlc|vscode|games ...]
 
 pkgs_for() {
@@ -65,25 +65,25 @@ for g in gaming obs vlc vscode games; do
 done
 [ -n "$ROWS" ] || { echo "nothing removable is installed :3"; exit 0; }
 
-if command -v yad >/dev/null 2>&1 && [ -n "$DISPLAY$WAYLAND_DISPLAY" ]; then
+if command -v yad >/dev/null 2>&1 && { [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ]; }; then
 	set --
 	for g in $ROWS; do
 		set -- "$@" FALSE "$(label_for "$g")" "$g"
 	done
 	choice=$(yad --list --checklist --title="Remove apps :3" \
 		--width=520 --height=300 --center --borders=12 \
-		--text="<b>Tick what you want gone</b>\nOnly apps — never system parts." \
+		--text="<b>Tick what you want gone</b>\nOnly apps  -  never system parts." \
 		--column="Remove":CHK --column="Group" --column=id --hide-column=3 --no-headers \
 		"$@" \
 		--button="Remove:0" --button="Cancel:1" 2>/dev/null) || exit 0
 	sel=$(printf '%s\n' "$choice" | awk -F'|' '$1=="TRUE"{printf "%s ", $3}')
 	[ -n "$sel" ] || exit 0
-	x-terminal-emulator -e sh -c "boykisser-debloat $sel; echo; read -p 'Press enter to close...' _" 2>/dev/null \
+	x-terminal-emulator -e sh -c "boykisser-debloat $sel; echo; printf 'Press enter to close... '; read -r _" 2>/dev/null \
 		|| remove_groups "$sel"
 	exit 0
 fi
 
-echo "Remove apps :3  — pick any (space-separated):"
+echo "Remove apps :3   -  pick any (space-separated):"
 for g in $ROWS; do printf "  %-7s %s\n" "$g" "$(label_for "$g")"; done
 printf "remove> "
 read -r sel

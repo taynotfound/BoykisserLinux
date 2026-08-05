@@ -1,5 +1,5 @@
 #!/bin/sh
-# Boykisser Linux — install KDE Plasma into the target system :3
+# Boykisser Linux  -  install KDE Plasma into the target system :3
 #
 # Called by the Calamares contextualprocess module when the user picks "KDE
 # Plasma" in the desktop chooser. It pulls KDE from the internet into the freshly
@@ -10,14 +10,15 @@
 # Usage: boykisser-install-kde <target-root>
 set -e
 
-ROOT="${1:-/}"
+[ -n "$1" ] || { echo "boykisser-install-kde: usage: boykisser-install-kde <target-root>" >&2; exit 1; }
+ROOT="$1"
 
 log() { echo "boykisser-install-kde: $*"; }
 
 # --- bail out gracefully if we can't reach the internet ----------------------
 if ! { command -v getent >/dev/null 2>&1 && getent hosts deb.debian.org >/dev/null 2>&1; } \
    && ! ping -c1 -W3 deb.debian.org >/dev/null 2>&1; then
-	log "no internet — keeping XFCE (KDE needs a network connection)."
+	log "no internet  -  keeping XFCE (KDE needs a network connection)."
 	exit 0
 fi
 
@@ -48,7 +49,7 @@ mount_bind run
 # DNS for apt inside the chroot.
 cp -f /etc/resolv.conf "$ROOT/etc/resolv.conf" 2>/dev/null || true
 if ! grep -q nameserver "$ROOT/etc/resolv.conf" 2>/dev/null; then
-	log "no usable resolv.conf in target — falling back to public DNS"
+	log "no usable resolv.conf in target  -  falling back to public DNS"
 	printf 'nameserver 1.1.1.1\nnameserver 9.9.9.9\n' > "$ROOT/etc/resolv.conf"
 fi
 
@@ -67,10 +68,10 @@ if ! chroot "$ROOT" sh -c '
 		apt-get update &&
 		apt-get install -y --no-install-recommends \
 			kde-plasma-desktop plasma-workspace plasma-nm \
-			konsole dolphin sddm-conf 2>/dev/null ||
+			konsole dolphin sddm 2>/dev/null ||
 		apt-get install -y kde-plasma-desktop'
 then
-	log "KDE install failed — leaving XFCE in place."
+	log "KDE install failed  -  leaving XFCE in place."
 	exit 0
 fi
 
@@ -91,7 +92,7 @@ done
 
 mkdir -p "$ROOT/etc/lightdm/lightdm.conf.d"
 cat > "$ROOT/etc/lightdm/lightdm.conf.d/60-boykisser-kde.conf" <<EOF
-# Boykisser Linux — default to the KDE Plasma session (user chose KDE) :3
+# Boykisser Linux  -  default to the KDE Plasma session (user chose KDE) :3
 [Seat:*]
 user-session=$SESSION
 EOF
@@ -120,10 +121,10 @@ if [ -f "$ROOT$KDEGLOBALS_SRC" ]; then
 	cp -f "$ROOT$KDEGLOBALS_SRC" "$ROOT/etc/skel/.config/kdeglobals"
 
 	# Per-account: kdeglobals + a Boykisser wallpaper on the desktop.
-	while IFS=: read -r uname _ uid _ _ uhome _; do
-		[ -n "$uid" ] || continue
-		[ "$uid" -ge 1000 ] && [ "$uid" -lt 60000 ] || continue
-		[ -d "$ROOT$uhome" ] || continue
+		while IFS=: read -r username _ uid _ _ uhome _; do
+			[ -n "$uid" ] || continue
+			[ "$uid" -ge 1000 ] && [ "$uid" -lt 60000 ] || continue
+			[ -d "$ROOT$uhome" ] || continue
 
 		mkdir -p "$ROOT$uhome/.config"
 		cp -f "$ROOT$KDEGLOBALS_SRC" "$ROOT$uhome/.config/kdeglobals"
@@ -138,7 +139,7 @@ Image=file://$WALLPAPER
 EOF
 		fi
 
-		chroot "$ROOT" chown -R "$uname:$uname" "$uhome/.config" 2>/dev/null || true
+			chroot "$ROOT" chown -R "$username:$username" "$uhome/.config" 2>/dev/null || true
 	done < "$ROOT/etc/passwd"
 fi
 

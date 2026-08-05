@@ -1,5 +1,5 @@
 #!/bin/sh
-# Boykisser Linux — remove live-system packages from the installed target :3
+# Boykisser Linux  -  remove live-system packages from the installed target :3
 #
 # Called by the Calamares contextualprocess module (both the XFCE and KDE
 # branches) with the mounted target root (@@ROOT@@). This replaces the stock
@@ -16,7 +16,7 @@ ROOT="${1:-/}"
 log() { echo "boykisser-live-cleanup: $*"; }
 
 if [ ! -d "$ROOT/var/lib/dpkg" ]; then
-	log "no dpkg database under '$ROOT' — nothing to do."
+	log "no dpkg database under '$ROOT'  -  nothing to do."
 	exit 0
 fi
 
@@ -43,7 +43,7 @@ for pkg in $LIVE_PKGS; do
 	fi
 done
 
-# Best-effort tidy-up; apt may be unusable offline at this point — that's fine.
+# Best-effort tidy-up; apt may be unusable offline at this point  -  that's fine.
 chroot "$ROOT" env DEBIAN_FRONTEND=noninteractive \
 	apt-get -y --purge autoremove >/dev/null 2>&1 \
 	|| log "autoremove skipped (ignored)"

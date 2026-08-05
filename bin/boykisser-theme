@@ -1,5 +1,5 @@
 #!/bin/sh
-# Boykisser Linux theme switcher :3   —   usage: boykisser-theme [light|dark]
+# Boykisser Linux theme switcher :3    -    usage: boykisser-theme [light|dark]
 # With no argument it re-applies the saved choice (default: dark).
 set -e
 
@@ -25,8 +25,9 @@ IMG="/usr/share/backgrounds/boykisser/${WALL}.png"
 if [ "${XDG_CURRENT_DESKTOP#*KDE}" != "$XDG_CURRENT_DESKTOP" ] && command -v lookandfeeltool >/dev/null 2>&1; then
 	if [ "$MODE" = light ]; then LNF="org.kde.breeze.desktop"; else LNF="org.kde.breezedark.desktop"; fi
 	lookandfeeltool -a "$LNF" 2>/dev/null || true
-	command -v kwriteconfig6 >/dev/null 2>&1 && \
-		kwriteconfig6 --file kdeglobals --group General --group Icons --key Theme "$ICONS" 2>/dev/null || true
+	KWRITECONFIG=$(command -v kwriteconfig6 2>/dev/null || command -v kwriteconfig5 2>/dev/null || true)
+	[ -n "$KWRITECONFIG" ] && \
+		$KWRITECONFIG --file kdeglobals --group General --group Icons --key Theme "$ICONS" 2>/dev/null || true
 	command -v plasma-apply-wallpaperimage >/dev/null 2>&1 && \
 		plasma-apply-wallpaperimage "$IMG" 2>/dev/null || true
 	gsettings set org.gnome.desktop.interface color-scheme "$SCHEME" 2>/dev/null || true

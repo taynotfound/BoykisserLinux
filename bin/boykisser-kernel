@@ -1,5 +1,5 @@
 #!/bin/sh
-# boykisser-kernel :3  —  hop onto the newest kernel from Debian backports.
+# boykisser-kernel :3   -   hop onto the newest kernel from Debian backports.
 # Great for brand-new hardware that trixie's stock kernel doesn't know yet.
 #
 # Usage:

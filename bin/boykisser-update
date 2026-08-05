@@ -1,5 +1,5 @@
 #!/bin/sh
-# boykisser-update :3  —  update everything in one cuddle.
+# boykisser-update :3   -   update everything in one cuddle.
 set -e
 
 PINK="\033[38;5;213m"; B="\033[1m"; R="\033[0m"
@@ -20,7 +20,7 @@ if command -v timeshift >/dev/null 2>&1 && [ ! -d /run/live ] \
    && [ -f /etc/timeshift/timeshift.json ]; then
 	printf "${PINK}-> creating a safety snapshot (timeshift)...${R}\n"
 	$SUDO timeshift --create --comments "boykisser-update $(date +%F)" --scripted \
-		|| printf "${PINK}   (snapshot failed — continuing without it)${R}\n"
+		|| printf "${PINK}   (snapshot failed  -  continuing without it)${R}\n"
 fi
 
 printf "${PINK}-> upgrading packages...${R}\n"

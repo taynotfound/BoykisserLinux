@@ -8,7 +8,7 @@
 set -e
 
 if [ "$(id -u)" -ne 0 ]; then
-	echo "This needs root — re-running with sudo :3"
+	echo "This needs root  -  re-running with sudo :3"
 	exec sudo "$0" "$@"
 fi
 
@@ -25,10 +25,10 @@ while [ "$i" -lt 60 ]; do
 	sleep 2
 done
 
-# apt update with a few retries — mirrors/DNS can be slow right after boot
+# apt update with a few retries  -  mirrors/DNS can be slow right after boot
 for try in 1 2 3; do
 	apt-get update && break
-	say "apt update failed (attempt $try) — retrying in 10s..."
+	say "apt update failed (attempt $try)  -  retrying in 10s..."
 	sleep 10
 done
 
@@ -79,15 +79,14 @@ apt-get install -y --no-install-recommends code-insiders || say "VS Code failed 
 
 # --- Steam (i386 multiarch) ---------------------------------------------------
 say "installing Steam..."
-dpkg --add-architecture i386
-if ! dpkg --print-foreign-architectures | grep -q i386; then
-	say "could not enable i386 multiarch — skipping Steam"
-else
+if dpkg --add-architecture i386 2>/dev/null; then
 	apt-get update || true
 	apt-get install -y --no-install-recommends steam-installer \
 		|| apt-get install -y --no-install-recommends steam || true
 	apt-get install -y \
 		libgl1-mesa-dri:i386 mesa-vulkan-drivers:i386 libglx-mesa0:i386 || true
+else
+	say "could not enable i386 multiarch  -  skipping Steam"
 fi
 
 # --- Flatpaks -----------------------------------------------------------------
@@ -103,4 +102,4 @@ do
 	flatpak install -y --noninteractive flathub "$app" || say "  (failed) $app"
 done
 
-say "all done — enjoy your apps! :3"
+say "all done  -  enjoy your apps! :3"

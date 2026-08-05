@@ -1,5 +1,5 @@
 #!/bin/sh
-# boykisser-presets :3  —  one-click Flatpak app preset groups.
+# boykisser-presets :3   -   one-click Flatpak app preset groups.
 # Pick preset groups (Art, Social, Office, Music) and get them installed from
 # Flathub. GUI (yad checklist) when available, terminal menu otherwise.
 # Usage: boykisser-presets [art|social|office|music ...]
@@ -37,10 +37,10 @@ install_presets() {
 		echo ":3 installing preset '$group'..."
 		for app in $(apps_for "$group"); do
 			flatpak install -y --noninteractive flathub "$app" \
-				|| { echo "!! $app failed — skipped"; rc=1; }
+				|| { echo "!! $app failed  -  skipped"; rc=1; }
 		done
 	done
-	[ "$rc" = 0 ] && echo ":3 all done!" || echo ":3 done (some apps failed — rerun later)"
+	[ "$rc" = 0 ] && echo ":3 all done!" || echo ":3 done (some apps failed  -  rerun later)"
 	return 0
 }
 
@@ -56,7 +56,7 @@ if [ $# -gt 0 ]; then
 fi
 
 # --- GUI ------------------------------------------------------------------------
-if command -v yad >/dev/null 2>&1 && [ -n "$DISPLAY$WAYLAND_DISPLAY" ]; then
+if command -v yad >/dev/null 2>&1 && { [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ]; }; then
 	choice=$(yad --list --checklist --title="App presets :3" \
 		--width=520 --height=320 --center --borders=12 \
 		--text="<b>Pick your app presets</b>\nEverything installs from Flathub." \
@@ -68,13 +68,13 @@ if command -v yad >/dev/null 2>&1 && [ -n "$DISPLAY$WAYLAND_DISPLAY" ]; then
 		--button="Install:0" --button="Cancel:1" 2>/dev/null) || exit 0
 	sel=$(printf '%s\n' "$choice" | awk -F'|' '$1=="TRUE"{printf "%s ", $3}')
 	[ -n "$sel" ] || exit 0
-	x-terminal-emulator -e sh -c "boykisser-presets $sel; echo; read -p 'Press enter to close...' _" 2>/dev/null \
+	x-terminal-emulator -e sh -c "boykisser-presets $sel; echo; printf 'Press enter to close... '; read -r _" 2>/dev/null \
 		|| install_presets "$sel"
 	exit 0
 fi
 
 # --- terminal fallback -----------------------------------------------------------
-echo "App presets :3  — pick any (space-separated): art social office music"
+echo "App presets :3   -  pick any (space-separated): art social office music"
 for g in art social office music; do printf "  %-7s %s\n" "$g" "$(label_for "$g")"; done
 printf "presets> "
 read -r sel

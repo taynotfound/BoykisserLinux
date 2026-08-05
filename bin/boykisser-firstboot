@@ -15,7 +15,7 @@ flatpak remote-add --if-not-exists flathub \
 
 # Don't download big apps into a live (RAM-backed) session.
 if grep -qw "boot=live" /proc/cmdline 2>/dev/null; then
-	echo "Live session detected — skipping heavy Flatpak installs. :3"
+	echo "Live session detected  -  skipping heavy Flatpak installs. :3"
 	exit 0
 fi
 
@@ -30,8 +30,8 @@ done
 # On the slim "netinstall" image, pull the whole heavy app set (OBS, VLC, Steam,
 # VS Code, gaming bits + Flatpaks). This is the bit that needs the internet.
 if [ -e /etc/boykisser/netinstall ]; then
-	echo "netinstall image — fetching the full Boykisser app set..."
-	/usr/local/bin/boykisser-postinstall-apps || \
+	echo "netinstall image  -  fetching the full Boykisser app set..."
+	boykisser-postinstall-apps || \
 		echo "  (postinstall-apps failed, will retry next boot)"
 	# Only mark done if the marker is gone or apps landed; retry otherwise.
 	if command -v obs >/dev/null 2>&1 || command -v code-insiders >/dev/null 2>&1; then

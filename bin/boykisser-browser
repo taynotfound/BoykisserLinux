@@ -1,5 +1,5 @@
 #!/bin/sh
-# boykisser-browser :3  —  pick your browser.
+# boykisser-browser :3   -   pick your browser.
 # Firefox ESR ships with the ISO; this installs an alternative (and optionally
 # removes Firefox). LibreWolf and Brave come from Flathub, Chromium from apt.
 # Usage: boykisser-browser [firefox|librewolf|brave|chromium]
@@ -41,7 +41,7 @@ if [ $# -gt 0 ]; then
 	exit $?
 fi
 
-if command -v yad >/dev/null 2>&1 && [ -n "$DISPLAY$WAYLAND_DISPLAY" ]; then
+if command -v yad >/dev/null 2>&1 && { [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ]; }; then
 	choice=$(yad --list --title="Pick a browser :3" \
 		--width=480 --height=280 --center --borders=12 \
 		--text="<b>Which browser do you want?</b>\nFirefox ESR is already installed." \
@@ -53,12 +53,12 @@ if command -v yad >/dev/null 2>&1 && [ -n "$DISPLAY$WAYLAND_DISPLAY" ]; then
 		--button="Install:0" --button="Cancel:1" 2>/dev/null) || exit 0
 	sel=$(printf '%s' "$choice" | awk -F'|' '{print $2}')
 	[ -n "$sel" ] || exit 0
-	x-terminal-emulator -e sh -c "boykisser-browser $sel; echo; read -p 'Press enter to close...' _" 2>/dev/null \
+	x-terminal-emulator -e sh -c "boykisser-browser $sel; echo; printf 'Press enter to close... '; read -r _" 2>/dev/null \
 		|| install_browser "$sel"
 	exit 0
 fi
 
-echo "Pick a browser :3  — firefox | librewolf | brave | chromium"
+echo "Pick a browser :3   -  firefox | librewolf | brave | chromium"
 printf "browser> "
 read -r sel
 [ -n "$sel" ] && install_browser "$sel"

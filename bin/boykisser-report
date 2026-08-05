@@ -1,5 +1,5 @@
 #!/bin/sh
-# boykisser-report :3  —  report a bug/error on GitHub Issues.
+# boykisser-report :3   -   report a bug/error on GitHub Issues.
 #
 # Gathers optional, non-personal system info, pre-fills a GitHub issue with it,
 # and opens the browser. Nothing is ever sent anywhere automatically.
@@ -50,19 +50,14 @@ fi
 
 # --- URL-encode the body and open the browser -----------------------------------
 enc() {
-	printf '%s' "$1" | od -An -tx1 -v | tr ' ' '\n' | grep -v '^$' | while read -r h; do
-		case "$h" in
-			2d|2e|5f|7e|3[0-9]|4[1-9a-f]|5[0-9a]|6[1-9a-f]|7[0-9a]) printf '%b' "\\x$h" ;;
-			*) printf '%%%s' "$h" ;;
-		esac
-	done
+	printf '%s' "$1" | python3 -c "import sys,urllib.parse; print(urllib.parse.quote(sys.stdin.read(), safe=''), end='')"
 }
 URL="$REPO_URL?title=$(enc "[bug] ")&body=$(enc "$BODY")"
 
 say ":3 opening a GitHub issue for you..."
 if [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && command -v xdg-open >/dev/null 2>&1; then
 	xdg-open "$URL" >/dev/null 2>&1 &
-	say "   fill in what happened and hit Submit — thank you! mwah"
+	say "   fill in what happened and hit Submit  -  thank you! mwah"
 else
 	say "   no browser session found. Please open this page to report:"
 	printf '%s\n' "$REPO_URL"

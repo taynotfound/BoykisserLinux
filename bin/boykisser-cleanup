@@ -1,5 +1,5 @@
 #!/bin/sh
-# boykisser-cleanup :3  —  reclaim disk space without breaking anything.
+# boykisser-cleanup :3   -   reclaim disk space without breaking anything.
 set -e
 
 PINK="\033[38;5;213m"; B="\033[1m"; R="\033[0m"

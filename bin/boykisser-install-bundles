@@ -1,5 +1,5 @@
 #!/bin/sh
-# Boykisser Linux — install optional app bundles into the target system :3
+# Boykisser Linux  -  install optional app bundles into the target system :3
 #
 # Called by the Calamares contextualprocess@bundles module with the mounted
 # target root and the bundles the user ticked in the "App bundles" chooser.
@@ -26,7 +26,7 @@ pkgs_for() {
 # --- bail out gracefully without internet ------------------------------------
 if ! { command -v getent >/dev/null 2>&1 && getent hosts deb.debian.org >/dev/null 2>&1; } \
    && ! ping -c1 -W3 deb.debian.org >/dev/null 2>&1; then
-	log "no internet — skipping app bundles ($*). Install them later with apt."
+	log "no internet  -  skipping app bundles ($*). Install them later with apt."
 	exit 0
 fi
 
@@ -60,18 +60,18 @@ fi
 
 # --- install ------------------------------------------------------------------
 export DEBIAN_FRONTEND=noninteractive
-chroot "$ROOT" apt-get update || log "apt update failed — trying anyway"
+chroot "$ROOT" apt-get update || log "apt update failed  -  trying anyway"
 
 for bundle in "$@"; do
 	PKGS="$(pkgs_for "$bundle")"
-	[ -n "$PKGS" ] || { log "unknown bundle '$bundle' — skipping"; continue; }
+	[ -n "$PKGS" ] || { log "unknown bundle '$bundle'  -  skipping"; continue; }
 	log "installing bundle '$bundle': $PKGS"
 	# shellcheck disable=SC2086
 	if ! chroot "$ROOT" apt-get install -y --no-install-recommends $PKGS; then
-		log "bundle '$bundle' failed as a set — retrying package by package"
+		log "bundle '$bundle' failed as a set  -  retrying package by package"
 		for p in $PKGS; do
 			chroot "$ROOT" apt-get install -y --no-install-recommends "$p" \
-				|| log "package '$p' failed — skipped"
+				|| log "package '$p' failed  -  skipped"
 		done
 	fi
 done

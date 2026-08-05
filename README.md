@@ -6,7 +6,7 @@ All the `boykisser-*` scripts and the graphical Boykisser Center, packaged as a 
 
 | Script | Does |
 |---|---|
-| `boykisser` | Main entry point — lists all commands |
+| `boykisser` | Main entry point  -  lists all commands |
 | `boykisser-center` | GTK3 control panel |
 | `boykisser-update` | Updates apt + Flatpak + tools itself |
 | `boykisser-theme` | Light/dark toggle |
@@ -40,6 +40,6 @@ git tag v1.2.3 && git push origin v1.2.3
 
 | Repo | What |
 |---|---|
-| **[BoykisserLinux](https://github.com/taynotfound/BoykisserLinux)** | ISO build config — fetches this `.deb` at build time |
+| **[BoykisserLinux](https://github.com/taynotfound/BoykisserLinux)** | ISO build config  -  fetches this `.deb` at build time |
 | **[boykisser-tools](https://github.com/taynotfound/boykisser-tools)** ← you are here | Scripts & control center |
 | **[boykisser-web](https://github.com/taynotfound/boykisser-web)** | Website & docs |

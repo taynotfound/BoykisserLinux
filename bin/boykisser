@@ -1,5 +1,5 @@
 #!/bin/sh
-# boykisser :3  —  the little control center for Boykisser Linux.
+# boykisser :3   -   the little control center for Boykisser Linux.
 # A friendly front door to all the boykisser-* helpers.
 set -e
 

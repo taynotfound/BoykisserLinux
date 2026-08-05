@@ -1,5 +1,5 @@
 #!/bin/sh
-# boykisser-welcome :3  —  a cute graphical welcome / control center.
+# boykisser-welcome :3   -   a cute graphical welcome / control center.
 # Uses yad if available, falls back to zenity, then to a terminal menu.
 # Pass --autostart to show only once (writes a "seen" flag).
 
@@ -30,7 +30,7 @@ lspci 2>/dev/null | grep -qi nvidia && ! lsmod 2>/dev/null | grep -q '^nvidia' &
 run_yad() {
 	while :; do
 		if [ "$LIVE" = 0 ]; then
-			HDR="<b>Welcome to Boykisser Linux!</b>\nYou're in the <b>live session</b> — try things out, then install! :3"
+			HDR="<b>Welcome to Boykisser Linux!</b>\nYou're in the <b>live session</b>  -  try things out, then install! :3"
 		else
 			HDR="<b>Welcome to Boykisser Linux!</b>\nA few steps to make it purr:"
 		fi
