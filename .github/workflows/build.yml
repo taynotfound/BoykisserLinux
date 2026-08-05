@@ -54,7 +54,7 @@ jobs:
       - name: Restore the live-build package cache
         uses: actions/cache@v4
         with:
-          # Downloaded .debs only (not the unpacked bootstrap) — saves re-fetching
+          # Downloaded .debs only (not the unpacked bootstrap)  -  saves re-fetching
           # ~2 GB of packages from the Debian mirrors on every run.
           path: |
             cache/packages.bootstrap
@@ -114,7 +114,7 @@ jobs:
             curl -fsSL "$url" -o config/packages.chroot/boykisser-tools.deb
             echo ":3 fetched boykisser-tools: $(ls -lh config/packages.chroot/boykisser-tools.deb)"
           else
-            echo "::warning::boykisser-tools release not found — skipping"
+            echo "::warning::boykisser-tools release not found  -  skipping"
           fi
 
       - name: Build the live ISO (${{ matrix.variant }})
@@ -129,7 +129,7 @@ jobs:
               lb config
               lb build
             '
-          # the container runs as root — make the cache readable for the
+          # the container runs as root  -  make the cache readable for the
           # post-job cache save step
           sudo chmod -R a+rX cache/packages.* 2>/dev/null || true
 
@@ -167,7 +167,7 @@ jobs:
           VARIANT: ${{ matrix.variant }}
         run: |
           if [ -z "$IA_ACCESS_KEY" ] || [ -z "$IA_SECRET_KEY" ]; then
-            echo "No Internet Archive keys set — skipping mirror upload."
+            echo "No Internet Archive keys set  -  skipping mirror upload."
             echo "uploaded=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -214,13 +214,13 @@ jobs:
           TAG: ${{ steps.tag.outputs.tag || github.event.inputs.release_tag }}
         run: |
           if [ "$VARIANT" = "netinstall" ]; then
-            heading="### Netinstall ISO — slim, needs internet on first boot (~${SIZE})"
+            heading="### Netinstall ISO  -  slim, needs internet on first boot (~${SIZE})"
             blurb="A much smaller image with just the base desktop, browser and store. The installed system downloads the rest (OBS, VLC, codecs, Steam, VS Code, gaming bits + Flatpaks) on first boot, so it needs an internet connection to finish setup."
           elif [ "$VARIANT" = "lite" ]; then
-            heading="### Lite ISO — for ancient BIOS laptops (~${SIZE})"
-            blurb="Same slim package set as netinstall, but built BIOS-only (syslinux, no grub-efi) with \`nomodeset\` in the default boot line. Made for pre-2010 hardware where the full/netinstall ISOs dump you at a \`grub>\` rescue prompt. dd it to a USB, boot it, done — no Ventoy, no chainloading."
+            heading="### Lite ISO  -  for ancient BIOS laptops (~${SIZE})"
+            blurb="Same slim package set as netinstall, but built BIOS-only (syslinux, no grub-efi) with \`nomodeset\` in the default boot line. Made for pre-2010 hardware where the full/netinstall ISOs dump you at a \`grub>\` rescue prompt. dd it to a USB, boot it, done  -  no Ventoy, no chainloading."
           else
-            heading="### Full ISO — everything offline (~${SIZE})"
+            heading="### Full ISO  -  everything offline (~${SIZE})"
             blurb="The complete daily driver: every app is already in the image, installs and runs fully offline."
           fi
           {
@@ -314,7 +314,7 @@ jobs:
             echo
             echo "<details><summary><b>Installation Instructions & Mirror Links</b></summary>"
             echo
-            echo "Three flavours below — grab the **full** ISO for an offline daily driver, the **netinstall** ISO for a tiny download that pulls apps on first boot, or the **lite** ISO if your laptop is old enough to remember Vista."
+            echo "Three flavours below  -  grab the **full** ISO for an offline daily driver, the **netinstall** ISO for a tiny download that pulls apps on first boot, or the **lite** ISO if your laptop is old enough to remember Vista."
             echo
             [ -f release-notes-full.md ] && cat release-notes-full.md
             [ -f release-notes-netinstall.md ] && cat release-notes-netinstall.md

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Boykisser Linux — boot the ISO in QEMU for testing :3
+# Boykisser Linux  -  boot the ISO in QEMU for testing :3
 # UEFI by default (modern). Use  ./test-vm.sh --bios  for legacy BIOS testing.
 set -euo pipefail
 
@@ -29,7 +29,7 @@ done
 AVAIL_MB=$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo 2>/dev/null || echo "$RAM")
 if [ "$RAM" -gt "$AVAIL_MB" ]; then
 	RAM=$(( AVAIL_MB > 2048 ? AVAIL_MB - 512 : 2048 ))
-	echo ":3 (not enough free RAM — using ${RAM} MB instead)"
+	echo ":3 (not enough free RAM  -  using ${RAM} MB instead)"
 fi
 
 if [ ! -f "$ISO" ]; then
@@ -40,7 +40,7 @@ fi
 # KVM acceleration if available
 ACCEL=()
 if [ -w /dev/kvm ]; then ACCEL=(-enable-kvm -cpu host); else
-	echo ":3 (no /dev/kvm — running without acceleration, will be slow)"
+	echo ":3 (no /dev/kvm  -  running without acceleration, will be slow)"
 	ACCEL=(-cpu max)
 fi
 
@@ -82,7 +82,7 @@ if [ "$MODE" = "uefi" ] && [ -n "$OVMF" ]; then
 		-drive if=pflash,format=raw,file="$VARS" \
 		"${COMMON[@]}"
 else
-	[ "$MODE" = "uefi" ] && echo ":3 (no OVMF found — falling back to BIOS)"
+	[ "$MODE" = "uefi" ] && echo ":3 (no OVMF found  -  falling back to BIOS)"
 	echo ":3 booting Boykisser Linux in BIOS mode..."
 	exec qemu-system-x86_64 "${COMMON[@]}"
 fi

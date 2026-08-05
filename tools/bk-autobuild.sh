@@ -103,19 +103,19 @@ if [ "$CHECK" = 1 ]; then
 fi
 
 if [ "$CURRENT" = "$LAST" ] && [ "$FORCE" != 1 ]; then
-	log "up to date — nothing to do :3"
+	log "up to date  -  nothing to do :3"
 	exit 0
 fi
 
 log "rebuilding the live ISO (kernel $LAST -> $CURRENT)..."
 if ./build.sh </dev/null >>"$LOG" 2>&1; then
 	echo "$CURRENT" > "$STATE"
-	log ":3 rebuild succeeded — ISO refreshed with kernel $CURRENT"
+	log ":3 rebuild succeeded  -  ISO refreshed with kernel $CURRENT"
 	command -v notify-send >/dev/null 2>&1 && \
 		notify-send "Boykisser Linux" "Live ISO rebuilt with kernel $CURRENT :3" || true
 else
-	log "!! rebuild FAILED — see $LOG"
+	log "!! rebuild FAILED  -  see $LOG"
 	command -v notify-send >/dev/null 2>&1 && \
-		notify-send -u critical "Boykisser Linux" "Weekly ISO rebuild failed — check autobuild.log" || true
+		notify-send -u critical "Boykisser Linux" "Weekly ISO rebuild failed  -  check autobuild.log" || true
 	exit 1
 fi

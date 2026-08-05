@@ -17,7 +17,7 @@
 | Repo | What |
 |---|---|
 | **[BoykisserLinux](https://github.com/taynotfound/BoykisserLinux)** ← you are here | ISO build config, live-build, CI, release workflow |
-| **[boykisser-tools](https://github.com/taynotfound/boykisser-tools)** | All `boykisser-*` scripts and the control center — update independently of the ISO |
+| **[boykisser-tools](https://github.com/taynotfound/boykisser-tools)** | All `boykisser-*` scripts and the control center  -  update independently of the ISO |
 | **[boykisser-web](https://github.com/taynotfound/boykisser-web)** | Website & docs at [boykisser.taymaerz.de](https://boykisser.taymaerz.de) |
 
 ## What is this?
@@ -29,11 +29,11 @@ Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
 
 ## Features
 
-- 💅 Full Boykisser XFCE theme — pink accents, Tela-circle icons, light & dark, custom Plymouth splash and boot menu
-- 🖥️ Choose your desktop in the installer — XFCE by default, or pick **KDE Plasma** (fully pink Boykisser-themed, pulled from the net during install)
+- 💅 Full Boykisser XFCE theme  -  pink accents, Tela-circle icons, light & dark, custom Plymouth splash and boot menu
+- 🖥️ Choose your desktop in the installer  -  XFCE by default, or pick **KDE Plasma** (fully pink Boykisser-themed, pulled from the net during install)
 - 🐲 Pink GRUB theme on the installed system, with the first entry (Boykisser) auto-selected
 - 📦 Flatpak + Flathub out of the box (GNOME Software, Flatseal, Gear Lever)
-- 🎮 Steam, Heroic, GameMode, MangoHud — with 32-bit libs enabled
+- 🎮 Steam, Heroic, GameMode, MangoHud  -  with 32-bit libs enabled
 - 🎥 OBS Studio with a working virtual camera (v4l2loopback)
 - 🌐 Firefox, VS Code Insiders, VLC, Discord
 - 🖥️ UEFI + BIOS, broad firmware, Nouveau for universal boot
@@ -42,13 +42,13 @@ Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
 - ⚡ zram compressed swap + power-profiles-daemon for snappy laptops
 - 🛡️ ufw firewall enabled by default (deny incoming, allow outgoing)
 - 🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box
-- 🐛 Built-in error reporting — `boykisser report` (or "Report a Problem" in the menu) opens a pre-filled GitHub issue with your system info
-- 🎛️ **Boykisser Center** — a full GTK control center GUI (`boykisser center`) with system status and one-click tiles for updates, apps, themes, drivers and more
-- 📦 Optional app bundles in the installer — Gaming, Streaming & Creation, Development, Office
-- 🧩 `boykisser presets` — one-click Flatpak preset groups (Art, Social, Office, Music)
-- 🌐 `boykisser browser` — pick Firefox, LibreWolf, Brave or Chromium
-- 🧹 `boykisser debloat` — remove app groups you don't want
-- 🔓 `boykisser autologin` — toggle passwordless login on installed systems
+- 🐛 Built-in error reporting  -  `boykisser report` (or "Report a Problem" in the menu) opens a pre-filled GitHub issue with your system info
+- 🎛️ **Boykisser Center**  -  a full GTK control center GUI (`boykisser center`) with system status and one-click tiles for updates, apps, themes, drivers and more
+- 📦 Optional app bundles in the installer  -  Gaming, Streaming & Creation, Development, Office
+- 🧩 `boykisser presets`  -  one-click Flatpak preset groups (Art, Social, Office, Music)
+- 🌐 `boykisser browser`  -  pick Firefox, LibreWolf, Brave or Chromium
+- 🧹 `boykisser debloat`  -  remove app groups you don't want
+- 🔓 `boykisser autologin`  -  toggle passwordless login on installed systems
 - 💾 Deja Dup for file backups + Timeshift snapshots before every `boykisser update` (once configured)
 - 🌍 Language chooser in the live boot menu (German, French, Spanish, Italian, Portuguese, Polish, Dutch)
 - 👋 First-login welcome checklist that walks you through setup
@@ -70,7 +70,7 @@ it works from any host.
 
 Rebuilds reuse the downloaded packages in `cache/` (much faster); pass
 `--clean` to start truly from scratch. `--fast` is for bootloader/ISO-level
-tweaks only — after changing package lists or chroot hooks, do a normal build.
+tweaks only  -  after changing package lists or chroot hooks, do a normal build.
 The full build log is written to `build.log`.
 
 The result lands at `boykisser-linux-amd64.iso` (or
@@ -78,8 +78,8 @@ The result lands at `boykisser-linux-amd64.iso` (or
 
 ### Full vs netinstall
 
-- **Full** — every app is in the squashfs; installs and runs fully offline.
-- **Netinstall** — a much smaller ISO (kept under **1.2 GB**) with only the base
+- **Full**  -  every app is in the squashfs; installs and runs fully offline.
+- **Netinstall**  -  a much smaller ISO (kept under **1.2 GB**) with only the base
   desktop, browser and store. It drops APT *Recommends* and the DKMS/build bits
   from the squashfs, then downloads the rest (OBS, VLC, codecs, Steam, VS Code,
   gaming bits + Flatpaks) on first boot of the *installed* system via
@@ -87,7 +87,7 @@ The result lands at `boykisser-linux-amd64.iso` (or
   setup. You can also re-run `sudo boykisser-postinstall-apps` any time.
 
 > Picking **KDE Plasma** in the installer also needs an internet connection, on
-> both the full and netinstall ISOs — KDE is downloaded during install to keep
+> both the full and netinstall ISOs  -  KDE is downloaded during install to keep
 > the images small. XFCE installs completely offline.
 
 ### Automatic weekly rebuilds
@@ -114,11 +114,11 @@ The live image keeps itself fresh two ways:
 Tagged pushes (`v*`) trigger [the build workflow](.github/workflows/build.yml),
 which builds the ISO and publishes it two ways:
 
-- **Internet Archive** — the whole ISO as a single direct download plus an
+- **Internet Archive**  -  the whole ISO as a single direct download plus an
   auto-generated torrent, so there's nothing to reassemble. (Needs the
   `IA_ACCESS_KEY` / `IA_SECRET_KEY` repo secrets; the step is skipped without
   them.)
-- **GitHub Releases** — a fallback copy split into 1.9 GiB parts to stay under
+- **GitHub Releases**  -  a fallback copy split into 1.9 GiB parts to stay under
   GitHub's 2 GiB asset limit:
 
 ```sh
@@ -147,13 +147,13 @@ live user is `boykisser` with password `live`.
 `boykisser report` (also "Report a Problem" in the app menu) opens a
 [GitHub issue](https://github.com/taynotfound/BoykisserLinux/issues/new)
 pre-filled with basic, non-personal system info (version, kernel, desktop,
-GPU, failed services). Nothing is sent automatically — the user reviews and
+GPU, failed services). Nothing is sent automatically  -  the user reviews and
 submits the issue themselves.
 
 ## Known limitations
 
 - The proprietary NVIDIA driver isn't in the live session (DKMS can't build
-  against the live kernel) — install it after setup with `boykisser nvidia`.
+  against the live kernel)  -  install it after setup with `boykisser nvidia`.
 - Picking KDE in the installer needs internet; XFCE installs fully offline.
 - The netinstall ISO needs internet on first boot to fetch the heavy apps.
 

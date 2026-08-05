@@ -71,7 +71,7 @@ jobs:
               TAG="${{ github.event.release.tag_name }}"
               REL_URL="${{ github.event.release.html_url }}"
               REL_NAME="${{ github.event.release.name }}"
-              MSG="$(printf '🚀 **[%s](<%s>)** · [%s — %s](<%s>)\n-# [%s](<%s>) · %s' \
+              MSG="$(printf '🚀 **[%s](<%s>)** · [%s  -  %s](<%s>)\n-# [%s](<%s>) · %s' \
                 "$REPO_SHORT" "$REPO_URL" "$TAG" "$REL_NAME" "$REL_URL" \
                 "$ACTOR" "$ACTOR_URL" "$TIMESTAMP")"
               ;;

@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to file a bug. :3
-        Please search the existing issues first — someone may have hit it already.
+        Please search the existing issues first  -  someone may have hit it already.
 
   - type: textarea
     id: what-happened

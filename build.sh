@@ -76,9 +76,9 @@ $ENGINE build -t "$IMAGE" -f docker/Dockerfile.builder docker/
 # --- run live-build inside the container --------------------------------------
 echo ":3 starting the live-build run (this takes a while, go get a snack)..."
 # Cleaning strategy (the package cache in cache/ makes rebuilds MUCH faster):
-#   normal (default)  lb clean          — fresh chroot+binary, keeps downloaded debs
-#   purge  (--clean)  lb clean --purge  — everything from scratch, incl. the deb cache
-#   fast   (--fast)   lb clean --binary — keep the built chroot, regenerate the ISO only
+#   normal (default)  lb clean           -  fresh chroot+binary, keeps downloaded debs
+#   purge  (--clean)  lb clean --purge   -  everything from scratch, incl. the deb cache
+#   fast   (--fast)   lb clean --binary  -  keep the built chroot, regenerate the ISO only
 #                     (use after tweaking includes.binary/bootloaders; NOT after
 #                     changing package lists or chroot hooks)
 case "$CLEAN_MODE" in
@@ -127,6 +127,6 @@ if [ -n "$ISO" ]; then
 	echo ":3  test it with:  ./test-vm.sh"
 	echo ":3 ===================================================="
 else
-	echo "!! No ISO produced — check build.log" >&2
+	echo "!! No ISO produced  -  check build.log" >&2
 	exit 1
 fi
