@@ -1,0 +1,15 @@
+#!/bin/sh
+# Boykisser Linux — first-boot welcome dialog :3
+SENTINEL="$HOME/.config/boykisser-welcomed"
+[ -f "$SENTINEL" ] && exit 0
+
+yad --title="Welcome to Boykisser Linux :3" \
+    --image="/usr/share/boykisser/logo.png" \
+    --window-icon="/usr/share/boykisser/badge.png" \
+    --width=480 --height=280 \
+    --text="\n<big><b>Hey, welcome to Boykisser Linux!</b></big>\n\nA Debian-based distro for people who don't want to think about their OS.\nEverything should just work — if it doesn't, file a bug.\n\nWant to install to disk? Hit the button on the desktop.\n" \
+    --button="Open GitHub Issues:xdg-open https://github.com/taynotfound/BoykisserLinux/issues" \
+    --button="OK:0" \
+    --center --no-escape 2>/dev/null
+
+touch "$SENTINEL"

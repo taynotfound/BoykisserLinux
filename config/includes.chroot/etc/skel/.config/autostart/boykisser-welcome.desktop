@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Version=1.0
 Name=Boykisser Welcome
-Comment=Show the welcome screen on first login :3
-Exec=boykisser-welcome --autostart
-OnlyShowIn=XFCE;
+Exec=/usr/local/bin/boykisser-welcome
+Icon=/usr/share/boykisser/badge.png
 Terminal=false
+Categories=
+X-GNOME-Autostart-enabled=true
+Hidden=false
 NoDisplay=true
-X-XFCE-Autostart-Phase=Application
