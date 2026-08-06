@@ -144,7 +144,7 @@ sequence:
       - locale
       - keyboard
       - packagechooser
-      - packagechooser@bundles
+      - packagechooserq@bundles
       - partition
       - users
       - summary
@@ -180,7 +180,7 @@ prompt-install: true
 dont-chroot: false
 instances:
   - id: bundles
-    module: packagechooser
+    module: packagechooserq
     config: packagechooser-bundles.conf
   - id: bundles
     module: contextualprocess
@@ -216,7 +216,7 @@ for SC in /etc/calamares/settings.conf /etc/calamares/settings-online.conf; do
 	# Desktop chooser: after the first 'keyboard' entry (the show: step).
 	inject_step "$SC" packagechooser   '^[[:space:]]*-[[:space:]]*keyboard[[:space:]]*$' after
 	# App bundles chooser: right after the desktop chooser.
-	inject_step "$SC" 'packagechooser@bundles' '^[[:space:]]*-[[:space:]]*packagechooser[[:space:]]*$' after
+	inject_step "$SC" 'packagechooserq@bundles' '^[[:space:]]*-[[:space:]]*packagechooser[[:space:]]*$' after
 	# Bundle installer: before the desktop contextualprocess (target still mounted).
 	inject_step "$SC" removeuser '^[[:space:]]*-[[:space:]]*umount[[:space:]]*$' before
 	inject_step "$SC" contextualprocess '^[[:space:]]*-[[:space:]]*removeuser[[:space:]]*$' before
@@ -227,7 +227,7 @@ for SC in /etc/calamares/settings.conf /etc/calamares/settings-online.conf; do
 		if grep -q '^instances:' "$SC"; then
 			sed -i '/^instances:/a\
   - id: bundles\
-    module: packagechooser\
+    module: packagechooserq\
     config: packagechooser-bundles.conf\
   - id: bundles\
     module: contextualprocess\
@@ -236,7 +236,7 @@ else
 		cat >> "$SC" <<'EOF'
 instances:
   - id: bundles
-    module: packagechooser
+    module: packagechooserq
     config: packagechooser-bundles.conf
   - id: bundles
     module: contextualprocess
@@ -277,6 +277,12 @@ cat > /etc/calamares/modules/contextualprocess.conf <<'EOF'
 # "packagechooser_packagechooser", value "xfce" or "kde"). Both branches end
 # with boykisser-live-cleanup, which purges the live-* packages from the
 # mounted target (@@ROOT@@) with dpkg and never fails the install.
+#
+# dontChroot: true is CRITICAL — by default contextualprocess runs commands
+# INSIDE the target chroot, where @@ROOT@@ (/tmp/calamares-root-…) doesn't
+# exist and DNS is dead, so the scripts silently no-op. We need them on the
+# live host, handling the mounted target themselves.
+dontChroot: true
 
 packagechooser_packagechooser:
     kde:

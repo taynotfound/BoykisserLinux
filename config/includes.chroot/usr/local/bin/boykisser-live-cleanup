@@ -30,6 +30,7 @@ live-config-systemd
 live-tools
 live-task-localisation
 live-task-recommended
+calamares
 calamares-settings-debian
 "
 
@@ -43,7 +44,24 @@ for pkg in $LIVE_PKGS; do
 	fi
 done
 
-# Best-effort tidy-up; apt may be unusable offline at this point  -  that's fine.
+# Remove live/installer-only launchers that were shipped via includes.chroot
+# (not owned by any purged package) so the installed system doesn't invite
+# you to install itself again.
+for f in \
+	usr/share/applications/install-boykisser.desktop \
+	usr/share/applications/calamares-install-debian.desktop \
+	usr/share/applications/calamares.desktop \
+	etc/skel/.config/autostart/boykisser-welcome.desktop
+do
+	rm -f "$ROOT/$f" 2>/dev/null || true
+done
+# Desktop copies of the installer icon (skel and any created users).
+rm -f "$ROOT"/etc/skel/Desktop/install-boykisser.desktop \
+      "$ROOT"/etc/skel/Desktop/calamares-install-debian.desktop \
+      "$ROOT"/home/*/Desktop/install-boykisser.desktop \
+      "$ROOT"/home/*/Desktop/calamares-install-debian.desktop \
+      "$ROOT"/home/*/.config/autostart/boykisser-welcome.desktop 2>/dev/null || true
+log "installer launchers removed from target"
 chroot "$ROOT" env DEBIAN_FRONTEND=noninteractive \
 	apt-get -y --purge autoremove >/dev/null 2>&1 \
 	|| log "autoremove skipped (ignored)"

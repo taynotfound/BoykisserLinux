@@ -109,7 +109,7 @@ jobs:
         if: matrix.variant == 'full'
         run: |
           urls=$(curl -fsSL https://api.github.com/repos/taynotfound/boykisser-tools/releases/latest \
-            | grep -o '"browser_download_url":"[^"]*\.deb"' | cut -d'"' -f4)
+            | grep -o '"browser_download_url": *"[^"]*\.deb"' | grep -o 'https[^"]*')
           if [ -n "$urls" ]; then
             mkdir -p config/packages.chroot
             for url in $urls; do
@@ -118,7 +118,8 @@ jobs:
               echo ":3 fetched $name"
             done
           else
-            echo "::warning::boykisser-tools release not found  -  skipping"
+            echo "::error::boykisser-tools release not found — full ISO would ship without boykisser-center etc."
+            exit 1
           fi
 
       - name: Build the live ISO (${{ matrix.variant }})

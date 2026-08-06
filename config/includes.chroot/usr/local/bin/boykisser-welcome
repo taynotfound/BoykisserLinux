@@ -3,6 +3,10 @@
 SENTINEL="$HOME/.config/boykisser-welcomed"
 [ -f "$SENTINEL" ] && exit 0
 
+# Live sessions only — this dialog tells you to install, which makes no sense
+# on an installed system.
+grep -qw 'boot=live' /proc/cmdline 2>/dev/null || exit 0
+
 yad --title="Welcome to Boykisser Linux :3" \
     --image="/usr/share/boykisser/logo.png" \
     --window-icon="/usr/share/boykisser/badge.png" \
