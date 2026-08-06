@@ -144,7 +144,7 @@ sequence:
       - locale
       - keyboard
       - packagechooser
-      - packagechooserq@bundles
+      - packagechooser@bundles
       - partition
       - users
       - summary
@@ -216,7 +216,7 @@ for SC in /etc/calamares/settings.conf /etc/calamares/settings-online.conf; do
 	# Desktop chooser: after the first 'keyboard' entry (the show: step).
 	inject_step "$SC" packagechooser   '^[[:space:]]*-[[:space:]]*keyboard[[:space:]]*$' after
 	# App bundles chooser: right after the desktop chooser.
-	inject_step "$SC" 'packagechooserq@bundles' '^[[:space:]]*-[[:space:]]*packagechooser[[:space:]]*$' after
+	inject_step "$SC" 'packagechooser@bundles' '^[[:space:]]*-[[:space:]]*packagechooser[[:space:]]*$' after
 	# Bundle installer: before the desktop contextualprocess (target still mounted).
 	inject_step "$SC" removeuser '^[[:space:]]*-[[:space:]]*umount[[:space:]]*$' before
 	inject_step "$SC" contextualprocess '^[[:space:]]*-[[:space:]]*removeuser[[:space:]]*$' before
@@ -227,7 +227,7 @@ for SC in /etc/calamares/settings.conf /etc/calamares/settings-online.conf; do
 		if grep -q '^instances:' "$SC"; then
 			sed -i '/^instances:/a\
   - id: bundles\
-    module: packagechooserq\
+    module: packagechooser\
     config: packagechooser-bundles.conf\
   - id: bundles\
     module: contextualprocess\
@@ -236,7 +236,7 @@ else
 		cat >> "$SC" <<'EOF'
 instances:
   - id: bundles
-    module: packagechooserq
+    module: packagechooser
     config: packagechooser-bundles.conf
   - id: bundles
     module: contextualprocess

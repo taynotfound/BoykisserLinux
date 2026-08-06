@@ -31,9 +31,10 @@ images:
     productWelcome: "logo.png"
 
 slideshow: "show.qml"
+slideshowAPI: 2
 
 style:
-    sidebarBackground:    "#241447"
-    sidebarText:          "#ffffff"
-    sidebarTextSelect:    "#ff5fa2"
-    sidebarTextHighlight: "#ff5fa2"
+    SidebarBackground:        "#241447"
+    SidebarText:              "#ffffff"
+    SidebarTextCurrent:       "#ff5fa2"
+    SidebarBackgroundCurrent: "#3d1f7a"
