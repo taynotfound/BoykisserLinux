@@ -34,6 +34,16 @@ fi
 mkdir -p /usr/share/pixmaps
 cp /usr/share/boykisser/start.png /usr/share/pixmaps/boykisser.png 2>/dev/null || true
 
+# Calamares slideshow slides — copy wallpapers next to show.qml so QML relative paths work
+BRAND=/etc/calamares/branding/boykisser
+i=1
+for img in /usr/share/backgrounds/boykisser/boykisser1.png \
+            /usr/share/backgrounds/boykisser/boykisser2.png \
+            /usr/share/backgrounds/boykisser/boykisser3.jpg; do
+	[ -f "$img" ] && cp "$img" "$BRAND/slide${i}.png" || true
+	i=$((i+1))
+done
+
 # Boot splash
 if command -v plymouth-set-default-theme >/dev/null 2>&1; then
 	plymouth-set-default-theme boykisser || true

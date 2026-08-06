@@ -2,7 +2,7 @@
 Type=Application
 Name=Night Light
 Comment=Warm colors in the evening (redshift) :3
-Exec=redshift-gtk
+Exec=redshift -l 51:10 -t 6500:4200 -m randr
 Icon=redshift
 Terminal=false
 X-XFCE-Autostart-Phase=Application
