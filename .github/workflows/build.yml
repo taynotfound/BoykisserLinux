@@ -105,7 +105,8 @@ jobs:
           mkdir -p config/includes.chroot/etc/boykisser
           echo "lite" > config/includes.chroot/etc/boykisser/lite
 
-      - name: Fetch latest boykisser-tools
+      - name: Fetch latest boykisser-tools (full only)
+        if: matrix.variant == 'full'
         run: |
           urls=$(curl -fsSL https://api.github.com/repos/taynotfound/boykisser-tools/releases/latest \
             | grep -o '"browser_download_url":"[^"]*\.deb"' | cut -d'"' -f4)

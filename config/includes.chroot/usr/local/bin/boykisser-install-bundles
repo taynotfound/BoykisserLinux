@@ -1,0 +1,81 @@
+#!/bin/sh
+# Boykisser Linux  -  install optional app bundles into the target system :3
+#
+# Called by the Calamares contextualprocess@bundles module with the mounted
+# target root and the bundles the user ticked in the "App bundles" chooser.
+# Best-effort by design: no internet, or a package that fails to install,
+# never fails the overall installation.
+#
+# Usage: boykisser-install-bundles <target-root> [gaming] [streaming] [dev]
+
+ROOT="${1:-/}"
+shift 2>/dev/null || true
+[ $# -gt 0 ] || exit 0
+
+log() { echo "boykisser-install-bundles: $*"; }
+
+pkgs_for() {
+	case "$1" in
+		gaming)    echo "steam-installer lutris gamemode mangohud" ;;
+		streaming) echo "obs-studio kdenlive audacity" ;;
+		dev)       echo "git build-essential python3-pip python3-venv nodejs npm podman" ;;
+		office)    echo "libreoffice libreoffice-gtk3 thunderbird evince" ;;
+	esac
+}
+
+# --- bail out gracefully without internet ------------------------------------
+if ! { command -v getent >/dev/null 2>&1 && getent hosts deb.debian.org >/dev/null 2>&1; } \
+   && ! ping -c1 -W3 deb.debian.org >/dev/null 2>&1; then
+	log "no internet  -  skipping app bundles ($*). Install them later with apt."
+	exit 0
+fi
+
+# --- make the target chroot-able ----------------------------------------------
+mounted=""
+mount_bind() {
+	if ! mountpoint -q "$ROOT/$1" 2>/dev/null; then
+		mkdir -p "$ROOT/$1" 2>/dev/null || true
+		if mount --bind "/$1" "$ROOT/$1" 2>/dev/null; then
+			mounted="$1 $mounted"
+		fi
+	fi
+}
+cleanup() {
+	for m in $mounted; do
+		umount -l "$ROOT/$m" 2>/dev/null || true
+	done
+}
+trap cleanup EXIT INT TERM
+
+mount_bind proc
+mount_bind sys
+mount_bind dev
+mount_bind dev/pts
+mount_bind run
+
+cp -f /etc/resolv.conf "$ROOT/etc/resolv.conf" 2>/dev/null || true
+if ! grep -q nameserver "$ROOT/etc/resolv.conf" 2>/dev/null; then
+	printf 'nameserver 1.1.1.1\nnameserver 9.9.9.9\n' > "$ROOT/etc/resolv.conf"
+fi
+
+# --- install ------------------------------------------------------------------
+export DEBIAN_FRONTEND=noninteractive
+chroot "$ROOT" apt-get update || log "apt update failed  -  trying anyway"
+
+for bundle in "$@"; do
+	PKGS="$(pkgs_for "$bundle")"
+	[ -n "$PKGS" ] || { log "unknown bundle '$bundle'  -  skipping"; continue; }
+	log "installing bundle '$bundle': $PKGS"
+	# shellcheck disable=SC2086
+	if ! chroot "$ROOT" apt-get install -y --no-install-recommends $PKGS; then
+		log "bundle '$bundle' failed as a set  -  retrying package by package"
+		for p in $PKGS; do
+			chroot "$ROOT" apt-get install -y --no-install-recommends "$p" \
+				|| log "package '$p' failed  -  skipped"
+		done
+	fi
+done
+
+chroot "$ROOT" apt-get clean || true
+log "done :3"
+exit 0
