@@ -8,7 +8,8 @@
 #
 # Usage: boykisser-install-bundles <target-root> [gaming] [streaming] [dev]
 
-ROOT="${1:-/}"
+ROOT="${1}"
+[ -n "$ROOT" ] || exit 0
 shift 2>/dev/null || true
 [ $# -gt 0 ] || exit 0
 
@@ -53,6 +54,7 @@ mount_bind dev
 mount_bind dev/pts
 mount_bind run
 
+mkdir -p "$ROOT/etc"
 cp -f /etc/resolv.conf "$ROOT/etc/resolv.conf" 2>/dev/null || true
 if ! grep -q nameserver "$ROOT/etc/resolv.conf" 2>/dev/null; then
 	printf 'nameserver 1.1.1.1\nnameserver 9.9.9.9\n' > "$ROOT/etc/resolv.conf"
