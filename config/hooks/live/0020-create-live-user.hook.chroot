@@ -3,9 +3,8 @@ set -e
 
 # Create the live user account that live-config expects but can't create
 # without user-setup package installed.
-useradd -m -s /bin/bash -G sudo,audio,video,plugdev,netdev,cdrom,floppy,dialout user
+for g in sudo audio video plugdev netdev cdrom floppy dialout autologin; do
+	groupadd -f "$g"
+done
+useradd -m -s /bin/bash -G sudo,audio,video,plugdev,netdev,cdrom,floppy,dialout,autologin user
 echo "user:live" | chpasswd
-
-# autologin group is what live-config/LightDM uses
-groupadd -f autologin
-usermod -aG autologin user
