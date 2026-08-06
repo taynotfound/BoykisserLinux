@@ -20,10 +20,10 @@ strings:
     versionedName:       Boykisser Linux 13 (trixie) :3
     shortVersionedName:  Boykisser 13
     bootloaderEntryName:  Boykisser
-    productUrl:          https://example.invalid/boykisser
-    supportUrl:          https://example.invalid/boykisser
-    knownIssuesUrl:      https://example.invalid/boykisser
-    releaseNotesUrl:     https://example.invalid/boykisser
+    productUrl:          https://boykisser.taymaerz.de
+    supportUrl:          https://github.com/taynotfound/BoykisserLinux/issues/new
+    knownIssuesUrl:      https://github.com/taynotfound/BoykisserLinux/issues
+    releaseNotesUrl:     https://github.com/taynotfound/BoykisserLinux/releases/latest
 
 images:
     productLogo:    "logo.png"

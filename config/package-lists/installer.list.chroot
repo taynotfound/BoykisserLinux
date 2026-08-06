@@ -14,6 +14,7 @@ e2fsprogs
 btrfs-progs
 os-prober
 sudo
+squashfs-tools
 
 # Bootloader packages for the installed target (BIOS + UEFI)
 grub-pc-bin
