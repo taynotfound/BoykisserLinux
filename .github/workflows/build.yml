@@ -107,12 +107,15 @@ jobs:
 
       - name: Fetch latest boykisser-tools
         run: |
-          url=$(curl -fsSL https://api.github.com/repos/taynotfound/boykisser-tools/releases/latest \
+          urls=$(curl -fsSL https://api.github.com/repos/taynotfound/boykisser-tools/releases/latest \
             | grep -o '"browser_download_url":"[^"]*\.deb"' | cut -d'"' -f4)
-          if [ -n "$url" ]; then
+          if [ -n "$urls" ]; then
             mkdir -p config/packages.chroot
-            curl -fsSL "$url" -o config/packages.chroot/boykisser-tools.deb
-            echo ":3 fetched boykisser-tools: $(ls -lh config/packages.chroot/boykisser-tools.deb)"
+            for url in $urls; do
+              name=$(basename "$url")
+              curl -fsSL "$url" -o "config/packages.chroot/$name"
+              echo ":3 fetched $name"
+            done
           else
             echo "::warning::boykisser-tools release not found  -  skipping"
           fi
