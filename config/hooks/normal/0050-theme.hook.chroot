@@ -34,6 +34,14 @@ fi
 mkdir -p /usr/share/pixmaps
 cp /usr/share/boykisser/start.png /usr/share/pixmaps/boykisser.png 2>/dev/null || true
 
+# Bundle chooser icons — copy (deref symlinks) next to bundles.qml so its
+# relative Image sources resolve. Tela ships these as SVG; qt6svg is installed.
+TELA=/usr/share/icons/Tela-circle-pink/scalable/apps
+cp -L "$TELA/steam.svg"                  /etc/calamares/branding/boykisser/bundle-gaming.svg    || true
+cp -L "$TELA/com.obsproject.Studio.svg"  /etc/calamares/branding/boykisser/bundle-streaming.svg || true
+cp -L "$TELA/code-insiders.svg"          /etc/calamares/branding/boykisser/bundle-dev.svg       || true
+cp -L "$TELA/libreoffice-startcenter.svg" /etc/calamares/branding/boykisser/bundle-office.svg   || true
+
 # Calamares slideshow slides — copy wallpapers next to show.qml so QML relative paths work
 BRAND=/etc/calamares/branding/boykisser
 i=1

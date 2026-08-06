@@ -3,6 +3,17 @@
 calamares
 calamares-settings-debian
 
+# Qt6 QML runtime — trixie's Calamares 3.3.14 is built against Qt6, and our
+# custom branding QML (bundles.qml checkbox picker, show.qml slideshow) imports
+# QtQuick/Controls/Layouts from the system. Without these the QML view steps
+# silently fail to load. The stock module QML survives because it's compiled
+# into the .so via qrc — ours is not.
+qml6-module-qtquick
+qml6-module-qtquick-controls
+qml6-module-qtquick-layouts
+qml6-module-qtquick-templates
+qml6-module-qtquick-window
+
 # Partitioning / install backends Calamares leans on
 gparted
 cryptsetup

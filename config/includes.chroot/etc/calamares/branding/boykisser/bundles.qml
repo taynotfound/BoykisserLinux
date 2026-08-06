@@ -48,10 +48,10 @@ Item {
 
             Repeater {
                 model: [
-                    { id: "gaming",    title: qsTr("Gaming"),                 desc: qsTr("Steam, Lutris, GameMode and MangoHud — ready to game out of the box.") },
-                    { id: "streaming", title: qsTr("Streaming & Creation"),   desc: qsTr("OBS Studio, Kdenlive and Audacity for streaming, video and audio work.") },
-                    { id: "dev",       title: qsTr("Development"),            desc: qsTr("git, build-essential, Python, Node.js and Podman for hacking on things.") },
-                    { id: "office",    title: qsTr("Office & Productivity"),  desc: qsTr("LibreOffice, Thunderbird and Evince for documents, mail and PDFs.") }
+                    { id: "gaming",    icon: "bundle-gaming.svg",    title: qsTr("Gaming"),                 desc: qsTr("Steam, Lutris, GameMode and MangoHud — ready to game out of the box.") },
+                    { id: "streaming", icon: "bundle-streaming.svg", title: qsTr("Streaming & Creation"),   desc: qsTr("OBS Studio, Kdenlive and Audacity for streaming, video and audio work.") },
+                    { id: "dev",       icon: "bundle-dev.svg",       title: qsTr("Development"),            desc: qsTr("git, build-essential, Python, Node.js and Podman for hacking on things.") },
+                    { id: "office",    icon: "bundle-office.svg",    title: qsTr("Office & Productivity"),  desc: qsTr("LibreOffice, Thunderbird and Evince for documents, mail and PDFs.") }
                 ]
 
                 delegate: Rectangle {
@@ -75,6 +75,14 @@ Item {
                                 picked[modelData.id] = checked;
                                 updateChoice();
                             }
+                        }
+
+                        Image {
+                            source: modelData.icon
+                            sourceSize.width: 40
+                            sourceSize.height: 40
+                            Layout.preferredWidth: 40
+                            Layout.preferredHeight: 40
                         }
 
                         ColumnLayout {
