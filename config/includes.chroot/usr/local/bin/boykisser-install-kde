@@ -47,6 +47,7 @@ mount_bind dev/pts
 mount_bind run
 
 # DNS for apt inside the chroot.
+mkdir -p "$ROOT/etc"
 cp -f /etc/resolv.conf "$ROOT/etc/resolv.conf" 2>/dev/null || true
 if ! grep -q nameserver "$ROOT/etc/resolv.conf" 2>/dev/null; then
 	log "no usable resolv.conf in target  -  falling back to public DNS"
