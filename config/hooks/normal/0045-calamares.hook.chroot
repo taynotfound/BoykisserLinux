@@ -218,7 +218,8 @@ for SC in /etc/calamares/settings.conf /etc/calamares/settings-online.conf; do
 	# App bundles chooser: right after the desktop chooser.
 	inject_step "$SC" 'packagechooser@bundles' '^[[:space:]]*-[[:space:]]*packagechooser[[:space:]]*$' after
 	# Bundle installer: before the desktop contextualprocess (target still mounted).
-	inject_step "$SC" contextualprocess '^[[:space:]]*-[[:space:]]*umount[[:space:]]*$' before
+	inject_step "$SC" removeuser '^[[:space:]]*-[[:space:]]*umount[[:space:]]*$' before
+	inject_step "$SC" contextualprocess '^[[:space:]]*-[[:space:]]*removeuser[[:space:]]*$' before
 	inject_step "$SC" 'contextualprocess@bundles' '^[[:space:]]*-[[:space:]]*contextualprocess[[:space:]]*$' before
 	# Register the instanced modules (append the block if there is none yet;
 	# otherwise slot our entries right under the existing instances: key).
