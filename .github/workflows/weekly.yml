@@ -20,6 +20,7 @@ jobs:
           fetch-depth: 0
 
       - name: Bump Version
+        id: bump
         run: |
           MONTH=$(date -u +%-m)
           YEAR=$(date -u +%y)
@@ -36,3 +37,14 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag "$NEW_VERSION"
           git push origin "$NEW_VERSION"
+          echo "new_tag=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+    outputs:
+      new_tag: ${{ steps.bump.outputs.new_tag }}
+
+  trigger-build:
+    needs: bump-and-build
+    uses: ./.github/workflows/build.yml
+    with:
+      release_tag: ${{ needs.bump-and-build.outputs.new_tag }}
+    secrets: inherit
