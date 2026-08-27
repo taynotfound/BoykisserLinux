@@ -6,6 +6,9 @@ on:
     - cron: "0 3 * * 1"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   bump-and-build:
     runs-on: ubuntu-latest
