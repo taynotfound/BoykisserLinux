@@ -20,28 +20,19 @@ jobs:
           fetch-depth: 0
 
       - name: Bump Version
-        id: bump
         run: |
-          LATEST_TAG=$(git describe --tags --match "v*" --abbrev=0 2>/dev/null || echo "v0.0.0.0")
-          VERSION=${LATEST_TAG#v}
-          IFS='.' read -ra PARTS <<< "$VERSION"
-          while [ ${#PARTS[@]} -lt 4 ]; do PARTS+=("0"); done
-          
-          LAST_IDX=$((${#PARTS[@]}-1))
-          PARTS[$LAST_IDX]=$((PARTS[$LAST_IDX] + 1))
-          NEW_VERSION="v$(IFS=.; echo "${PARTS[*]}")"
-          
-          echo "Bumping: $LATEST_TAG -> $NEW_VERSION"
+          MONTH=$(date -u +%-m)
+          YEAR=$(date -u +%y)
+          REVISION=0
+          while read -r tag; do
+            if [[ "$tag" =~ ^v${MONTH}\.${YEAR}\.[0-9]+$ ]]; then
+              REVISION=${tag##*.}
+              break
+            fi
+          done < <(git tag --list "v${MONTH}.${YEAR}.*" --sort=-version:refname)
+          NEW_VERSION="v${MONTH}.${YEAR}.$((REVISION + 1))"
+          echo "Creating weekly release tag: $NEW_VERSION"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag "$NEW_VERSION"
           git push origin "$NEW_VERSION"
-          
-          echo "new_tag=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-  trigger-build:
-    needs: bump-and-build
-    uses: ./.github/workflows/build.yml
-    with:
-      release_tag: ${{ needs.bump-and-build.outputs.new_tag }}
-    secrets: inherit
