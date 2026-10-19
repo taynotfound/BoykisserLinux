@@ -306,8 +306,11 @@ jobs:
             echo
             echo "### Changelog"
             echo
-            prev_tag=$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || echo "")
-            if [ -n "$prev_tag" ]; then
+            prev_tag=$(git describe --tags --abbrev=0 --match 'v*' "${GITHUB_SHA}^" 2>/dev/null || echo "")
+            # major releases get a hand-written changelog instead of the commit list
+            if [ -f "../release-notes/${TAG}.md" ]; then
+              cat "../release-notes/${TAG}.md"
+            elif [ -n "$prev_tag" ]; then
               git log "${prev_tag}..${GITHUB_SHA}" --pretty=format:"* %s" --no-merges | grep -v "^* bump" || echo "* Routine updates."
             else
               echo "* Initial or untracked changes."
@@ -345,7 +348,13 @@ jobs:
           TAG: ${{ steps.tag.outputs.tag }}
           KIND: ${{ inputs.release_kind || 'big' }}
         run: |
-          prev=$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || true)
-          [ -n "$prev" ] && git log "${prev}..${GITHUB_SHA}" --no-merges --pretty=format:"%s" > changes.txt || : > changes.txt
+          prev=$(git describe --tags --abbrev=0 --match 'v*' "${GITHUB_SHA}^" 2>/dev/null || true)
+          if [ -f "release-notes/${TAG}.md" ]; then
+            grep '^- ' "release-notes/${TAG}.md" > changes.txt || : > changes.txt
+          elif [ -n "$prev" ]; then
+            git log "${prev}..${GITHUB_SHA}" --no-merges --pretty=format:"%s" > changes.txt
+          else
+            : > changes.txt
+          fi
           python3 scripts/discord-release.py --kind "$KIND" --tag "$TAG" \
             --dist dist --changes changes.txt --notes dist/release-notes.md
