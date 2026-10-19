@@ -1,8 +1,9 @@
 #!/bin/sh
 # Boykisser Linux — finish the installed-system GRUB theme :3
-# theme.txt ships in includes.chroot; here we render a background image sized for
-# the menu and bake the *.pf2 fonts GRUB needs. grub-mkconfig auto-loadfonts any
-# *.pf2 it finds in the theme directory, so the installed system's update-grub
+# theme.txt and a pre-rendered 1920x1080 background.png ship in includes.chroot
+# (the chroot has no ImageMagick); here we only bake the *.pf2 fonts GRUB needs.
+# grub-mkconfig auto-loadfonts any *.pf2 it finds in the theme directory, so the
+# installed system's update-grub
 # (run by the Calamares bootloader helper) picks these up with no extra wiring.
 set -e
 
@@ -10,32 +11,6 @@ echo "Baking the installed-system GRUB theme :3"
 
 THEME_DIR=/boot/grub/themes/boykisser
 [ -d "$THEME_DIR" ] || exit 0
-
-# --- background ---------------------------------------------------------------
-# Reuse one of the Boykisser wallpapers. GRUB wants PNG; convert if we have a
-# tool, otherwise just copy a PNG wallpaper straight in.
-SRC=""
-for c in \
-	/usr/share/backgrounds/boykisser/boykisser1.png \
-	/usr/share/backgrounds/boykisser/boykisser2.png \
-	/usr/share/backgrounds/boykisser/boykisser4.png \
-	/usr/share/boykisser/logo-dark.png \
-	/usr/share/boykisser/logo.png
-do
-	[ -f "$c" ] && { SRC="$c"; break; }
-done
-
-if [ -n "$SRC" ]; then
-	if command -v convert >/dev/null 2>&1; then
-		# Fit onto a 1920x1080 dark canvas, centred — looks tidy at any res.
-		convert -size 1920x1080 xc:'#1a0e2e' \
-			\( "$SRC" -resize 1920x1080\> \) -gravity center -composite \
-			"$THEME_DIR/background.png" 2>/dev/null \
-			|| cp "$SRC" "$THEME_DIR/background.png"
-	else
-		cp "$SRC" "$THEME_DIR/background.png"
-	fi
-fi
 
 # --- fonts --------------------------------------------------------------------
 # Force the font family name to "Boykisser" so theme.txt can reference

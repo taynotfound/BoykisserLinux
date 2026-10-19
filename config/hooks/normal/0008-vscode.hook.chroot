@@ -4,8 +4,8 @@
 # and the HTTPS repo verifies correctly.
 set -e
 
-if [ -e /etc/boykisser/netinstall ]; then
-	echo "netinstall: skipping VS Code (installed on first boot) :3"
+if [ -e /etc/boykisser/netinstall ] || [ -e /etc/boykisser/lite ]; then
+	echo "slim variant: skipping VS Code (installed on first boot) :3"
 	exit 0
 fi
 

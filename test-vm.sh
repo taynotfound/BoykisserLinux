@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Boykisser Linux  -  boot the ISO in QEMU for testing :3
 # UEFI by default (modern). Use  ./test-vm.sh --bios  for legacy BIOS testing.
+#   --disk         attach vm-disk.qcow2 (created on first use, 40G) to test the installer
+#   --installed    boot the installed system from vm-disk.qcow2, no ISO
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -8,15 +10,19 @@ ISO="$HERE/boykisser-linux-amd64.iso"
 MODE=uefi
 RAM=4096
 CPUS=4
+DISK=""
+INSTALLED=0
 
 usage() {
-	echo "usage: $0 [iso] [--bios] [--ram MB] [--cpus N]"
+	echo "usage: $0 [iso] [--bios] [--disk] [--installed] [--ram MB] [--cpus N]"
 	exit 0
 }
 
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--bios) MODE=bios ;;
+		--disk) DISK="$HERE/vm-disk.qcow2" ;;
+		--installed) DISK="$HERE/vm-disk.qcow2"; INSTALLED=1 ;;
 		--ram)  RAM="$2"; shift ;;
 		--cpus) CPUS="$2"; shift ;;
 		-h|--help) usage ;;
@@ -32,7 +38,7 @@ if [ "$RAM" -gt "$AVAIL_MB" ]; then
 	echo ":3 (not enough free RAM  -  using ${RAM} MB instead)"
 fi
 
-if [ ! -f "$ISO" ]; then
+if [ "$INSTALLED" = 0 ] && [ ! -f "$ISO" ]; then
 	echo "!! ISO not found: $ISO  (run ./build.sh first)" >&2
 	exit 1
 fi
@@ -47,6 +53,7 @@ fi
 # Locate OVMF (UEFI firmware)
 OVMF=""
 for c in \
+	/usr/share/edk2/x64/OVMF_CODE.4m.fd \
 	/usr/share/edk2/ovmf/OVMF_CODE.fd \
 	/usr/share/OVMF/OVMF_CODE.fd \
 	/usr/share/edk2-ovmf/x64/OVMF_CODE.fd ; do
@@ -62,16 +69,22 @@ COMMON=(
 	-display gtk,gl=on
 	-device intel-hda -device hda-duplex
 	-netdev user,id=net0 -device virtio-net,netdev=net0
-	-boot d
-	-cdrom "$ISO"
 	-name "Boykisser Linux :3"
 )
+if [ -n "$DISK" ]; then
+	[ -f "$DISK" ] || qemu-img create -f qcow2 "$DISK" 40G >/dev/null
+	COMMON+=(-drive file="$DISK",if=virtio,format=qcow2)
+fi
+[ "$INSTALLED" = 0 ] && COMMON+=(-boot d -cdrom "$ISO")
 
 if [ "$MODE" = "uefi" ] && [ -n "$OVMF" ]; then
 	echo ":3 booting Boykisser Linux in UEFI mode..."
-	# writable copy of the UEFI vars
-	VARS="$(mktemp /tmp/boykisser-ovmf-vars.XXXXXX.fd)"
-	for v in \
+	# Writable copy of the UEFI vars. With a disk it is kept next to it, so the
+	# boot entry the installer writes survives into --installed runs.
+	if [ -n "$DISK" ]; then VARS="${DISK%.qcow2}.ovmf-vars.fd"
+	else VARS="$(mktemp /tmp/boykisser-ovmf-vars.XXXXXX.fd)"; fi
+	[ -s "$VARS" ] || for v in \
+		/usr/share/edk2/x64/OVMF_VARS.4m.fd \
 		/usr/share/edk2/ovmf/OVMF_VARS.fd \
 		/usr/share/OVMF/OVMF_VARS.fd \
 		/usr/share/edk2-ovmf/x64/OVMF_VARS.fd ; do

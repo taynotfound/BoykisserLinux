@@ -12,7 +12,11 @@ KERNEL="$(ls binary/live/vmlinuz-* 2>/dev/null | head -n1 | sed 's|binary||')"
 INITRD="$(ls binary/live/initrd.img-* 2>/dev/null | head -n1 | sed 's|binary||')"
 [ -n "$KERNEL" ] || { echo "  (no kernel found — skipping)"; exit 0; }
 
-APPEND="boot=live components quiet splash username=boykisser user-fullname=Boykisser hostname=boykisser noeject"
+# Must match the default entry from auto/config. No username= here: the live
+# user is "user" (created by hooks/live/0020); naming another one breaks autologin.
+APPEND="boot=live components quiet splash hostname=boykisser noeject"
+# The lite image targets ancient GPUs, so it keeps nomodeset everywhere.
+[ -e config/includes.chroot/etc/boykisser/lite ] && APPEND="$APPEND nomodeset"
 
 # lang | label | locale | kbd
 LANGS="

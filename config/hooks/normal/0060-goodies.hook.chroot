@@ -1,7 +1,6 @@
 #!/bin/sh
 # Boykisser Linux goodies :3
-# Drops the /etc/boykisser metadata, makes the helper scripts executable, and
-# wires up friendly shell aliases + a tip line.
+# Drops the /etc/boykisser metadata and wires up friendly shell aliases.
 set -e
 
 echo "Sprinkling Boykisser goodies :3"
@@ -9,26 +8,37 @@ echo "Sprinkling Boykisser goodies :3"
 # --- /etc/boykisser metadata --------------------------------------------------
 mkdir -p /etc/boykisser
 
-# The netinstall marker (if any) is dropped by build.sh into includes.chroot and
-# is already here. Record which flavour this image is.
-if [ -e /etc/boykisser/netinstall ]; then
+# build.sh / CI drop the variant marker (netinstall | lite) and the release tag
+# into includes.chroot, so they are already here. Record which flavour this is.
+if [ -e /etc/boykisser/lite ]; then
+	VARIANT="lite"
+elif [ -e /etc/boykisser/netinstall ]; then
 	VARIANT="netinstall"
 else
 	VARIANT="full"
 fi
 echo "$VARIANT" > /etc/boykisser/variant
 
+RELEASE="$(cat /etc/boykisser/release 2>/dev/null || echo dev)"
 DEBVER="$(cat /etc/debian_version 2>/dev/null || echo 13)"
 cat > /etc/boykisser/version <<EOF
-Boykisser Linux :3  (Debian $DEBVER · trixie · amd64 · $VARIANT)
+Boykisser Linux $RELEASE :3  (Debian $DEBVER · trixie · amd64 · $VARIANT)
 built $(date -u +%Y-%m-%d)
 https://boykisser.taymaerz.de
 EOF
 
-# --- make every boykisser helper executable -----------------------------------
-for f in /usr/local/bin/boykisser /usr/local/bin/boykisser-*; do
-	[ -e "$f" ] && chmod 0755 "$f" || true
+# Let tools like fastfetch and hostnamectl show the release too.
+sed -i '/^IMAGE_VERSION=/d;/^VARIANT_ID=/d' /etc/os-release
+printf 'IMAGE_VERSION="%s"\nVARIANT_ID=%s\n' "$RELEASE" "$VARIANT" >> /etc/os-release
+
+# os-release belongs to base-files, so every Debian point release would put the
+# Debian branding back. Divert both copies so base-files writes *.debian instead.
+cp /etc/os-release /etc/os-release.boykisser
+for f in /usr/lib/os-release /etc/os-release; do
+	dpkg-divert --quiet --local --divert "$f.debian" --add "$f"
 done
+mv -f /etc/os-release.boykisser /usr/lib/os-release
+ln -sf ../usr/lib/os-release /etc/os-release
 
 # --- friendly shell aliases + a tip -------------------------------------------
 if [ -f /etc/bash.bashrc ] && ! grep -q 'BOYKISSER_ALIASES' /etc/bash.bashrc; then

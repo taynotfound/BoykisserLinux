@@ -22,6 +22,14 @@ firmware-iwlwifi
 firmware-realtek
 firmware-atheros
 firmware-brcm80211
+# The slim builds drop Recommends, so spell out the split firmware packages:
+# GPU firmware (incl. NVIDIA GSP for nouveau), Intel/SOF laptop audio, MediaTek Wi-Fi.
+firmware-amd-graphics
+firmware-intel-graphics
+firmware-nvidia-graphics
+firmware-intel-sound
+firmware-sof-signed
+firmware-mediatek
 intel-microcode
 amd64-microcode
 
@@ -83,6 +91,10 @@ e2fsprogs
 gparted
 baobab
 
+# Desktop portals: Flatpak apps need these for file pickers, screenshots, links
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+
 # Theming engines, icons & fonts
 plymouth
 plymouth-themes
@@ -110,10 +122,6 @@ timeshift
 # simple GUI file backups (Timeshift covers system snapshots)
 deja-dup
 
-# Boykisser Center (GTK3 control center app)
-python3-gi
-gir1.2-gtk-3.0
-
 # Handy utilities
 file-roller
 mousepad
@@ -139,6 +147,11 @@ xdg-user-dirs-gtk
 xdg-utils
 nano
 vim-tiny
+# used by the boykisser-* tools (GPU detection, network checks, Secure Boot)
+pciutils
+usbutils
+iputils-ping
+mokutil
 
 # Boykisser goodies — desktop widget + dialogs for the welcome/control center
 conky-all
