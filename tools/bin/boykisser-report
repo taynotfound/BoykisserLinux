@@ -10,7 +10,7 @@
 
 REPO_URL="https://github.com/taynotfound/BoykisserLinux/issues/new"
 
-PINK="\033[38;5;213m"; B="\033[1m"; R="\033[0m"
+PINK="\033[38;5;213m"; R="\033[0m"
 say() { printf "${PINK}%s${R}\n" "$1"; }
 
 SYSINFO=1

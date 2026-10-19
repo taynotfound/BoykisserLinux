@@ -15,7 +15,6 @@ LOGO="/usr/share/boykisser/start.png"
 [ -f "$LOGO" ] || LOGO="/usr/share/boykisser/face.png"
 
 DISCORD="https://discord.gg/3ZpwE9PPfP"
-SITE="https://boykisser.taymaerz.de"
 
 open_url() { xdg-open "$1" >/dev/null 2>&1 & }
 

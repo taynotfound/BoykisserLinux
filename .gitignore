@@ -48,3 +48,4 @@ config/includes.chroot/etc/boykisser/lite
 web/node_modules/
 web/dist/
 web/.astro/
+__pycache__/
