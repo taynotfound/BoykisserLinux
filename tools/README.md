@@ -1,78 +1,58 @@
 # boykisser-tools :3
 
-All the `boykisser-*` scripts and the graphical Boykisser Center, packaged as individual `.deb` files so they can update independently of the ISO.
+The `boykisser-*` helper scripts and the GTK Boykisser Center that ship with
+Boykisser Linux. They're plain POSIX shell (plus one Python/GTK app), packaged
+as Debian packages that install into `/usr/bin`.
 
-## What's in here
+User docs: [boykisser.taymaerz.de/docs/cli](https://boykisser.taymaerz.de/docs/cli/)
 
-| Script | Does |
-|---|---|
-| `boykisser` | Main CLI dispatcher |
-| `boykisser-center` | GTK3 graphical control panel |
-| `boykisser-update` | Updates apt + Flatpak + tools itself |
-| `boykisser-theme` | Light/dark theme switcher |
-| `boykisser-wallpaper` | Sets the Boykisser wallpaper on all monitors |
-| `boykisser-nvidia` | Installs the proprietary NVIDIA driver |
-| `boykisser-presets` | Installs Flatpak app preset groups |
-| `boykisser-doctor` | Read-only system health check |
-| `boykisser-report` | Pre-fills a GitHub issue with system info |
-| `boykisser-welcome` | Welcome checklist dialog |
-| `boykisser-cleanup` | Frees disk space (old packages, caches, logs) |
-| `boykisser-kernel` | Installs a newer kernel from trixie-backports |
-| `boykisser-autologin` | Toggles LightDM autologin on/off |
-| `boykisser-debloat` | Removes app groups you don't want |
-| `boykisser-browser` | Picks and installs a browser |
-| + more | `ls /usr/local/bin/boykisser*` |
+## Layout
 
-## Installing
+| Path | What |
+| --- | --- |
+| `bin/` | The scripts. `boykisser` dispatches to `boykisser-<command>`. |
+| `share/applications/` | Menu launchers |
+| `share/systemd/` | `boykisser-firstboot.service` |
+| `build-debs.sh` | Builds the packages with `dpkg-deb` |
+| `VERSION` | Version for releases |
 
-### Full install (recommended)
-
-```sh
-mkdir -p /tmp/bk && cd /tmp/bk
-curl -s https://api.github.com/repos/taynotfound/boykisser-tools/releases/latest \
-  | grep browser_download_url | grep '\.deb' | cut -d'"' -f4 \
-  | xargs -I{} curl -LO {}
-sudo dpkg -i *.deb && sudo apt-get install -f
-```
-
-### Individual packages
-
-Each tool ships as its own `.deb`. Install just what you need:
+## Packages
 
 | Package | Contents |
-|---|---|
-| `boykisser-core` | `boykisser` CLI |
-| `boykisser-center` | Graphical control center |
-| `boykisser-update` | Updater |
-| `boykisser-doctor` | Health check |
-| `boykisser-nvidia` | NVIDIA driver installer |
-| `boykisser-theme` | Theme switcher |
-| `boykisser-apps` | App installer tools |
-| `boykisser-system` | System admin tools |
-| `boykisser-tools` | Meta-package (all of the above) |
+| --- | --- |
+| `boykisser-core` | `boykisser` |
+| `boykisser-center` | `boykisser-center` (GTK 3) |
+| `boykisser-update` | `boykisser-update` (apt, Flatpak, firmware, self-update) |
+| `boykisser-doctor` | `boykisser-doctor` (read-only health check) |
+| `boykisser-nvidia` | `boykisser-nvidia` (driver + Secure Boot key enrolment) |
+| `boykisser-theme` | `boykisser-theme`, `boykisser-theme-toggle`, `boykisser-wallpaper` |
+| `boykisser-apps` | `boykisser-presets`, `-browser`, `-debloat`, `-postinstall-apps`, `-install-bundles` |
+| `boykisser-system` | `boykisser-cleanup`, `-kernel`, `-autologin`, `-report`, `-welcome`, `-firstboot`, `-live-cleanup`, `-install-kde`, `install-boykisser` |
+| `boykisser-tools` | Metapackage: all of the above |
+
+## Build and try
 
 ```sh
-# example: just the updater and health check
-sudo dpkg -i boykisser-update_*.deb boykisser-doctor_*.deb
-sudo apt-get install -f
+tools/build-debs.sh                    # -> tools/dist/*.deb
+sudo apt install ./tools/dist/*.deb
 ```
 
-## Updating
+The ISO build (`./build.sh` and CI) runs `build-debs.sh` into
+`config/packages.chroot`, so every image ships the tools from its own commit.
 
-`boykisser update` checks this repo's releases and installs a newer `.deb` automatically if one is available. No PPA needed.
+## Release
 
-## Releasing
+1. Bump `VERSION`.
+2. `git tag tools-v$(cat tools/VERSION) && git push origin --tags`
 
-Tag a commit and CI builds + publishes all the `.deb` files:
+CI lints the scripts, builds the packages and publishes a `tools-v*` release
+(not marked as latest, so the website keeps pointing at the newest ISO).
+Installed systems pick it up through `boykisser update`.
 
-```sh
-git tag v1.2.3 && git push origin v1.2.3
-```
+## Conventions
 
-## Part of Boykisser Linux
-
-| Repo | What |
-|---|---|
-| **[BoykisserLinux](https://github.com/taynotfound/BoykisserLinux)** | ISO build config - fetches this `.deb` at build time |
-| **[boykisser-tools](https://github.com/taynotfound/boykisser-tools)** <- you are here | Scripts & control center |
-| **[boykisser-web](https://github.com/taynotfound/boykisser-web)** | Website & docs |
+- POSIX `sh` unless there's a reason; `shellcheck -S warning` must pass.
+- Anything that changes the system re-runs itself with `sudo` when needed.
+- Never fail a Calamares step: installer helpers (`*-install-*`,
+  `*-live-cleanup`) log and exit 0 on errors.
+- Friendly output with a `:3` where it fits.

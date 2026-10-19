@@ -48,7 +48,7 @@ Description=Boykisser Linux weekly live-image rebuild :3
 
 [Service]
 Type=oneshot
-ExecStart=$HERE/tools/bk-autobuild.sh
+ExecStart=$HERE/scripts/bk-autobuild.sh
 WorkingDirectory=$HERE
 Nice=10
 IOSchedulingClass=idle

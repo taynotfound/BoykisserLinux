@@ -1,167 +1,106 @@
 <div align="center">
-  <img src="boykisser_start.png" alt="Boykisser Linux" width="200">
+  <img src="config/includes.chroot/usr/share/boykisser/start.png" alt="Boykisser Linux mascot" width="160">
 
-  # Boykisser Linux :3
+  <h1>Boykisser Linux :3</h1>
 
-  **A gay, gimmicky, actually daily-drivable Debian distro. XFCE, but make it pink.**
+  <p><strong>Debian, but make it pink.</strong><br>
+  A gay, gimmicky and genuinely daily-drivable Debian 13 distro with XFCE or KDE Plasma.</p>
 
-  [Website](https://boykisser.taymaerz.de) ·
-  [Download](https://github.com/taynotfound/BoykisserLinux/releases/latest) ·
-  [Discord](https://discord.gg/3ZpwE9PPfP)
+  <p>
+    <a href="https://github.com/taynotfound/BoykisserLinux/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/taynotfound/BoykisserLinux?style=flat-square&color=ff5fa2&label=release"></a>
+    <a href="https://github.com/taynotfound/BoykisserLinux/actions/workflows/build.yml"><img alt="ISO build" src="https://img.shields.io/github/actions/workflow/status/taynotfound/BoykisserLinux/build.yml?style=flat-square&label=build"></a>
+    <a href="https://discord.gg/3ZpwE9PPfP"><img alt="Discord" src="https://img.shields.io/badge/discord-join-ff5fa2?style=flat-square&logo=discord&logoColor=white"></a>
+  </p>
+
+  <p>
+    <a href="https://boykisser.taymaerz.de"><b>Website</b></a> ·
+    <a href="https://github.com/taynotfound/BoykisserLinux/releases/latest"><b>Download</b></a> ·
+    <a href="https://boykisser.taymaerz.de/docs/getting-started/"><b>Docs</b></a> ·
+    <a href="https://discord.gg/3ZpwE9PPfP"><b>Discord</b></a>
+  </p>
+
+  <img src="web/src/assets/screenshots/xfce.png" alt="The Boykisser Linux XFCE desktop" width="820">
 </div>
 
----
+## What you get
 
-## Repositories
+Plain Debian 13 (trixie) under the paint, with the setup work already done:
 
-| Repo | What |
-|---|---|
-| **[BoykisserLinux](https://github.com/taynotfound/BoykisserLinux)** ← you are here | ISO build config, live-build, CI, release workflow |
-| **[boykisser-tools](https://github.com/taynotfound/boykisser-tools)** | All `boykisser-*` scripts and the control center  -  update independently of the ISO |
-| **[boykisser-web](https://github.com/taynotfound/boykisser-web)** | Website & docs at [boykisser.taymaerz.de](https://boykisser.taymaerz.de) |
+- **Pink from the first frame.** Boot menu, Plymouth splash, Calamares installer, desktop, Tela Circle pink icons and six wallpapers. One click flips light and dark.
+- **XFCE or KDE Plasma.** XFCE is the default and installs offline; pick Plasma in the installer and it gets the same treatment.
+- **Gaming.** Steam with 32-bit libraries, Heroic, GameMode, MangoHud, and `boykisser nvidia` for the proprietary driver (Secure Boot included).
+- **Streaming.** OBS Studio with a working virtual camera.
+- **Flatpak ready.** Flathub, GNOME Software, Flatseal and Gear Lever.
+- **Boykisser Center.** A GTK control panel for updates, app presets, drivers, kernels, a health check and a bug reporter.
+- **Sensible defaults.** ufw firewall, automatic security updates, zram swap, weekly TRIM, firmware updates, night light, printing.
+- **No telemetry.** No accounts, nothing phones home.
+- **Old hardware too.** A Lite ISO for BIOS-only machines.
 
-## What is this?
+## Download
 
-Boykisser Linux is a custom [Debian 13 (trixie)](https://www.debian.org/) live
-ISO built with [live-build](https://wiki.debian.org/live-build) and installed
-with [Calamares](https://calamares.io/). It ships an XFCE desktop with a full
-Boykisser theme, gaming and streaming tools, and Flatpak ready to go.
+New ISOs are built every Monday with the current Debian kernel and security updates.
 
-## Features
+| Flavour | Size | For |
+| --- | --- | --- |
+| **Full** | ~2.6 GB | Most people. Everything included, installs offline. |
+| **Netinstall** | ~1.5 GB | Smaller download; big apps download on first boot. |
+| **Lite** | ~1.5 GB | Pre-2012, BIOS-only machines. |
 
-- 💅 Full Boykisser XFCE theme  -  pink accents, Tela-circle icons, light & dark, custom Plymouth splash and boot menu
-- 🖥️ Choose your desktop in the installer  -  XFCE by default, or pick **KDE Plasma** (fully pink Boykisser-themed, pulled from the net during install)
-- 🐲 Pink GRUB theme on the installed system, with the first entry (Boykisser) auto-selected
-- 📦 Flatpak + Flathub out of the box (GNOME Software, Flatseal, Gear Lever)
-- 🎮 Steam, Heroic, GameMode, MangoHud  -  with 32-bit libs enabled
-- 🎥 OBS Studio with a working virtual camera (v4l2loopback)
-- 🌐 Firefox, VS Code Insiders, VLC, Discord
-- 🖥️ UEFI + BIOS, broad firmware, Nouveau for universal boot
-- 🟩 One-click helper to install proprietary NVIDIA drivers after setup
-- 🔒 Automatic security updates (unattended-upgrades) on the installed system
-- ⚡ zram compressed swap + power-profiles-daemon for snappy laptops
-- 🛡️ ufw firewall enabled by default (deny incoming, allow outgoing)
-- 🖨️ Printing (CUPS) and firmware updates (fwupd) out of the box
-- 🐛 Built-in error reporting  -  `boykisser report` (or "Report a Problem" in the menu) opens a pre-filled GitHub issue with your system info
-- 🎛️ **Boykisser Center**  -  a full GTK control center GUI (`boykisser center`) with system status and one-click tiles for updates, apps, themes, drivers and more
-- 📦 Optional app bundles in the installer  -  Gaming, Streaming & Creation, Development, Office
-- 🧩 `boykisser presets`  -  one-click Flatpak preset groups (Art, Social, Office, Music)
-- 🌐 `boykisser browser`  -  pick Firefox, LibreWolf, Brave or Chromium
-- 🧹 `boykisser debloat`  -  remove app groups you don't want
-- 🔓 `boykisser autologin`  -  toggle passwordless login on installed systems
-- 💾 Deja Dup for file backups + Timeshift snapshots before every `boykisser update` (once configured)
-- 🌍 Language chooser in the live boot menu (German, French, Spanish, Italian, Portuguese, Polish, Dutch)
-- 👋 First-login welcome checklist that walks you through setup
-- 🌙 Night light (redshift) and weekly SSD TRIM out of the box
-- 🚀 `boykisser kernel` installs the newest kernel from trixie-backports
-
-## Build it yourself
-
-You need `podman` (or `docker`). The ISO is built inside a Debian container, so
-it works from any host.
-
-```sh
-./build.sh        # build the full ISO
-./build.sh --netinstall   # build the slim ISO (pulls apps from the net on first boot)
-./build.sh --fast # incremental: keep the chroot, regenerate the ISO only
-./build.sh --clean        # deep clean, also wipes the package cache
-./test-vm.sh      # boot it in QEMU
-```
-
-Rebuilds reuse the downloaded packages in `cache/` (much faster); pass
-`--clean` to start truly from scratch. `--fast` is for bootloader/ISO-level
-tweaks only  -  after changing package lists or chroot hooks, do a normal build.
-The full build log is written to `build.log`.
-
-The result lands at `boykisser-linux-amd64.iso` (or
-`boykisser-linux-netinstall-amd64.iso` for the slim build).
-
-### Full vs netinstall
-
-- **Full**  -  every app is in the squashfs; installs and runs fully offline.
-- **Netinstall**  -  a much smaller ISO (kept under **1.2 GB**) with only the base
-  desktop, browser and store. It drops APT *Recommends* and the DKMS/build bits
-  from the squashfs, then downloads the rest (OBS, VLC, codecs, Steam, VS Code,
-  gaming bits + Flatpaks) on first boot of the *installed* system via
-  `boykisser-postinstall-apps`, so it **needs an internet connection** to finish
-  setup. You can also re-run `sudo boykisser-postinstall-apps` any time.
-
-> Picking **KDE Plasma** in the installer also needs an internet connection, on
-> both the full and netinstall ISOs  -  KDE is downloaded during install to keep
-> the images small. XFCE installs completely offline.
-
-### Automatic weekly rebuilds
-
-The live image keeps itself fresh two ways:
-
-- **CI:** [the build workflow](.github/workflows/build.yml) runs every Monday
-  (03:00 UTC) and publishes a rolling `weekly-YYYYMMDD` prerelease with the
-  current trixie kernel and security updates baked in.
-- **Locally:** `tools/bk-autobuild.sh` rebuilds the ISO only when Debian ships
-  a new `linux-image-amd64`. Wire it up as a weekly systemd user timer:
-
-  ```sh
-  ./tools/bk-autobuild.sh --install-timer   # enable the weekly timer
-  ./tools/bk-autobuild.sh --check           # just ask if a rebuild is due
-  ./tools/bk-autobuild.sh --force           # rebuild right now
-  ./tools/bk-autobuild.sh --uninstall-timer # remove the timer
-  ```
-
-  State lives in `.autobuild-state`, logs in `autobuild.log` (both gitignored).
-
-## Releases
-
-Tagged pushes (`v*`) trigger [the build workflow](.github/workflows/build.yml),
-which builds the ISO and publishes it two ways:
-
-- **Internet Archive**  -  the whole ISO as a single direct download plus an
-  auto-generated torrent, so there's nothing to reassemble. (Needs the
-  `IA_ACCESS_KEY` / `IA_SECRET_KEY` repo secrets; the step is skipped without
-  them.)
-- **GitHub Releases**  -  a fallback copy split into 1.9 GiB parts to stay under
-  GitHub's 2 GiB asset limit:
+Grab them from the [latest release](https://github.com/taynotfound/BoykisserLinux/releases/latest). Each release links an Internet Archive mirror and torrent with single-file ISOs. On GitHub the full ISO is split into parts:
 
 ```sh
 cat boykisser-linux-amd64.iso.part* > boykisser-linux-amd64.iso
-sha256sum -c SHA256SUMS
-sudo dd if=boykisser-linux-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+sha256sum --ignore-missing -c SHA256SUMS
 ```
 
-The live session logs in automatically; if you ever get a login prompt, the
-live user is `boykisser` with password `live`.
+Flash it with [Etcher](https://etcher.balena.io/), [Rufus](https://rufus.ie/) (DD mode) or `dd`, boot it, and double-click **Install Boykisser Linux**. The live session logs in by itself (user `user`, password `live`). The [getting started guide](https://boykisser.taymaerz.de/docs/getting-started/) has the details.
 
-## Layout
+## This repository
+
+Everything lives here: the OS, its tools and the website.
 
 | Path | What |
 | --- | --- |
-| `auto/config` | live-build configuration |
-| `config/package-lists/` | what gets installed |
-| `config/hooks/normal/` | build-time setup (Flatpak, Steam, theme, ...) |
-| `config/includes.chroot/` | files overlaid onto the image |
-| `config/bootloaders/` | Boykisser boot splash + GRUB theme |
-| `docker/Dockerfile.builder` | the build container |
-| `tools/` | maintainer helpers (weekly auto-rebuild) |
+| [`auto/`](auto), [`config/`](config) | The live-build definition of the ISO: package lists, build hooks, files overlaid onto the system, boot menu theme |
+| [`tools/`](tools) | `boykisser-*` scripts and the Boykisser Center, packaged as `.deb`s (see [tools/README.md](tools/README.md)) |
+| [`web/`](web) | [boykisser.taymaerz.de](https://boykisser.taymaerz.de), Astro + Starlight (see [web/README.md](web/README.md)) |
+| [`docker/`](docker) | The Debian container the ISO is built in |
+| [`scripts/`](scripts) | Maintainer helpers: manual release tag, local weekly auto-rebuild |
+| `build.sh`, `test-vm.sh` | Build the ISO, boot it in QEMU |
 
-## Error reporting
+Every ISO build packages `tools/` from the same commit, so the image and its tools never drift apart. Installed systems pick up newer tools from `tools-v*` releases through `boykisser update`.
 
-`boykisser report` (also "Report a Problem" in the app menu) opens a
-[GitHub issue](https://github.com/taynotfound/BoykisserLinux/issues/new)
-pre-filled with basic, non-personal system info (version, kernel, desktop,
-GPU, failed services). Nothing is sent automatically  -  the user reviews and
-submits the issue themselves.
+## Build it yourself
 
-## Known limitations
+You need `podman` or `docker` and about 30 GB of disk. The build runs in a privileged Debian container, so any host distro works.
 
-- The proprietary NVIDIA driver isn't in the live session (DKMS can't build
-  against the live kernel)  -  install it after setup with `boykisser nvidia`.
-- Picking KDE in the installer needs internet; XFCE installs fully offline.
-- The netinstall ISO needs internet on first boot to fetch the heavy apps.
+```sh
+./build.sh                 # full ISO
+./build.sh --netinstall    # slim ISO
+./build.sh --lite          # BIOS-only ISO
+./build.sh --fast          # boot menu/ISO tweaks only: keep the built system
+./build.sh --clean         # from scratch, including the package cache
 
-## Disclaimer
+./test-vm.sh               # boot it (UEFI; --bios for legacy)
+./test-vm.sh --disk        # with a virtual disk, to try the installer
+./test-vm.sh --installed   # boot what you installed
+```
 
-AI tooling helped build this OS. Everything is reviewed and tested by a human,
-but please read the code before running it. Run `./README.sh` for the cute
-version. :3
+More in the [building docs](https://boykisser.taymaerz.de/docs/building/).
 
-Debian is a trademark of Software in the Public Interest, Inc. Boykisser Linux
-is an independent project and is not affiliated with or endorsed by Debian.
+## Releases
+
+- **ISOs:** CI tags `vM.YY.N` every Monday (or run [`scripts/bump_version.sh`](scripts/bump_version.sh)) and builds all three flavours. They're published to GitHub Releases, mirrored to the Internet Archive, and announced on Discord.
+- **Tools:** bump [`tools/VERSION`](tools/VERSION) and push a matching `tools-vX.Y.Z` tag.
+
+## Contributing and bugs
+
+Bug reports are easiest from the OS itself: `boykisser report` (or **Report a Problem** in the menu) opens a GitHub issue pre-filled with non-personal system info. Pull requests are welcome; for anything bigger, say hi on [Discord](https://discord.gg/3ZpwE9PPfP) first.
+
+## A note on AI
+
+AI tools helped build this OS. Every change is reviewed and tested by a human, but be your own kitty and read the code before you run it. :3
+
+---
+
+<sub>Boykisser is a community meme character; this is unofficial fan work. Not affiliated with Debian. Debian is a trademark of Software in the Public Interest, Inc.</sub>
