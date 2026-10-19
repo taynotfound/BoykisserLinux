@@ -37,7 +37,7 @@ autobuild.log
 build.log
 
 # test VM disk (test-vm.sh --disk)
-vm-disk.qcow2
+vm-disk.img
 # tools/build-debs.sh output; build.sh drops the debs into packages.chroot
 tools/dist/
 config/packages.chroot/

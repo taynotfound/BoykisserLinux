@@ -79,7 +79,8 @@ echo ":3 using container engine: $ENGINE"
 
 # --- build the builder image --------------------------------------------------
 echo ":3 building the builder image ($IMAGE)..."
-$ENGINE build -t "$IMAGE" -f docker/Dockerfile.builder docker/
+# Host networking: a fresh root podman setup often has no working container DNS.
+$ENGINE build --network=host -t "$IMAGE" -f docker/Dockerfile.builder docker/
 
 # --- run live-build inside the container --------------------------------------
 echo ":3 starting the live-build run (this takes a while, go get a snack)..."
@@ -100,6 +101,7 @@ TTY_FLAGS="-i"
 [ -t 0 ] && TTY_FLAGS="-it"
 $ENGINE run --rm $TTY_FLAGS \
 	--privileged \
+	--network=host \
 	--name "${NAME}-build" \
 	-e CLEAN_CMD="$CLEAN_CMD" \
 	-v "$HERE":/build:Z \

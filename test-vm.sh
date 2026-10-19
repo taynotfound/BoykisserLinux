@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Boykisser Linux  -  boot the ISO in QEMU for testing :3
 # UEFI by default (modern). Use  ./test-vm.sh --bios  for legacy BIOS testing.
-#   --disk         attach vm-disk.qcow2 (created on first use, 40G) to test the installer
-#   --installed    boot the installed system from vm-disk.qcow2, no ISO
+#   --disk         attach vm-disk.img (created on first use, 40G) to test the installer
+#   --installed    boot the installed system from vm-disk.img, no ISO
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -21,8 +21,8 @@ usage() {
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--bios) MODE=bios ;;
-		--disk) DISK="$HERE/vm-disk.qcow2" ;;
-		--installed) DISK="$HERE/vm-disk.qcow2"; INSTALLED=1 ;;
+		--disk) DISK="$HERE/vm-disk.img" ;;
+		--installed) DISK="$HERE/vm-disk.img"; INSTALLED=1 ;;
 		--ram)  RAM="$2"; shift ;;
 		--cpus) CPUS="$2"; shift ;;
 		-h|--help) usage ;;
@@ -60,20 +60,34 @@ for c in \
 	[ -f "$c" ] && { OVMF="$c"; break; }
 done
 
+# Some distros (Arch, Fedora) package QEMU's virtio-gpu and GTK UI separately;
+# fall back to plain VGA / SDL / VNC instead of failing.
+DEVICES="$(qemu-system-x86_64 -device help 2>/dev/null)"
+DISPLAYS="$(qemu-system-x86_64 -display help 2>/dev/null)"
+if printf '%s' "$DEVICES" | grep -q '"virtio-vga"'; then GFX=(-vga virtio); else GFX=(-device VGA,xres=1280,yres=800); fi
+if printf '%s' "$DISPLAYS" | grep -qx gtk; then GFX+=(-display gtk,gl=on)
+elif printf '%s' "$DISPLAYS" | grep -qx sdl; then GFX+=(-display sdl)
+else GFX+=(-display vnc=127.0.0.1:0); echo ":3 no GTK/SDL display in this QEMU  -  connect a VNC viewer to 127.0.0.1:5900"; fi
+
 COMMON=(
 	-m "$RAM"
 	-smp "$CPUS"
 	-machine q35
 	"${ACCEL[@]}"
-	-vga virtio
-	-display gtk,gl=on
+	"${GFX[@]}"
 	-device intel-hda -device hda-duplex
 	-netdev user,id=net0 -device virtio-net,netdev=net0
 	-name "Boykisser Linux :3"
 )
 if [ -n "$DISK" ]; then
-	[ -f "$DISK" ] || qemu-img create -f qcow2 "$DISK" 40G >/dev/null
-	COMMON+=(-drive file="$DISK",if=virtio,format=qcow2)
+	if [ ! -f "$DISK" ]; then
+		# qemu-img lives in a separate package on some distros; a sparse raw file works too
+		if command -v qemu-img >/dev/null 2>&1; then qemu-img create -f qcow2 "$DISK" 40G >/dev/null
+		else truncate -s 40G "$DISK"; fi
+	fi
+	FMT=raw
+	[ "$(od -An -c -N3 "$DISK" | tr -d ' ')" = "QFI" ] && FMT=qcow2
+	COMMON+=(-drive file="$DISK",if=virtio,format=$FMT)
 fi
 [ "$INSTALLED" = 0 ] && COMMON+=(-boot d -cdrom "$ISO")
 
@@ -81,7 +95,7 @@ if [ "$MODE" = "uefi" ] && [ -n "$OVMF" ]; then
 	echo ":3 booting Boykisser Linux in UEFI mode..."
 	# Writable copy of the UEFI vars. With a disk it is kept next to it, so the
 	# boot entry the installer writes survives into --installed runs.
-	if [ -n "$DISK" ]; then VARS="${DISK%.qcow2}.ovmf-vars.fd"
+	if [ -n "$DISK" ]; then VARS="${DISK%.img}.ovmf-vars.fd"
 	else VARS="$(mktemp /tmp/boykisser-ovmf-vars.XXXXXX.fd)"; fi
 	[ -s "$VARS" ] || for v in \
 		/usr/share/edk2/x64/OVMF_VARS.4m.fd \
