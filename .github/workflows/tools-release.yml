@@ -50,3 +50,8 @@ jobs:
             ```sh
             sudo apt install ./boykisser-*.deb
             ```
+
+      - name: Announce on Discord
+        env:
+          DISCORD_RELEASE_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+        run: python3 scripts/discord-release.py --kind tools --tag "$GITHUB_REF_NAME"

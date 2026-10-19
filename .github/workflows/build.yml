@@ -15,6 +15,10 @@ on:
         description: "Tag passed from calling workflow"
         required: false
         type: string
+      release_kind:
+        description: "Discord announcement size: big (default) or minor (weekly)"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -337,20 +341,11 @@ jobs:
       - name: Announce on Discord
         if: success()
         env:
-          WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+          DISCORD_RELEASE_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
           TAG: ${{ steps.tag.outputs.tag }}
-          PRERELEASE: ${{ steps.tag.outputs.prerelease }}
-          URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.tag.outputs.tag }}
+          KIND: ${{ inputs.release_kind || 'big' }}
         run: |
-          if [ -z "$WEBHOOK" ]; then echo "No DISCORD_RELEASE_WEBHOOK secret, skipping."; exit 0; fi
-          kind="release"; [ "$PRERELEASE" = "true" ] && kind="pre-release"
-          jq -n --arg tag "$TAG" --arg url "$URL" --arg kind "$kind" '{
-            username: "Boykisser Linux",
-            avatar_url: "https://raw.githubusercontent.com/taynotfound/BoykisserLinux/main/config/includes.chroot/usr/share/boykisser/start.png",
-            embeds: [{
-              title: "Boykisser Linux \($tag) is out :3",
-              url: $url,
-              color: 16736162,
-              description: "A new \($kind) just landed: Full, Netinstall and Lite ISOs plus checksums.\n\n[Download](\($url)) · [Website](https://boykisser.taymaerz.de) · [Docs](https://boykisser.taymaerz.de/docs/)"
-            }]
-          }' | curl -fsS -X POST -H "Content-Type: application/json" -d @- "$WEBHOOK"
+          prev=$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || true)
+          [ -n "$prev" ] && git log "${prev}..${GITHUB_SHA}" --no-merges --pretty=format:"%s" > changes.txt || : > changes.txt
+          python3 scripts/discord-release.py --kind "$KIND" --tag "$TAG" \
+            --dist dist --changes changes.txt --notes dist/release-notes.md

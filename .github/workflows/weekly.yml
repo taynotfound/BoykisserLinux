@@ -47,4 +47,5 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       release_tag: ${{ needs.bump-and-build.outputs.new_tag }}
+      release_kind: minor
     secrets: inherit
