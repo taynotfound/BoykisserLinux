@@ -1,10 +1,45 @@
 #!/bin/sh
 set -e
 
-# Create the live user account that live-config expects but can't create
+# Create the live session account ("live", password "live"). live-config
+# expects it (username=live on the kernel command line) but can't create it
 # without user-setup package installed.
 for g in sudo audio video plugdev netdev cdrom floppy dialout autologin; do
 	groupadd -f "$g"
 done
-useradd -m -s /bin/bash -G sudo,audio,video,plugdev,netdev,cdrom,floppy,dialout,autologin user
-echo "user:live" | chpasswd
+useradd -m -s /bin/bash -G sudo,audio,video,plugdev,netdev,cdrom,floppy,dialout,autologin live
+echo "live:live" | chpasswd
+
+# The live session must never lock or blank: people leave it alone while the
+# installer runs and then face a password prompt they never set. Only the live
+# user's home gets this, and that home doesn't survive the install.
+H=/home/live/.config
+mkdir -p "$H/autostart" "$H/xfce4/xfconf/xfce-perchannel-xml"
+printf '[Desktop Entry]\nHidden=true\n' > "$H/autostart/light-locker.desktop"
+cat > "$H/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml" <<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-power-manager" version="1.0">
+  <property name="xfce4-power-manager" type="empty">
+    <property name="dpms-enabled" type="bool" value="false"/>
+    <property name="blank-on-ac" type="int" value="0"/>
+    <property name="blank-on-battery" type="int" value="0"/>
+    <property name="lock-screen-suspend-hibernate" type="bool" value="false"/>
+    <property name="inactivity-on-ac" type="uint" value="0"/>
+    <property name="inactivity-on-battery" type="uint" value="0"/>
+  </property>
+</channel>
+XML
+chown -R live:live /home/live/.config
+
+# Our own trusted installer launcher instead of Debian's (see live-install-icon).
+printf '[Desktop Entry]\nHidden=true\n' > "$H/autostart/calamares-desktop-icon.desktop"
+cat > "$H/autostart/boykisser-install-icon.desktop" <<'DESK'
+[Desktop Entry]
+Type=Application
+Name=Install Boykisser Linux icon
+Exec=/usr/lib/boykisser/live-install-icon
+NoDisplay=true
+X-GNOME-Autostart-Phase=Initialization
+X-KDE-autostart-phase=1
+DESK
+chown -R live:live /home/live/.config

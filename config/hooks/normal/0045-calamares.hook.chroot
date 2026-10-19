@@ -276,22 +276,22 @@ cat > /etc/calamares/modules/contextualprocess.conf <<'EOF'
 # Reacts to the desktop chosen in the packagechooser step (GlobalStorage key
 # "packagechooser_packagechooser", value "xfce" or "kde"). Both branches end
 # with boykisser-live-cleanup, which purges the live-* packages from the
-# mounted target (@@ROOT@@) with dpkg and never fails the install.
+# mounted target (${ROOT}) with dpkg and never fails the install.
 #
 # dontChroot: true is CRITICAL — by default contextualprocess runs commands
-# INSIDE the target chroot, where @@ROOT@@ (/tmp/calamares-root-…) doesn't
+# INSIDE the target chroot, where ${ROOT} (/tmp/calamares-root-…) doesn't
 # exist and DNS is dead, so the scripts silently no-op. We need them on the
 # live host, handling the mounted target themselves.
 dontChroot: true
 
 packagechooser_packagechooser:
     kde:
-        - command: "/usr/bin/boykisser-install-kde @@ROOT@@"
+        - command: "/usr/bin/boykisser-install-kde ${ROOT}"
           timeout: 5400
-        - command: "/usr/bin/boykisser-live-cleanup @@ROOT@@"
+        - command: "/usr/bin/boykisser-live-cleanup ${ROOT}"
           timeout: 600
     xfce:
-        - command: "/usr/bin/boykisser-live-cleanup @@ROOT@@"
+        - command: "/usr/bin/boykisser-live-cleanup ${ROOT}"
           timeout: 600
 EOF
 

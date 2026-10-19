@@ -7,16 +7,20 @@ set -e
 
 echo "Adding language boot entries :3"
 
-# kernel/initrd names as generated in binary/live/
-KERNEL="$(ls binary/live/vmlinuz-* 2>/dev/null | head -n1 | sed 's|binary||')"
-INITRD="$(ls binary/live/initrd.img-* 2>/dev/null | head -n1 | sed 's|binary||')"
-[ -n "$KERNEL" ] || { echo "  (no kernel found — skipping)"; exit 0; }
+# live-build runs binary hooks from inside binary/; accept the build root too.
+if [ -d binary/live ]; then B=binary; ROOT=.; else B=.; ROOT=..; fi
 
-# Must match the default entry from auto/config. No username= here: the live
-# user is "user" (created by hooks/live/0020); naming another one breaks autologin.
-APPEND="boot=live components quiet splash hostname=boykisser noeject"
+# kernel/initrd paths as seen from the ISO root
+KERNEL="$(cd "$B" && ls live/vmlinuz-* 2>/dev/null | head -n1)"
+INITRD="$(cd "$B" && ls live/initrd.img-* 2>/dev/null | head -n1)"
+KERNEL="/$KERNEL"; INITRD="/$INITRD"
+[ "$KERNEL" != "/" ] || { echo "  (no kernel found — skipping)"; exit 0; }
+
+# Must match the default entry from auto/config. username= has to name the
+# account hooks/live/0020 creates, or autologin breaks.
+APPEND="boot=live components quiet splash username=live hostname=boykisser noeject"
 # The lite image targets ancient GPUs, so it keeps nomodeset everywhere.
-[ -e config/includes.chroot/etc/boykisser/lite ] && APPEND="$APPEND nomodeset"
+[ -e "$ROOT/config/includes.chroot/etc/boykisser/lite" ] && APPEND="$APPEND nomodeset"
 
 # lang | label | locale | kbd
 LANGS="
@@ -30,7 +34,7 @@ nl|Nederlands|nl_NL.UTF-8|nl
 "
 
 # --- GRUB (UEFI) ---------------------------------------------------------------
-GRUB=binary/boot/grub/grub.cfg
+GRUB="$B/boot/grub/grub.cfg"
 if [ -f "$GRUB" ]; then
 	{
 		echo ""
@@ -49,7 +53,7 @@ if [ -f "$GRUB" ]; then
 fi
 
 # --- isolinux (BIOS) -------------------------------------------------------------
-ISO=binary/isolinux/live.cfg
+ISO="$B/isolinux/live.cfg"
 if [ -f "$ISO" ]; then
 	{
 		printf '%s\n' "$LANGS" | while IFS='|' read -r code label locale kbd; do

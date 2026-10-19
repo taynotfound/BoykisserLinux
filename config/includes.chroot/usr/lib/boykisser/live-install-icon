@@ -1,0 +1,22 @@
+#!/bin/sh
+# Boykisser Linux (live session only): put a trusted "Install Boykisser Linux"
+# launcher on the desktop. Replaces Debian's add-calamares-desktop-icon, which
+# copies into the localized desktop folder (~/Schreibtisch, ~/Bureau, ...) but
+# marks ~/Desktop/... as trusted, so XFCE warns about an "untrusted launcher"
+# in every non-English session.
+grep -qw 'boot=live' /proc/cmdline 2>/dev/null || exit 0
+
+DESKTOP="$(xdg-user-dir DESKTOP 2>/dev/null)"
+[ -n "$DESKTOP" ] || DESKTOP="$HOME/Desktop"
+mkdir -p "$DESKTOP"
+F="$DESKTOP/install-boykisser.desktop"
+cp /usr/share/applications/install-boykisser.desktop "$F"
+chmod +x "$F"
+
+# XFCE only runs launchers whose checksum matches the stored metadata.
+gio set --type=string "$F" metadata::trusted true 2>/dev/null || true
+gio set --type=string "$F" metadata::xfce-exe-checksum "$(sha256sum "$F" | cut -d' ' -f1)" 2>/dev/null || true
+touch "$F"
+
+# Warm the page cache so the installer starts quickly when clicked.
+ionice -c 3 cat /usr/bin/calamares >/dev/null 2>&1 || true
