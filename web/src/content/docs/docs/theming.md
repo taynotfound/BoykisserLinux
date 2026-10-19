@@ -18,7 +18,7 @@ Your choice is remembered (in `~/.config/boykisser/mode`).
 
 ## Wallpapers
 
-Six Boykisser wallpapers live in `/usr/share/backgrounds/boykisser/`.
+Six Boykisser wallpapers live in `/usr/share/backgrounds/boykisser/`: Nightfall (the dark default), Daydream (the light default), Synthwave, Drops, Paws and Kiss. They're drawn from code in `branding/wallpapers/make.py`, so anyone can tweak and re-render them.
 
 ```sh
 boykisser wallpaper --next    # cycle to the next one

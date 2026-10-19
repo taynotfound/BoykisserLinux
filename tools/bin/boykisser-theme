@@ -18,17 +18,17 @@ if [ "$MODE" = "--login" ]; then LOGIN=1; MODE=""; fi
 PINK="#ff5fa2"
 case "$MODE" in
 	light)
-		MODE=light; GTK="Adwaita";      ICONS="Tela-circle-pink-light"; WALL="boykisser2"; SCHEME="prefer-light"
+		MODE=light; GTK="Adwaita";      ICONS="Tela-circle-pink-light"; WALL="daydream"; SCHEME="prefer-light"
 		KDE_LNF="org.kde.breeze.desktop";     KDE_COLORS="BreezeLight" ;;
 	*)
-		MODE=dark;  GTK="Adwaita-dark"; ICONS="Tela-circle-pink-dark";  WALL="boykisser1"; SCHEME="prefer-dark"
+		MODE=dark;  GTK="Adwaita-dark"; ICONS="Tela-circle-pink-dark";  WALL="nightfall"; SCHEME="prefer-dark"
 		KDE_LNF="org.kde.breezedark.desktop"; KDE_COLORS="BreezeDark" ;;
 esac
 
 echo "$MODE" > "$CFG/mode"
 
-IMG="/usr/share/backgrounds/boykisser/${WALL}.png"
-[ -f "$IMG" ] || IMG="/usr/share/backgrounds/boykisser/${WALL}.jpg"
+IMG="/usr/share/backgrounds/boykisser/${WALL}.jpg"
+[ -f "$IMG" ] || IMG="$(ls /usr/share/backgrounds/boykisser/* 2>/dev/null | head -n1)"
 
 # Hint GTK4/libadwaita and portal-aware apps about light/dark (both desktops).
 gsettings set org.gnome.desktop.interface color-scheme "$SCHEME" 2>/dev/null || true

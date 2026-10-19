@@ -13,7 +13,7 @@
 DIR=/usr/share/backgrounds/boykisser
 CHAN=xfce4-desktop
 MODE="$(cat "${HOME}/.config/boykisser/mode" 2>/dev/null || echo dark)"
-[ "$MODE" = light ] && WALL="$DIR/boykisser2.png" || WALL="$DIR/boykisser1.png"
+[ "$MODE" = light ] && WALL="$DIR/daydream.jpg" || WALL="$DIR/nightfall.jpg"
 [ -f "$WALL" ] || WALL="$(ls "$DIR"/* 2>/dev/null | head -n1)"
 [ -n "$WALL" ] || exit 0
 

@@ -25,8 +25,8 @@ if [ -f /usr/share/boykisser/face.png ]; then
 elif [ -f /usr/share/boykisser/badge.png ]; then
 	cp /usr/share/boykisser/badge.png /etc/calamares/branding/boykisser/icon.png || true
 fi
-if [ -f /usr/share/backgrounds/boykisser/boykisser1.png ]; then
-	cp /usr/share/backgrounds/boykisser/boykisser1.png \
+if [ -f /usr/share/backgrounds/boykisser/nightfall.jpg ]; then
+	cp /usr/share/backgrounds/boykisser/nightfall.jpg \
 		/etc/calamares/branding/boykisser/background.png || true
 fi
 
@@ -45,9 +45,9 @@ cp -L "$TELA/libreoffice-startcenter.svg" /etc/calamares/branding/boykisser/bund
 # Calamares slideshow slides — copy wallpapers next to show.qml so QML relative paths work
 BRAND=/etc/calamares/branding/boykisser
 i=1
-for img in /usr/share/backgrounds/boykisser/boykisser1.png \
-            /usr/share/backgrounds/boykisser/boykisser2.png \
-            /usr/share/backgrounds/boykisser/boykisser3.jpg; do
+for img in /usr/share/backgrounds/boykisser/nightfall.jpg \
+            /usr/share/backgrounds/boykisser/daydream.jpg \
+            /usr/share/backgrounds/boykisser/synthwave.jpg; do
 	[ -f "$img" ] && cp "$img" "$BRAND/slide${i}.png" || true
 	i=$((i+1))
 done

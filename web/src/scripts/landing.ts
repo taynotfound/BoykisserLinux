@@ -1,4 +1,5 @@
-// Landing page behaviour: live release info, screenshot tabs, and the kisses.
+// Landing page behaviour: live release info, screenshot tabs, the typing
+// terminal, fade-ins and the kisses.
 
 const REPO = 'taynotfound/BoykisserLinux';
 
@@ -78,7 +79,7 @@ function initTabs() {
 
 /** Click anywhere for a little kiss; type "boykisser" (or tap the cat 7 times) for party mode. */
 function initKisses() {
-	if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+	if (reducedMotion()) return;
 	// text faces or Font Awesome icons (paw, heart)
 	const KISSES = [':3', ':3c', 'fa-paw', 'fa-heart', 'fa-heart'];
 
@@ -139,8 +140,51 @@ function initKisses() {
 	});
 }
 
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** The terminal types `boykisser`, then shows the output, once it scrolls into view. */
+function initTerminal() {
+	const term = document.querySelector<HTMLElement>('[data-terminal]');
+	const typed = term?.querySelector<HTMLElement>('[data-typed]');
+	if (!term || !typed || reducedMotion()) return;
+	const text = typed.textContent ?? '';
+	term.classList.add('typing');
+	typed.textContent = '';
+	const io = new IntersectionObserver((entries) => {
+		if (!entries.some((e) => e.isIntersecting)) return;
+		io.disconnect();
+		let i = 0;
+		const tick = () => {
+			typed.textContent = text.slice(0, ++i);
+			if (i < text.length) setTimeout(tick, 70 + Math.random() * 60);
+			else setTimeout(() => term.classList.remove('typing'), 350);
+		};
+		setTimeout(tick, 400);
+	}, { threshold: 0.4 });
+	io.observe(term);
+}
+
+/** Fade sections in as they scroll into view (opacity only). */
+function initReveal() {
+	const items = document.querySelectorAll<HTMLElement>('.reveal');
+	if (reducedMotion() || !('IntersectionObserver' in window)) {
+		items.forEach((el) => el.classList.add('shown'));
+		return;
+	}
+	const io = new IntersectionObserver((entries) => {
+		for (const e of entries) {
+			if (!e.isIntersecting) continue;
+			e.target.classList.add('shown');
+			io.unobserve(e.target);
+		}
+	}, { threshold: 0.15 });
+	items.forEach((el) => io.observe(el));
+}
+
 export function initLanding() {
 	initTabs();
+	initTerminal();
+	initReveal();
 	initKisses();
 	loadRelease();
 }

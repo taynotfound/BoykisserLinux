@@ -5,84 +5,37 @@ import '@fontsource-variable/nunito';
 import '@fontsource-variable/jetbrains-mono';
 import '../styles/landing.css';
 
-import mascot from '../assets/mascot.png';
 import Logo from '../assets/brand/logo.svg';
 import shotXfce from '../assets/screenshots/xfce.png';
-import shotCenter from '../assets/screenshots/boykisser-center.png';
 import shotKde from '../assets/screenshots/kde.png';
+import shotCenter from '../assets/screenshots/boykisser-center.png';
 import shotInstaller from '../assets/screenshots/installer.png';
 import shotGrub from '../assets/screenshots/grub.png';
 
 const GITHUB = 'https://github.com/taynotfound/BoykisserLinux';
 const RELEASES = `${GITHUB}/releases/latest`;
 const DISCORD = 'https://discord.gg/3ZpwE9PPfP';
+const RAW = 'https://raw.githubusercontent.com/taynotfound/BoykisserLinux/main/config/includes.chroot/usr/share/backgrounds/boykisser';
 
 const title = 'Boykisser Linux :3';
 const description =
 	'A pink Debian 13 spin with XFCE or KDE Plasma. Flatpak, Steam and OBS are set up out of the box, and there is no telemetry.';
 
 const features = [
-	{
-		icon: 'fa-palette',
-		title: 'Pink everywhere',
-		text: "The boot menu, splash screen, installer, login screen, desktop and icons all match. There's a light and a dark version and you can switch with one click.",
-	},
-	{
-		icon: 'fa-desktop',
-		title: 'XFCE or KDE Plasma',
-		text: 'XFCE is the default and installs offline. If you pick Plasma in the installer it gets downloaded and themed the same way.',
-	},
-	{
-		icon: 'fa-gamepad-modern',
-		title: 'Gaming',
-		text: 'Steam (with the 32-bit libraries it needs), Heroic, GameMode and MangoHud come with the full ISO.',
-	},
-	{
-		icon: 'fa-video',
-		title: 'Streaming',
-		text: 'OBS Studio is installed with the virtual camera set up, so Discord and your browser can use it right away.',
-	},
-	{
-		icon: 'fa-box-open',
-		title: 'Flatpak',
-		text: 'Flathub is set up from the start. GNOME Software is the app store, with Flatseal and Gear Lever next to it.',
-	},
-	{
-		icon: 'fa-sliders',
-		title: 'Boykisser Center',
-		text: 'One window for updates, app packs, NVIDIA drivers, newer kernels, a system check and bug reports.',
-	},
-	{
-		icon: 'fa-shield-check',
-		title: 'Private and up to date',
-		text: 'No telemetry and no accounts. The firewall is on, security updates install by themselves, and Timeshift can snapshot before every update.',
-	},
-	{
-		icon: 'fa-laptop',
-		title: 'Old hardware',
-		text: "There's a Lite ISO for older BIOS-only machines that won't boot the normal one.",
-	},
+	{ icon: 'fa-palette', title: 'Pink everywhere', text: "The boot menu, splash screen, installer, login screen, desktop and icons all match. There's a light and a dark version and you can switch with one click." },
+	{ icon: 'fa-desktop', title: 'XFCE or KDE Plasma', text: 'XFCE is the default and installs offline. If you pick Plasma in the installer it gets downloaded and themed the same way.' },
+	{ icon: 'fa-gamepad-modern', title: 'Gaming', text: 'Steam (with the 32-bit libraries it needs), Heroic, GameMode and MangoHud come with the full ISO.' },
+	{ icon: 'fa-video', title: 'Streaming', text: 'OBS Studio is installed with the virtual camera set up, so Discord and your browser can use it right away.' },
+	{ icon: 'fa-box-open', title: 'Flatpak', text: 'Flathub is set up from the start. GNOME Software is the app store, with Flatseal and Gear Lever next to it.' },
+	{ icon: 'fa-sliders', title: 'Boykisser Center', text: 'One window for updates, app packs, NVIDIA drivers, newer kernels, a system check and bug reports.' },
+	{ icon: 'fa-shield-check', title: 'Private and up to date', text: 'No telemetry and no accounts. The firewall is on, security updates install by themselves, and Timeshift can snapshot before every update.' },
+	{ icon: 'fa-laptop', title: 'Old hardware', text: "There's a Lite ISO for older BIOS-only machines that won't boot the normal one." },
 ];
+
 const flavours = [
-	{
-		id: 'full',
-		name: 'Full',
-		badge: 'Recommended',
-		size: '~2.6 GB',
-		text: 'Steam, OBS, VS Code and codecs are already in the image. Installs without internet.',
-	},
-	{
-		id: 'netinstall',
-		name: 'Netinstall',
-		size: '~1.5 GB',
-		text: 'Same desktop, smaller download. The bigger apps download on the first boot, so you need internet for that.',
-	},
-	{
-		id: 'lite',
-		name: 'Lite',
-		size: '~1.8 GB',
-		text: 'For older machines with BIOS-only firmware. Leaves out the heavy apps and starts in safe graphics mode.',
-	},
+	{ id: 'full', name: 'Full', size: '~2.6 GB', text: 'Steam, OBS, VS Code and codecs are already in the image. Installs without internet.', recommended: true },
+	{ id: 'netinstall', name: 'Netinstall', size: '~1.5 GB', text: 'Same desktop, smaller download. The bigger apps download on the first boot, so you need internet for that.' },
+	{ id: 'lite', name: 'Lite', size: '~1.5 GB', text: 'For older machines with BIOS-only firmware. Leaves out the heavy apps and starts in safe graphics mode.' },
 ];
 
 const shots = [
@@ -93,22 +46,54 @@ const shots = [
 	{ id: 'grub', label: 'Boot menu', img: shotGrub, alt: 'The pink Boykisser boot menu on an installed system' },
 ];
 
-const wallpapers = ['boykisser1', 'boykisser2', 'boykisser3', 'boykisser4', 'boykisser5', 'boykisser6'];
-const wallExt: Record<string, string> = {
-	boykisser1: 'png', boykisser2: 'png', boykisser3: 'jpg', boykisser4: 'png', boykisser5: 'jpeg', boykisser6: 'jpeg',
-};
-const RAW = 'https://raw.githubusercontent.com/taynotfound/BoykisserLinux/main/config/includes.chroot/usr/share/backgrounds/boykisser';
+const wallpapers = [
+	['nightfall', 'Nightfall', 'the dark default'],
+	['daydream', 'Daydream', 'the light default'],
+	['synthwave', 'Synthwave', ''],
+	['drops', 'Drops', ''],
+	['paws', 'Paws', 'calm enough for desktop icons'],
+	['kiss', 'Kiss', ''],
+];
 
+// what the terminal "types" (the real output of `boykisser`, shortened)
 const cli = [
 	['center', 'open the Boykisser Center'],
 	['update', 'apt, Flatpak, firmware and these tools'],
 	['doctor', 'check the health of your system'],
 	['presets', 'Art, Social, Office and Music app packs'],
-	['browser', 'Firefox, LibreWolf, Brave or Chromium'],
+	['browser', 'LibreWolf, Brave or Chromium'],
 	['theme', 'switch look: light | dark'],
 	['nvidia', 'install the proprietary NVIDIA driver'],
 	['report', 'open a pre-filled bug report'],
 ];
+
+// --- the hero night sky (same scene as the Nightfall wallpaper) -------------------
+// small seeded PRNG so the sky is the same on every build
+let seed = 11;
+const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+const SW = 1600, SH = 720;
+const stars = Array.from({ length: 120 }, () => ({
+	x: rand() * SW, y: Math.pow(rand(), 1.15) * SH * 0.62, r: 0.6 + rand() * 1.6,
+	o: 0.3 + rand() * 0.6, d: (rand() * 6).toFixed(2), t: (2.5 + rand() * 4).toFixed(2),
+}));
+function smooth(points: [number, number][], bottom: number) {
+	let d = `M${points[0][0]},${points[0][1].toFixed(1)}`;
+	for (let i = 0; i < points.length - 1; i++) {
+		const p0 = points[Math.max(i - 1, 0)], p1 = points[i], p2 = points[i + 1], p3 = points[Math.min(i + 2, points.length - 1)];
+		d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)},${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)},${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0]},${p2[1].toFixed(1)}`;
+	}
+	return `${d} L${points[points.length - 1][0]},${bottom} L${points[0][0]},${bottom} Z`;
+}
+const hills = ([[560, 34, '#3a1d5c'], [600, 40, '#2c1648'], [645, 30, '#211037'], [690, 26, '#160e24']] as const).map(([base, amp, fill]) => {
+	const f1 = 0.0016 + rand() * 0.0012, p1 = rand() * 6.3, p2 = rand() * 6.3;
+	const pts: [number, number][] = [];
+	for (let x = -80; x <= SW + 160; x += 80) pts.push([x, base + amp * Math.sin(f1 * x + p1) + amp * 0.35 * Math.sin(f1 * 2.7 * x + p2)]);
+	return { d: smooth(pts, SH + 4), fill };
+});
+const floaters = Array.from({ length: 9 }, (_, i) => ({
+	kind: i % 3 === 0 ? 'paw' : 'heart', left: (6 + rand() * 88).toFixed(1), size: (14 + rand() * 12).toFixed(0),
+	dur: (16 + rand() * 14).toFixed(1), delay: (-rand() * 30).toFixed(1),
+}));
 ---
 
 <!doctype html>
@@ -150,66 +135,120 @@ const cli = [
 		<a class="skip" href="#main">Skip to content</a>
 
 		<header class="nav">
-			<a class="brand" href="/">
-				<Logo width={34} height={34} aria-hidden="true" />
-				<span>Boykisser Linux</span>
-			</a>
-			<nav aria-label="Main">
-				<a href="#features">Features</a>
-				<a href="#look">Screenshots</a>
-				<a href="/docs/getting-started/">Docs</a>
-				<a href={GITHUB}><i class="fa-brands fa-github" aria-hidden="true"></i> GitHub</a>
-				<a class="btn btn-sm btn-primary" href="#download"><i class="fa-solid fa-download" aria-hidden="true"></i> Download</a>
-			</nav>
+			<div class="wrap nav-inner">
+				<a class="brand" href="/">
+					<Logo width={28} height={28} aria-hidden="true" />
+					<span class="brand-name">Boykisser Linux</span>
+				</a>
+				<nav aria-label="Main">
+					<a href="#features" class="hide-sm">Features</a>
+					<a href="#screenshots" class="hide-sm">Screenshots</a>
+					<a href="#wallpapers" class="hide-sm">Wallpapers</a>
+					<a href="/docs/getting-started/">Docs</a>
+					<a href={GITHUB} aria-label="GitHub"><i class="fa-brands fa-github" aria-hidden="true"></i><span class="hide-sm"> GitHub</span></a>
+					<a class="btn btn-primary btn-sm" href="#download">Download</a>
+				</nav>
+			</div>
 		</header>
 
 		<main id="main">
 			<section class="hero">
-				<div class="hero-copy">
-					<p class="eyebrow">Debian 13 (trixie) · XFCE or KDE Plasma · amd64</p>
-					<h1>Boykisser<br /><span class="pink">Linux :3</span></h1>
-					<p class="lede">
-						A pink Debian spin I actually daily drive. It's normal Debian 13 underneath,
-						with Steam, OBS and Flatpak already set up when you first log in.
-					</p>
-					<div class="cta">
-						<a class="btn btn-primary" href="#download"><i class="fa-solid fa-download" aria-hidden="true"></i> Download</a>
-						<a class="btn" href="/docs/getting-started/"><i class="fa-solid fa-book" aria-hidden="true"></i> Docs</a>
-						<a class="btn" href={DISCORD}><i class="fa-brands fa-discord" aria-hidden="true"></i> Discord</a>
-					</div>
-					<p class="release" data-release hidden></p>
+				<svg class="sky" viewBox={`0 0 ${SW} ${SH}`} preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+					<defs>
+						<linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1">
+							<stop offset="0" stop-color="#0f0a1c" />
+							<stop offset=".5" stop-color="#241247" />
+							<stop offset=".78" stop-color="#5b2a72" />
+							<stop offset=".9" stop-color="#b44a86" />
+						</linearGradient>
+						<linearGradient id="hero-trail" x1="0" y1="0" x2="1" y2="0">
+							<stop offset="0" stop-color="#fff" stop-opacity="0" />
+							<stop offset="1" stop-color="#fff" stop-opacity=".9" />
+						</linearGradient>
+					</defs>
+					<rect width={SW} height={SH} fill="url(#hero-sky)" />
+					<g class="stars">
+						{stars.map((s) => <circle cx={s.x.toFixed(0)} cy={s.y.toFixed(0)} r={s.r.toFixed(1)} fill="#fff3f8" opacity={s.o.toFixed(2)} style={`--d:${s.d}s;--t:${s.t}s`} />)}
+					</g>
+					<g class="shooting">
+						<line x1="0" y1="0" x2="160" y2="56" stroke="url(#hero-trail)" stroke-width="2" stroke-linecap="round" />
+						<circle cx="160" cy="56" r="2.5" fill="#fff" />
+					</g>
+					{hills.map((h, i) => (
+						<Fragment>
+							<path d={h.d} fill={h.fill} />
+							{i < 3 && <path d={h.d} fill="none" stroke="#ff9ac8" stroke-width="1.5" stroke-opacity=".25" />}
+						</Fragment>
+					))}
+				</svg>
+				<svg class="moon" viewBox="-150 -150 300 300" aria-hidden="true">
+					<defs>
+						<radialGradient id="hero-moon-glow">
+							<stop offset="0" stop-color="#ffd1e6" stop-opacity=".5" />
+							<stop offset="1" stop-color="#ffd1e6" stop-opacity="0" />
+						</radialGradient>
+					</defs>
+					<circle r="150" fill="url(#hero-moon-glow)" />
+					<circle r="62" fill="#fff3f8" />
+					<g transform="translate(-40 -40) scale(1.25)">
+						<g transform="rotate(-10 32 32)">
+							<g fill="#e3c4d8">
+								<path class="moon-eye" d="M14 16.5 A5.5 5.5 0 0 1 14 27.5 Z" />
+								<path class="moon-eye" d="M14 36.5 A5.5 5.5 0 0 1 14 47.5 Z" />
+							</g>
+							<path d="M33 15 C45 11 49 29 35 32 C49 35 45 53 33 49" fill="none" stroke="#f2a9cc" stroke-width="7" stroke-linecap="round" />
+						</g>
+					</g>
+				</svg>
+				<div class="floaters" aria-hidden="true">
+					{floaters.map((f) => (
+						<i class={`fa-solid ${f.kind === 'paw' ? 'fa-paw' : 'fa-heart'}`} style={`left:${f.left}%;font-size:${f.size}px;--dur:${f.dur}s;--delay:${f.delay}s`}></i>
+					))}
 				</div>
-				<div class="hero-art">
-					<div class="window">
-						<div class="window-bar" aria-hidden="true"><span></span><span></span><span></span></div>
-						<Image src={shotXfce} alt="The Boykisser Linux XFCE desktop" widths={[640, 960, 1280]} sizes="(max-width: 900px) 92vw, 560px" loading="eager" />
+
+				<div class="wrap hero-inner">
+					<div class="hero-copy">
+						<h1>Boykisser Linux <span class="face" data-cat>:3</span></h1>
+						<p class="lede">
+							A pink Debian spin I actually daily drive. It's normal Debian 13 underneath,
+							with Steam, OBS and Flatpak already set up when you first log in.
+						</p>
+						<div class="cta">
+							<a class="btn btn-primary" href="#download"><i class="fa-solid fa-download" aria-hidden="true"></i> Download</a>
+							<a class="btn" href="/docs/getting-started/"><i class="fa-solid fa-book" aria-hidden="true"></i> Docs</a>
+							<a class="btn" href={DISCORD}><i class="fa-brands fa-discord" aria-hidden="true"></i> Discord</a>
+						</div>
+						<p class="release" data-release hidden></p>
 					</div>
-					<Image class="hero-cat" src={mascot} alt="" width={180} height={180} data-cat />
+					<figure class="hero-shot">
+						<Image src={shotXfce} alt="The Boykisser Linux XFCE desktop" widths={[640, 960, 1280]} sizes="(max-width: 900px) 92vw, 600px" loading="eager" />
+					</figure>
 				</div>
 			</section>
 
-			<ul class="pills" aria-label="At a glance">
-				<li><i class="fa-solid fa-eye-slash" aria-hidden="true"></i> No telemetry</li>
-				<li><i class="fa-solid fa-microchip" aria-hidden="true"></i> UEFI and legacy BIOS</li>
-				<li><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Firewall on</li>
-				<li><i class="fa-solid fa-rotate" aria-hidden="true"></i> Automatic security updates</li>
-			</ul>
+			<p class="facts wrap">
+				<span><i class="fa-solid fa-eye-slash" aria-hidden="true"></i> No telemetry</span>
+				<span><i class="fa-solid fa-microchip" aria-hidden="true"></i> UEFI and legacy BIOS</span>
+				<span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Firewall on</span>
+				<span><i class="fa-solid fa-rotate" aria-hidden="true"></i> Automatic security updates</span>
+			</p>
 
-			<section id="features" class="section">
+			<section id="features" class="section wrap">
 				<h2>What's included</h2>
-				<p class="section-lede">I set these up so I don't have to every time I reinstall. Now you don't either.</p>
 				<div class="features">
 					{features.map((f) => (
-						<article class="card">
-							<span class="card-icon" aria-hidden="true"><i class={`fa-solid ${f.icon}`}></i></span>
-							<h3>{f.title}</h3>
-							<p>{f.text}</p>
-						</article>
+						<div class="feature reveal">
+							<i class={`fa-solid ${f.icon}`} aria-hidden="true"></i>
+							<div>
+								<h3>{f.title}</h3>
+								<p>{f.text}</p>
+							</div>
+						</div>
 					))}
 				</div>
 			</section>
 
-			<section id="look" class="section">
+			<section id="screenshots" class="section wrap">
 				<h2>Screenshots</h2>
 				<div class="tabs" role="tablist" aria-label="Screenshots">
 					{shots.map((s, i) => (
@@ -220,12 +259,12 @@ const cli = [
 				</div>
 				{shots.map((s, i) => (
 					<div class="shot" role="tabpanel" id={`panel-${s.id}`} aria-labelledby={`tab-${s.id}`} hidden={i !== 0}>
-						<Image src={s.img} alt={s.alt} widths={[640, 960, 1280]} sizes="(max-width: 1100px) 92vw, 1000px" />
+						<Image src={s.img} alt={s.alt} widths={[640, 960, 1280]} sizes="(max-width: 1100px) 92vw, 1040px" />
 					</div>
 				))}
 			</section>
 
-			<section class="section split">
+			<section class="section wrap split">
 				<div>
 					<h2>The <code>boykisser</code> command</h2>
 					<p>
@@ -235,71 +274,62 @@ const cli = [
 					</p>
 					<a class="link" href="/docs/cli/">All commands <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
 				</div>
-				<div class="terminal" aria-label="Output of the boykisser command">
-					<div class="window-bar" aria-hidden="true"><span></span><span></span><span></span></div>
-					<pre><code><span class="prompt">user@boykisser:~$</span> boykisser
-<span class="pink"><b>Boykisser Linux :3</b></span>
+				<div class="terminal" data-terminal>
+					<div class="terminal-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+					<pre aria-label="Output of the boykisser command"><code><span class="prompt">user@boykisser:~$</span> <span class="typed" data-typed>boykisser</span><span class="cursor" aria-hidden="true"></span>
+<span class="out"><span class="pink"><b>Boykisser Linux :3</b></span>
 
 <b>usage:</b> boykisser &lt;command&gt;
 {cli.map(([cmd, desc]) => <Fragment>{'\n  '}<span class="pink">{cmd.padEnd(10)}</span> {desc}</Fragment>)}
-  <span class="dim">...</span></code></pre>
+  <span class="dim">...</span></span></code></pre>
 				</div>
 			</section>
 
-			<section class="section">
+			<section id="wallpapers" class="section wrap">
 				<h2>Wallpapers</h2>
-				<p class="section-lede">All six come with the ISO. <code>boykisser wallpaper --next</code> switches to the next one.</p>
+				<p class="section-text">
+					Six wallpapers come with every image. They're drawn from code in the repo, so you can change
+					the colours and render your own. <code>boykisser wallpaper --next</code> switches between them.
+				</p>
 				<div class="walls">
-					{wallpapers.map((w, i) => (
-						<a href={`${RAW}/${w}.${wallExt[w]}`} target="_blank" rel="noopener">
-							<img src={`/wallpapers/${w}.webp`} alt={`Boykisser wallpaper ${i + 1}`} width="640" height="360" loading="lazy" />
+					{wallpapers.map(([file, name, note]) => (
+						<a class="wall reveal" href={`${RAW}/${file}.jpg`} target="_blank" rel="noopener">
+							<img src={`/wallpapers/${file}.webp`} alt={`${name} wallpaper`} width="960" height="540" loading="lazy" />
+							<span>{name}{note && <span class="dim"> · {note}</span>}</span>
 						</a>
 					))}
 				</div>
 			</section>
 
-			<section id="download" class="section">
-				<h2>Get Boykisser Linux</h2>
-				<p class="section-lede">
-					There are three versions, rebuilt every Monday with the latest Debian updates.
-					If you're not sure, get <b>Full</b>.
+			<section id="download" class="section wrap">
+				<h2>Download</h2>
+				<p class="section-text">
+					There are three versions, rebuilt every Monday with the latest Debian updates. If you're not sure, get Full.
 				</p>
 				<div class="flavours">
 					{flavours.map((f) => (
-						<article class={`card flavour ${f.badge ? 'featured' : ''}`} data-flavour={f.id}>
-							{f.badge && <span class="badge">{f.badge}</span>}
-							<h3>{f.name}</h3>
-							<p class="size" data-size>{f.size}</p>
+						<div class={`flavour ${f.recommended ? 'recommended' : ''}`} data-flavour={f.id}>
+							<h3>{f.name} <span class="size" data-size>{f.size}</span></h3>
 							<p>{f.text}</p>
 							<div class="flavour-links">
-								<a class="btn btn-primary btn-sm" data-direct href={RELEASES}><i class="fa-solid fa-download" aria-hidden="true"></i> Download</a>
+								<a class={`btn btn-sm ${f.recommended ? 'btn-primary' : ''}`} data-direct href={RELEASES}><i class="fa-solid fa-download" aria-hidden="true"></i> Download</a>
 								<a class="btn btn-sm" data-torrent href={RELEASES} hidden><i class="fa-solid fa-magnet" aria-hidden="true"></i> Torrent</a>
 							</div>
-						</article>
+						</div>
 					))}
 				</div>
-
 				<ol class="steps">
-					<li>
-						<h3>Verify</h3>
-						<p>Verify the download against <code>SHA256SUMS</code> from the release.</p>
-					</li>
-					<li>
-						<h3>Flash</h3>
-						<p>Write the ISO to a USB stick with <a href="https://etcher.balena.io/">Etcher</a>, <a href="https://rufus.ie/">Rufus</a> or <code>dd</code>.</p>
-					</li>
-					<li>
-						<h3>Boot</h3>
-						<p>Try the live session, then double-click <b>Install Boykisser Linux</b> on the desktop.</p>
-					</li>
+					<li><b>Verify</b> the download against <code>SHA256SUMS</code> from the release.</li>
+					<li><b>Flash</b> it to a USB stick with <a href="https://etcher.balena.io/">Etcher</a>, <a href="https://rufus.ie/">Rufus</a> or <code>dd</code>.</li>
+					<li><b>Boot</b> it, try the live session, then double-click <b>Install Boykisser Linux</b>.</li>
 				</ol>
-				<p class="fineprint">
-					Needs a 64-bit PC with 2 GB RAM (4 GB+ recommended) and 20 GB of disk.
-					<a href="/docs/downloading/">Download guide <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+				<p class="section-text small">
+					Needs a 64-bit PC with 2 GB of RAM (4 GB is more comfortable) and 20 GB of disk.{' '}
+					<a href="/docs/downloading/">Download guide</a>
 				</p>
 			</section>
 
-			<section class="section faq">
+			<section class="section wrap faq">
 				<h2>FAQ</h2>
 				<details>
 					<summary>Is this a joke distro?</summary>
@@ -317,16 +347,16 @@ const cli = [
 					<summary>Who makes this?</summary>
 					<p>Me, <a href="https://taymaerz.de">Tay</a>. It's a hobby project. If something breaks, run <code>boykisser report</code> or tell me on <a href={DISCORD}>Discord</a>.</p>
 				</details>
-				<a class="link" href="/docs/faq/">More in the docs <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+				<p><a class="link" href="/docs/faq/">More in the docs <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></p>
 			</section>
 		</main>
 
 		<footer class="footer">
-			<div class="footer-inner">
-				<div class="brand">
-					<Logo width={30} height={30} aria-hidden="true" />
+			<div class="wrap footer-inner">
+				<a class="brand" href="/">
+					<Logo width={24} height={24} aria-hidden="true" />
 					<span>Boykisser Linux</span>
-				</div>
+				</a>
 				<nav aria-label="Footer">
 					<a href="/docs/getting-started/">Docs</a>
 					<a href={GITHUB}><i class="fa-brands fa-github" aria-hidden="true"></i> GitHub</a>
@@ -335,7 +365,7 @@ const cli = [
 					<a href="https://github.com/sponsors/taynotfound"><i class="fa-solid fa-heart" aria-hidden="true"></i> Sponsor</a>
 				</nav>
 			</div>
-			<p class="fineprint">
+			<p class="wrap small dim">
 				Made by <a href="https://taymaerz.de">Tay Maerz</a>. Boykisser is a community meme character and this is unofficial fan work.
 				Not affiliated with Debian. Debian is a trademark of Software in the Public Interest, Inc.
 			</p>

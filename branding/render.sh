@@ -55,6 +55,14 @@ png logo.svg 360 "$OS/usr/share/plymouth/themes/boykisser/boykisser.png"
 on_sky 1920 1080 220 northeast +90+60 "$OS/boot/grub/themes/boykisser/background.png"
 on_sky 1920 1080 230 north +0+170 "$SHARE/login.png"
 
+echo ":3 wallpapers"
+python3 "$HERE/wallpapers/make.py" "$OS/usr/share/backgrounds/boykisser"
+mkdir -p "$WEB/public/wallpapers"
+find "${WEB:?}/public/wallpapers" -name '*.webp' -delete
+for f in "$OS"/usr/share/backgrounds/boykisser/*.jpg; do
+	magick "$f" -resize 960x540 -quality 82 "$WEB/public/wallpapers/$(basename "${f%.jpg}").webp"
+done
+
 echo ":3 website images"
 png app-icon.svg 64  "$WEB/public/favicon.png"
 png app-icon.svg 180 "$WEB/public/apple-touch-icon.png"

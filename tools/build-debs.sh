@@ -90,6 +90,12 @@ pkg boykisser-theme "" "light/dark theme switcher for XFCE and KDE Plasma" \
 	bin/boykisser-wallpaper:usr/bin/boykisser-wallpaper \
 	share/applications/boykisser-theme-toggle.desktop:usr/share/applications/boykisser-theme-toggle.desktop
 
+# the wallpapers live in the ISO overlay; packaging them too brings new ones to installed systems
+WALLS=../config/includes.chroot/usr/share/backgrounds/boykisser
+walls=()
+for f in "$HERE/$WALLS"/*.jpg; do walls+=("$WALLS/$(basename "$f"):usr/share/backgrounds/boykisser/$(basename "$f")"); done
+pkg boykisser-wallpapers "" "wallpapers (drawn by branding/wallpapers/make.py)" "${walls[@]}"
+
 pkg boykisser-apps "boykisser-core, flatpak" "app installers (presets, browser picker, debloat, bundles)" \
 	bin/boykisser-postinstall-apps:usr/bin/boykisser-postinstall-apps \
 	bin/boykisser-presets:usr/bin/boykisser-presets \
@@ -112,7 +118,7 @@ pkg boykisser-system "boykisser-core, python3, pciutils" "system tools (cleanup,
 	share/applications/boykisser-welcome.desktop:usr/share/applications/boykisser-welcome.desktop
 
 deps=""
-for p in core center update doctor nvidia theme apps system; do
+for p in core center update doctor nvidia theme wallpapers apps system; do
 	deps="${deps:+$deps, }boykisser-$p (= $VERSION)"
 done
 pkg boykisser-tools "$deps" "all boykisser-* tools (metapackage)"
