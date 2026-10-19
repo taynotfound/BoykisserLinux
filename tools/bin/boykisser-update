@@ -1,40 +1,113 @@
 #!/bin/sh
 # boykisser-update :3   -   update everything in one cuddle.
+#
+#   boykisser-update               apt + Flatpak + firmware + boykisser-tools
+#   boykisser-update --tools-only  just check for a newer boykisser-tools
 set -e
 
 PINK="\033[38;5;213m"; B="\033[1m"; R="\033[0m"
-printf "${PINK}${B}:3 updating Boykisser Linux...${R}\n"
+say() { printf "${PINK}%b${R}\n" "$1"; }
 
-export DEBIAN_FRONTEND=noninteractive
+REPO="taynotfound/BoykisserLinux"
 
 SUDO=""
 [ "$(id -u)" -ne 0 ] && SUDO="sudo"
+# sudo resets the environment, so pass the frontend explicitly.
+APT="$SUDO env DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
 
-printf "${PINK}-> refreshing apt...${R}\n"
-$SUDO apt-get update
+# --- boykisser-tools self-update -------------------------------------------------
+# Tools are released as "tools-vX.Y.Z" GitHub releases in the main repo, with one
+# .deb per package. Install the newest one if it beats what dpkg has.
+update_tools() {
+	have="$(dpkg-query -W -f '${Version}' boykisser-core 2>/dev/null || true)"
+	[ -n "$have" ] || { say "-> boykisser-tools not installed via dpkg, skipping self-update"; return 0; }
+	command -v curl >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1 || return 0
+
+	say "-> checking for newer boykisser-tools..."
+	json="$(curl -fsSL --max-time 20 "https://api.github.com/repos/$REPO/releases?per_page=40" 2>/dev/null)" \
+		|| { say "   (couldn't reach GitHub, skipping)"; return 0; }
+	# prints: <version> <url> <url> ...   for the newest tools-v* release
+	latest="$(printf '%s' "$json" | python3 -c '
+import json, sys
+for r in json.load(sys.stdin):
+    t = r.get("tag_name", "")
+    if t.startswith("tools-v") and not r.get("draft"):
+        urls = [a["browser_download_url"] for a in r.get("assets", []) if a["name"].endswith(".deb")]
+        print(t[len("tools-v"):], *urls)
+        break
+')" || return 0
+	[ -n "$latest" ] || { say "   (no tools release found)"; return 0; }
+
+	ver="${latest%% *}"
+	if ! dpkg --compare-versions "$ver" gt "$have"; then
+		say "   boykisser-tools $have is current"
+		return 0
+	fi
+
+	say "-> updating boykisser-tools $have -> $ver"
+	tmp="$(mktemp -d)"
+	# only refresh the packages that are installed, plus anything new in the set
+	for url in ${latest#* }; do
+		curl -fsSL --max-time 120 -o "$tmp/$(basename "$url")" "$url" || { say "   download failed: $url"; rm -rf "$tmp"; return 0; }
+	done
+	installed=""
+	for deb in "$tmp"/*.deb; do
+		name="$(basename "$deb" | cut -d_ -f1)"
+		if dpkg-query -W -f '${Status}' "$name" 2>/dev/null | grep -q "install ok installed" \
+		   || dpkg-query -W -f '${Status}' boykisser-tools 2>/dev/null | grep -q "install ok installed"; then
+			installed="$installed $deb"
+		fi
+	done
+	# shellcheck disable=SC2086
+	[ -n "$installed" ] && $APT install -y $installed
+	rm -rf "$tmp"
+}
+
+if [ "${1:-}" = "--tools-only" ]; then
+	update_tools
+	exit 0
+fi
+
+say "${B}:3 updating Boykisser Linux..."
+
+if [ -d /run/live ]; then
+	say "   (live session: updates land in RAM and vanish on reboot)"
+fi
+
+say "-> refreshing apt..."
+$APT update
 
 # Snapshot before upgrading, so a bad update can be rolled back with
-# "sudo timeshift --restore". Skipped in the live session (no persistence)
-# and until the user has run timeshift once to configure it.
+# "sudo timeshift --restore". Skipped in the live session and until the user has
+# configured Timeshift once.
 if command -v timeshift >/dev/null 2>&1 && [ ! -d /run/live ] \
    && [ -f /etc/timeshift/timeshift.json ]; then
-	printf "${PINK}-> creating a safety snapshot (timeshift)...${R}\n"
+	say "-> creating a safety snapshot (timeshift)..."
 	$SUDO timeshift --create --comments "boykisser-update $(date +%F)" --scripted \
-		|| printf "${PINK}   (snapshot failed  -  continuing without it)${R}\n"
+		|| say "   (snapshot failed, continuing without it)"
 fi
 
-printf "${PINK}-> upgrading packages...${R}\n"
-$SUDO apt-get -y full-upgrade
+say "-> upgrading packages..."
+$APT -y full-upgrade
+$APT -y autoremove --purge || true
 
 if command -v flatpak >/dev/null 2>&1; then
-	printf "${PINK}-> updating Flatpaks...${R}\n"
-	flatpak update -y || true
+	say "-> updating Flatpaks..."
+	$SUDO flatpak update -y --noninteractive --system 2>/dev/null || true
+	[ "$(id -u)" -ne 0 ] && { flatpak update -y --noninteractive --user 2>/dev/null || true; }
+	$SUDO flatpak uninstall -y --noninteractive --unused 2>/dev/null || true
 fi
 
-if command -v fwupdmgr >/dev/null 2>&1; then
-	printf "${PINK}-> checking firmware...${R}\n"
+update_tools || true
+
+if command -v fwupdmgr >/dev/null 2>&1 && [ ! -d /run/live ]; then
+	say "-> checking firmware..."
 	$SUDO fwupdmgr refresh --force >/dev/null 2>&1 || true
 	$SUDO fwupdmgr get-updates 2>/dev/null || true
 fi
 
-printf "${PINK}${B}:3 all up to date! mwah${R}\n"
+if [ -f /run/reboot-required ]; then
+	say "${B}:3 all up to date! a reboot is needed to finish (new kernel or libraries)"
+else
+	say "${B}:3 all up to date! mwah"
+fi

@@ -23,9 +23,10 @@ open_url() { xdg-open "$1" >/dev/null 2>&1 & }
 st() { [ "$1" = 0 ] && echo "✅" || echo "⬜"; }
 NET_OK=1;    getent hosts deb.debian.org >/dev/null 2>&1 && NET_OK=0
 LIVE=1;      [ -d /run/live ] && LIVE=0
-APPS_OK=1;   command -v obs >/dev/null 2>&1 || flatpak info com.discordapp.Discord >/dev/null 2>&1 && APPS_OK=0
+APPS_OK=1
+if command -v obs >/dev/null 2>&1 || flatpak info com.discordapp.Discord >/dev/null 2>&1; then APPS_OK=0; fi
 NVIDIA_NEEDED=1
-lspci 2>/dev/null | grep -qi nvidia && ! lsmod 2>/dev/null | grep -q '^nvidia' && NVIDIA_NEEDED=0
+lspci 2>/dev/null | grep -iE 'vga|3d|display' | grep -qi nvidia && ! lsmod 2>/dev/null | grep -q '^nvidia' && NVIDIA_NEEDED=0
 
 run_yad() {
 	while :; do
@@ -48,13 +49,13 @@ run_yad() {
 			"$([ "$NVIDIA_NEEDED" = 0 ] && echo video-display || echo dialog-ok)" "Install NVIDIA drivers" "nvidia" \
 			"system-software-update" "Update the system" "update" \
 			"tools-report-bug" "Report a problem" "report" \
-			"internet-group-chat" "Join the Discord" "discord" \
+			"discord" "Join the Discord" "discord" \
 			"preferences-system" "Open the Boykisser Center (all the tools)" "center" \
 			--button="Do it!:0" --button="Close:1" 2>/dev/null) || break
 		action=$(printf '%s' "$choice" | awk -F'|' '{print $3}')
 		case "$action" in
 			net)     nm-connection-editor >/dev/null 2>&1 & ;;
-			install) install-boykisser ;;
+			install) install-boykisser >/dev/null 2>&1 & ;;
 			apps)    x-terminal-emulator -e sh -c 'boykisser-postinstall-apps; echo; read -p "Press enter to close..." _' ;;
 			presets) boykisser-presets & ;;
 			browser) boykisser-browser & ;;
@@ -79,7 +80,7 @@ run_zenity() {
 		"Switch light/dark theme" \
 		"Join the Discord" 2>/dev/null) || exit 0
 	case "$choice" in
-		Install*disk)   install-boykisser ;;
+		Install*disk)   install-boykisser >/dev/null 2>&1 & ;;
 		Install*apps*)  x-terminal-emulator -e sh -c 'boykisser-postinstall-apps; read -p "done, enter to close " _' ;;
 		Update*)        x-terminal-emulator -e sh -c 'boykisser-update; read -p "done, enter to close " _' ;;
 		Switch*)        boykisser-theme-toggle ;;

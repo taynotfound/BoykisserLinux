@@ -36,7 +36,7 @@ if command -v dpkg >/dev/null 2>&1; then
 	else bad "some packages are broken (try: sudo apt-get -f install)"; fi
 fi
 if command -v apt-get >/dev/null 2>&1; then
-	UPG=$(apt-get -s -o Debug::NoLocking=true upgrade 2>/dev/null | grep -c '^Inst' || echo 0)
+	UPG=$(apt-get -s -o Debug::NoLocking=true upgrade 2>/dev/null | grep -c '^Inst')
 	if [ "${UPG:-0}" -gt 0 ]; then warn "$UPG updates available (run: boykisser update)"
 	else ok "system is up to date"; fi
 fi
@@ -50,6 +50,20 @@ else warn "firewall (ufw) is not active"; fi
 if systemctl is-active cups >/dev/null 2>&1; then ok "printing (cups) is running"
 else warn "printing (cups) is not running"; fi
 if swapon --show 2>/dev/null | grep -q zram; then ok "zram compressed swap is on"; fi
+if [ -d /run/live ]; then ok "live session (changes are kept in RAM only)"; fi
+
+section "Boykisser"
+TOOLS=$(dpkg-query -W -f '${Version}' boykisser-core 2>/dev/null)
+if [ -n "$TOOLS" ]; then ok "boykisser-tools $TOOLS"
+else warn "boykisser-tools not installed as packages"; fi
+if command -v flatpak >/dev/null 2>&1; then
+	if flatpak remotes 2>/dev/null | grep -q flathub; then ok "Flathub is set up"
+	else warn "Flathub remote missing (fix: sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo)"; fi
+fi
+if [ -f /var/lib/boykisser-firstboot.done ] || [ -d /run/live ]; then :
+elif systemctl is-enabled boykisser-firstboot.service >/dev/null 2>&1; then
+	warn "first-boot app setup hasn't finished yet (log: /var/log/boykisser-firstboot.log)"
+fi
 
 section "Network"
 if getent hosts deb.debian.org >/dev/null 2>&1; then ok "internet looks reachable"
@@ -60,7 +74,7 @@ if command -v lspci >/dev/null 2>&1; then
 	lspci 2>/dev/null | grep -iE 'vga|3d|display' | sed 's/^[^ ]* /  GPU: /' | head -3
 fi
 if command -v nvidia-detect >/dev/null 2>&1; then
-	if lspci 2>/dev/null | grep -qi nvidia; then
+	if lspci 2>/dev/null | grep -iE 'vga|3d|display' | grep -qi nvidia; then
 		if lsmod 2>/dev/null | grep -q '^nvidia'; then ok "NVIDIA proprietary driver loaded"
 		else warn "NVIDIA card without proprietary driver (try: boykisser nvidia)"; fi
 	fi

@@ -6,7 +6,7 @@ ConditionPathExists=!/var/lib/boykisser-firstboot.done
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/boykisser-firstboot
+ExecStart=/usr/bin/boykisser-firstboot
 RemainAfterExit=yes
 # generous but finite — an offline machine must not hang boot forever
 TimeoutStartSec=1800

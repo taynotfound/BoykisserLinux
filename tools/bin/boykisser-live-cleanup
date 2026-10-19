@@ -30,6 +30,7 @@ live-config-systemd
 live-tools
 live-task-localisation
 live-task-recommended
+calamares
 calamares-settings-debian
 "
 
@@ -42,6 +43,22 @@ for pkg in $LIVE_PKGS; do
 			|| log "could not purge $pkg (ignored)"
 	fi
 done
+
+# Remove live/installer-only launchers that aren't owned by a purged package so
+# the installed system doesn't invite you to install itself again. The welcome
+# autostart stays: on an installed system it becomes the first-login checklist.
+for f in \
+	usr/share/applications/install-boykisser.desktop \
+	usr/share/applications/calamares-install-debian.desktop \
+	usr/share/applications/calamares.desktop
+do
+	rm -f "$ROOT/$f" 2>/dev/null || true
+done
+rm -f "$ROOT"/etc/skel/Desktop/install-boykisser.desktop \
+      "$ROOT"/etc/skel/Desktop/calamares-install-debian.desktop \
+      "$ROOT"/home/*/Desktop/install-boykisser.desktop \
+      "$ROOT"/home/*/Desktop/calamares-install-debian.desktop 2>/dev/null || true
+log "installer launchers removed from target"
 
 # Best-effort tidy-up; apt may be unusable offline at this point  -  that's fine.
 chroot "$ROOT" env DEBIAN_FRONTEND=noninteractive \

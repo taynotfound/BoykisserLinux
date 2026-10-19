@@ -1,7 +1,7 @@
 #!/bin/sh
 # Boykisser Linux first-boot setup.
 # On an INSTALLED system this installs the Flatpak apps (Heroic, Discord,
-# Flatseal, Gearlever). On the live ISO it only makes sure Flathub is wired up
+# Flatseal, Gear Lever) and retries on every boot until they're all in. On the live ISO it only makes sure Flathub is wired up
 # so we don't pull gigabytes into RAM.
 set -e
 
@@ -42,16 +42,23 @@ if [ -e /etc/boykisser/netinstall ]; then
 	exit 0
 fi
 
-APPS="com.heroicgameslauncher.hgl \
-      com.discordapp.Discord \
-      com.github.tchx84.Flatseal \
-      it.mijorus.gearlever"
+APPS="com.github.tchx84.Flatseal it.mijorus.gearlever"
+# The lite image is for very old machines: keep it to the small helpers.
+[ -e /etc/boykisser/lite ] || APPS="com.heroicgameslauncher.hgl com.discordapp.Discord $APPS"
 
+FAILED=0
 for app in $APPS; do
 	echo "Installing $app ..."
-	flatpak install -y --noninteractive flathub "$app" || \
+	flatpak install -y --noninteractive flathub "$app" || {
 		echo "  (failed, will retry next boot) $app"
+		FAILED=1
+	}
 done
+
+if [ "$FAILED" = 1 ]; then
+	echo "some apps failed (offline?)  -  will retry on the next boot"
+	exit 0
+fi
 
 # Mark done so the service deactivates itself.
 mkdir -p /var/lib

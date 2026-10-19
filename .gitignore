@@ -22,7 +22,7 @@ config/common
 config/source
 config/package-lists/*.binary
 # live-build's root-level artifact dir only — anchored so it does NOT swallow
-# config/includes.chroot/usr/local/ (where the boykisser-* helper scripts live).
+# anything under config/includes.chroot/usr/local/.
 /local/
 *.ovmf-vars.fd
 website/
@@ -35,3 +35,16 @@ autobuild.log
 
 # local build log (build.sh)
 build.log
+
+# test VM disk (test-vm.sh --disk)
+vm-disk.qcow2
+# tools/build-debs.sh output; build.sh drops the debs into packages.chroot
+tools/dist/
+config/packages.chroot/
+# release tag stamped by build.sh / CI
+config/includes.chroot/etc/boykisser/release
+config/includes.chroot/etc/boykisser/lite
+# website dependencies and build output
+web/node_modules/
+web/dist/
+web/.astro/

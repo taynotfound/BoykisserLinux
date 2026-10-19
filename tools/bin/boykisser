@@ -9,7 +9,7 @@ usage() {
 	printf "${PINK}${B}Boykisser Linux :3${R}\n\n"
 	printf "${B}usage:${R} boykisser <command>\n\n"
 	printf "  ${PINK}center${R}     open the graphical Boykisser Center\n"
-	printf "  ${PINK}update${R}     update the whole system (apt + flatpak)\n"
+	printf "  ${PINK}update${R}     update everything (apt, Flatpak, firmware, these tools)\n"
 	printf "  ${PINK}cleanup${R}    free up disk space (old packages, caches, logs)\n"
 	printf "  ${PINK}doctor${R}     check the health of your system\n"
 	printf "  ${PINK}apps${R}       install the full app set (OBS, Steam, VS Code, ...)\n"
@@ -18,7 +18,7 @@ usage() {
 	printf "  ${PINK}debloat${R}    remove app groups you don't want (Steam, OBS, ...)\n"
 	printf "  ${PINK}autologin${R}  toggle logging in without a password:  on | off | status\n"
 	printf "  ${PINK}theme${R}      switch look:  boykisser theme [light|dark]\n"
-	printf "  ${PINK}wallpaper${R}  re-apply the Boykisser wallpaper\n"
+	printf "  ${PINK}wallpaper${R}  fill empty monitors, or:  --next | --force\n"
 	printf "  ${PINK}nvidia${R}     install the proprietary NVIDIA driver\n"
 	printf "  ${PINK}kernel${R}     newer kernel from backports:  boykisser kernel --install\n"
 	printf "  ${PINK}report${R}     report a bug/error to the team\n"
@@ -49,7 +49,8 @@ case "$cmd" in
 	install)   exec install-boykisser "$@" ;;
 	version|--version|-v)
 		if [ -f /etc/boykisser/version ]; then cat /etc/boykisser/version
-		else echo "Boykisser Linux :3"; fi ;;
+		else echo "Boykisser Linux :3"; fi
+		v=$(dpkg-query -W -f '${Version}' boykisser-core 2>/dev/null) && echo "boykisser-tools $v" ;;
 	help|--help|-h|"") usage ;;
 	*) printf "unknown command: %s\n\n" "$cmd"; usage; exit 1 ;;
 esac

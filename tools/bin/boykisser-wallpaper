@@ -1,65 +1,61 @@
 #!/bin/sh
-# Force the Boykisser wallpaper onto every monitor XFCE actually has.
-# Real (and live/VM) outputs are named per connector (eDP-1, HDMI-A-1, DP-1,
-# Virtual-1...) and never match a shipped xfce4-desktop.xml, so a freshly
-# started xfdesktop gives them empty backdrops -> grey desktop. We set them
-# live, after xfdesktop is up, and keep retrying for a while because in the live
-# session the desktop can take a few seconds to appear.
+# boykisser-wallpaper :3   -   give every XFCE monitor a Boykisser wallpaper.
+#
+#   boykisser-wallpaper           fill in monitors that have no wallpaper yet
+#   boykisser-wallpaper --force   put the theme's wallpaper on every monitor
+#   boykisser-wallpaper --next    cycle to the next Boykisser wallpaper
+#
+# XFCE stores a backdrop per connector (eDP-1, HDMI-A-1, Virtual-1, ...), so a
+# shipped xfce4-desktop.xml never matches real outputs and new monitors come up
+# grey. This runs at login and only fills the gaps, so a wallpaper the user
+# picked themselves is never overwritten.
 
-WALL="/usr/share/backgrounds/boykisser/boykisser1.png"
-[ -f "$WALL" ] || WALL="/usr/share/backgrounds/boykisser/boykisser2.png"
-[ -f "$WALL" ] || exit 0
+DIR=/usr/share/backgrounds/boykisser
+CHAN=xfce4-desktop
+MODE="$(cat "${HOME}/.config/boykisser/mode" 2>/dev/null || echo dark)"
+[ "$MODE" = light ] && WALL="$DIR/boykisser2.png" || WALL="$DIR/boykisser1.png"
+[ -f "$WALL" ] || WALL="$(ls "$DIR"/* 2>/dev/null | head -n1)"
+[ -n "$WALL" ] || exit 0
 
-CHAN="xfce4-desktop"
+ACTION="${1:-fill}"
 
-# Create-or-set a string/int/bool property (xfconf needs -n the first time).
-set_str()  { xfconf-query -c "$CHAN" -p "$1" -s "$2" 2>/dev/null || xfconf-query -c "$CHAN" -p "$1" -n -t string -s "$2" 2>/dev/null; }
-set_int()  { xfconf-query -c "$CHAN" -p "$1" -s "$2" 2>/dev/null || xfconf-query -c "$CHAN" -p "$1" -n -t int    -s "$2" 2>/dev/null; }
-set_bool() { xfconf-query -c "$CHAN" -p "$1" -s "$2" 2>/dev/null || xfconf-query -c "$CHAN" -p "$1" -n -t bool   -s "$2" 2>/dev/null; }
-
-stamp() {
-	base="$1"
-	set_str  "$base/last-image" "$WALL"
-	set_str  "$base/image-path" "$WALL"   # older xfdesktop key
-	set_int  "$base/image-style" 5        # 5 = zoomed/scaled
-	set_bool "$base/image-show" true
-	set_int  "$base/color-style" 0
+set_prop() { # type path value
+	xfconf-query -c "$CHAN" -p "$2" -s "$3" 2>/dev/null \
+		|| xfconf-query -c "$CHAN" -p "$2" -n -t "$1" -s "$3" 2>/dev/null
 }
 
-# Fix wallpaper: apply() now returns 0 only when xfdesktop was successfully
-# reloaded (or already set), so we can exit early.
-apply() {
-	applied=0
-	# 1) Update every backdrop xfconf already knows about.
-	xfconf-query -c "$CHAN" -l 2>/dev/null | grep -E '/(last-image|image-path)$' | while read -r prop; do
-		xfconf-query -c "$CHAN" -p "$prop" -s "$WALL" 2>/dev/null && applied=1
-	done
-
-	# 2) Seed a full backdrop for every connected output (covers fresh monitors).
-	if command -v xrandr >/dev/null 2>&1; then
-		for mon in $(xrandr 2>/dev/null | awk '/ connected/{print $1}'); do
-			stamp "/backdrop/screen0/monitor$mon/workspace0"
-			applied=1
-		done
-	fi
-
-	# 3) Generic fallbacks that almost always exist somewhere.
-	stamp "/backdrop/screen0/monitor0/workspace0"
-	stamp "/backdrop/screen0/monitorVirtual-1/workspace0"
-
-	if xfdesktop --reload >/dev/null 2>&1; then
-		return 0
-	fi
-	return 1
+stamp() { # backdrop-base image
+	set_prop string "$1/last-image" "$2"
+	set_prop int    "$1/image-style" 5   # zoomed
+	set_prop int    "$1/color-style" 0
 }
 
-set_bool /backdrop/single-workspace-mode true
+outputs() {
+	command -v xrandr >/dev/null 2>&1 && xrandr 2>/dev/null | awk '/ connected/{print $1}'
+}
 
-# Retry for ~60s so we win even if xfdesktop / xfconfd start late in the live
-# session, then stop once things have settled.
+if [ "$ACTION" = "--next" ]; then
+	CUR="$(xfconf-query -c "$CHAN" -l 2>/dev/null | grep 'last-image$' | head -n1 | xargs -r xfconf-query -c "$CHAN" -p 2>/dev/null)"
+	# the file after the current one, wrapping around to the first
+	WALL="$(ls "$DIR"/* | awk -v cur="$CUR" 'NR==1{first=$0} found&&!done{print; done=1} $0==cur{found=1} END{if(!done)print first}')"
+	ACTION=--force
+fi
+
+# xfdesktop/xfconfd can start a few seconds after autostart in the live
+# session; wait for the channel instead of racing it.
 n=0
-while [ "$n" -lt 30 ]; do
-	apply && break
-	n=$((n + 1))
-	sleep 2
+until xfconf-query -c "$CHAN" -l >/dev/null 2>&1 || [ "$n" -ge 30 ]; do
+	n=$((n + 1)); sleep 1
 done
+
+set_prop bool /backdrop/single-workspace-mode true
+
+for mon in $(outputs) 0; do
+	case "$mon" in 0) base=/backdrop/screen0/monitor0/workspace0 ;; *) base="/backdrop/screen0/monitor$mon/workspace0" ;; esac
+	cur="$(xfconf-query -c "$CHAN" -p "$base/last-image" 2>/dev/null)"
+	if [ "$ACTION" = "--force" ] || [ -z "$cur" ] || [ ! -f "$cur" ]; then
+		stamp "$base" "$WALL"
+	fi
+done
+
+xfdesktop --reload >/dev/null 2>&1 || true

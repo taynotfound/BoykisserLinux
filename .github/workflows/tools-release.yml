@@ -1,0 +1,52 @@
+name: Release boykisser-tools
+
+# Push a tag like tools-v2.1.0 (matching tools/VERSION) to publish the .debs.
+# Installed systems pick them up through `boykisser update`.
+on:
+  push:
+    tags: ["tools-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag matches tools/VERSION
+        run: |
+          want="tools-v$(cat tools/VERSION)"
+          if [ "$GITHUB_REF_NAME" != "$want" ]; then
+            echo "::error::tag $GITHUB_REF_NAME doesn't match tools/VERSION ($want)"
+            exit 1
+          fi
+
+      - name: Lint
+        run: |
+          sudo apt-get install -y shellcheck >/dev/null
+          for f in tools/bin/*; do
+            head -n1 "$f" | grep -q python || shellcheck -S warning "$f"
+          done
+          python3 -m py_compile tools/bin/boykisser-center
+
+      - name: Build the packages
+        run: tools/build-debs.sh dist
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          name: boykisser-tools ${{ github.ref_name }}
+          # keep "latest" pointing at the newest ISO release
+          make_latest: false
+          files: dist/*.deb
+          body: |
+            The `boykisser-*` helper scripts and the Boykisser Center, as Debian packages.
+
+            **On Boykisser Linux:** just run `boykisser update`, it installs these for you.
+
+            **Anywhere else (Debian 13 / trixie):**
+            ```sh
+            sudo apt install ./boykisser-*.deb
+            ```

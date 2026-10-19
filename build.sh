@@ -34,10 +34,12 @@ EXTRA_LIST="$HERE/config/package-lists/apps-extra.list.chroot"
 MARKER="$HERE/config/includes.chroot/etc/boykisser/netinstall"
 LITE_MARKER="$HERE/config/includes.chroot/etc/boykisser/lite"
 
+RELEASE_FILE="$HERE/config/includes.chroot/etc/boykisser/release"
+
 restore_variant() {
 	# Always undo the netinstall/lite tweaks so the working tree stays clean.
 	[ -f "$EXTRA_LIST.disabled" ] && mv -f "$EXTRA_LIST.disabled" "$EXTRA_LIST"
-	rm -f "$MARKER" "$LITE_MARKER"
+	rm -f "$MARKER" "$LITE_MARKER" "$RELEASE_FILE"
 }
 trap restore_variant EXIT
 restore_variant
@@ -59,6 +61,12 @@ elif [ "$NETINSTALL" = "1" ]; then
 else
 	echo ":3 building the FULL daily-driver ISO"
 fi
+
+# --- release tag shown in /etc/boykisser/version and os-release ------------------
+RELEASE="${BOYKISSER_RELEASE:-dev-$(git -C "$HERE" describe --tags --always --dirty 2>/dev/null || echo local)}"
+mkdir -p "$(dirname "$RELEASE_FILE")"
+echo "$RELEASE" > "$RELEASE_FILE"
+echo ":3 release: $RELEASE"
 
 # --- pick a container engine --------------------------------------------------
 ENGINE="${ENGINE:-}"
@@ -101,6 +109,9 @@ $ENGINE run --rm $TTY_FLAGS \
 		set -e
 		echo ":3 cleaning previous build state ($CLEAN_CMD)..."
 		$CLEAN_CMD || true
+		echo ":3 packaging boykisser-tools from tools/..."
+		rm -rf config/packages.chroot
+		tools/build-debs.sh config/packages.chroot
 		echo ":3 lb config..."
 		lb config
 		echo ":3 lb build..."

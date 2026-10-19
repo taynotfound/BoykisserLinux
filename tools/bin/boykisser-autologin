@@ -2,22 +2,27 @@
 # boykisser-autologin :3   -   turn LightDM autologin on or off.
 # Usage: boykisser-autologin [on [user]|off|status]
 
-# Ensure root privileges early so we don't fail partway through a state change.
-[ "$(id -u)" -eq 0 ] || exec sudo "$0" "$@"
-
 CONF=/etc/lightdm/lightdm.conf.d/60-boykisser-autologin.conf
 
-status() {
-	if [ -f "$CONF" ]; then
-		user=$(sed -n 's/^autologin-user=//p' "$CONF")
-		echo "autologin: ON (user: ${user:-?})"
-	else
-		echo "autologin: off"
-	fi
+# Calamares writes its own autologin-user= into lightdm.conf when you tick
+# "log in automatically" in the installer, so look at every LightDM config.
+current_user() {
+	cat /etc/lightdm/lightdm.conf /etc/lightdm/lightdm.conf.d/*.conf 2>/dev/null \
+		| sed -n 's/^[[:space:]]*autologin-user[[:space:]]*=[[:space:]]*//p' | tail -n1
 }
 
-case "${1:-status}" in
-	status) status; exit 0 ;;
+status() {
+	user="$(current_user)"
+	if [ -n "$user" ]; then echo "autologin: ON (user: $user)"
+	else echo "autologin: off"; fi
+}
+
+[ "${1:-status}" = status ] && { status; exit 0; }
+
+# Changing state needs root; do it before touching anything.
+[ "$(id -u)" -eq 0 ] || exec sudo "$0" "$@"
+
+case "$1" in
 	on)
 		if [ -d /run/live ]; then
 			echo "!! you're in the live session  -  autologin is already handled there." >&2
@@ -35,6 +40,7 @@ case "${1:-status}" in
 		;;
 	off)
 		rm -f "$CONF"
+		sed -i 's/^[[:space:]]*autologin-user[[:space:]]*=.*/#autologin-user=/' /etc/lightdm/lightdm.conf 2>/dev/null || true
 		echo ":3 autologin disabled (takes effect next boot)"
 		;;
 	*)

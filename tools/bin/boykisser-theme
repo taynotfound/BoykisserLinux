@@ -1,19 +1,28 @@
 #!/bin/sh
-# Boykisser Linux theme switcher :3    -    usage: boykisser-theme [light|dark]
-# With no argument it re-applies the saved choice (default: dark).
+# Boykisser Linux theme switcher :3
+#
+#   boykisser-theme [light|dark]   switch and remember the choice
+#   boykisser-theme                re-apply the saved choice (default: dark)
+#   boykisser-theme --login        autostart mode: only does the heavy KDE work
+#                                  once, XFCE settings are cheap so always applied
 set -e
 
 CFG="${HOME}/.config/boykisser"
 mkdir -p "$CFG"
 
-MODE="$1"
+LOGIN=0
+MODE="${1:-}"
+if [ "$MODE" = "--login" ]; then LOGIN=1; MODE=""; fi
 [ -z "$MODE" ] && MODE="$(cat "$CFG/mode" 2>/dev/null || echo dark)"
 
+PINK="#ff5fa2"
 case "$MODE" in
 	light)
-		MODE=light;  GTK="Adwaita";       ICONS="Tela-circle-pink-light";  WALL="boykisser2"; SCHEME="prefer-light";;
+		MODE=light; GTK="Adwaita";      ICONS="Tela-circle-pink-light"; WALL="boykisser2"; SCHEME="prefer-light"
+		KDE_LNF="org.kde.breeze.desktop";     KDE_COLORS="BreezeLight" ;;
 	*)
-		MODE=dark;   GTK="Adwaita-dark";  ICONS="Tela-circle-pink-dark";   WALL="boykisser1"; SCHEME="prefer-dark";;
+		MODE=dark;  GTK="Adwaita-dark"; ICONS="Tela-circle-pink-dark";  WALL="boykisser1"; SCHEME="prefer-dark"
+		KDE_LNF="org.kde.breezedark.desktop"; KDE_COLORS="BreezeDark" ;;
 esac
 
 echo "$MODE" > "$CFG/mode"
@@ -21,35 +30,51 @@ echo "$MODE" > "$CFG/mode"
 IMG="/usr/share/backgrounds/boykisser/${WALL}.png"
 [ -f "$IMG" ] || IMG="/usr/share/backgrounds/boykisser/${WALL}.jpg"
 
+# Hint GTK4/libadwaita and portal-aware apps about light/dark (both desktops).
+gsettings set org.gnome.desktop.interface color-scheme "$SCHEME" 2>/dev/null || true
+
 # --- KDE Plasma ----------------------------------------------------------------
-if [ "${XDG_CURRENT_DESKTOP#*KDE}" != "$XDG_CURRENT_DESKTOP" ] && command -v lookandfeeltool >/dev/null 2>&1; then
-	if [ "$MODE" = light ]; then LNF="org.kde.breeze.desktop"; else LNF="org.kde.breezedark.desktop"; fi
-	lookandfeeltool -a "$LNF" 2>/dev/null || true
-	KWRITECONFIG=$(command -v kwriteconfig6 2>/dev/null || command -v kwriteconfig5 2>/dev/null || true)
-	[ -n "$KWRITECONFIG" ] && \
-		$KWRITECONFIG --file kdeglobals --group General --group Icons --key Theme "$ICONS" 2>/dev/null || true
+case "${XDG_CURRENT_DESKTOP:-}" in *KDE*)
+	STAMP="$CFG/kde-applied"
+	# Applying a global theme restarts bits of Plasma, so on login only do it
+	# when the mode changed since last time.
+	if [ "$LOGIN" = 1 ] && [ "$(cat "$STAMP" 2>/dev/null)" = "$MODE" ]; then exit 0; fi
+
+	# Give plasmashell a moment on first login, the apply tools talk to it over D-Bus.
+	[ "$LOGIN" = 1 ] && sleep 4
+
+	command -v plasma-apply-lookandfeel >/dev/null 2>&1 && \
+		plasma-apply-lookandfeel -a "$KDE_LNF" >/dev/null 2>&1 || true
+	# Plasma 6 only honours a colour scheme once it is *applied* (kdeglobals gets
+	# the actual colour groups); just writing ColorScheme= leaves the panel light.
+	command -v plasma-apply-colorscheme >/dev/null 2>&1 && \
+		plasma-apply-colorscheme --accent-color "$PINK" "$KDE_COLORS" >/dev/null 2>&1 || true
+	CHANGEICONS="$(ls /usr/lib/*/libexec/plasma-changeicons 2>/dev/null | head -n1)"
+	if [ -n "$CHANGEICONS" ]; then
+		"$CHANGEICONS" "$ICONS" >/dev/null 2>&1 || true
+	else
+		kwriteconfig6 --file kdeglobals --group Icons --key Theme "$ICONS" 2>/dev/null || true
+	fi
 	command -v plasma-apply-wallpaperimage >/dev/null 2>&1 && \
-		plasma-apply-wallpaperimage "$IMG" 2>/dev/null || true
-	gsettings set org.gnome.desktop.interface color-scheme "$SCHEME" 2>/dev/null || true
+		plasma-apply-wallpaperimage "$IMG" >/dev/null 2>&1 || true
+
+	echo "$MODE" > "$STAMP"
 	echo "Boykisser theme set to ${MODE} (KDE) :3"
 	exit 0
-fi
+esac
 
 # --- XFCE ------------------------------------------------------------------------
+command -v xfconf-query >/dev/null 2>&1 || { echo "Boykisser theme saved (${MODE}); no XFCE or KDE session to apply it to."; exit 0; }
+
 xfconf-query -c xsettings -p /Net/ThemeName     -s "$GTK"   2>/dev/null || true
 xfconf-query -c xsettings -p /Net/IconThemeName -s "$ICONS" 2>/dev/null || true
 
-# Apply to every existing backdrop property...
-xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image$' | while read -r prop; do
-	xfconf-query -c xfce4-desktop -p "$prop" -s "$IMG" 2>/dev/null || true
-done
-# ...and make sure at least the primary one exists.
-xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image \
-	-n -t string -s "$IMG" 2>/dev/null || true
-xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/image-style \
-	-n -t int -s 5 2>/dev/null || true
-
-# Hint GTK4/libadwaita apps about light/dark
-gsettings set org.gnome.desktop.interface color-scheme "$SCHEME" 2>/dev/null || true
+# On login the wallpaper autostart handles backdrops (it also covers monitors
+# that appear late); an explicit switch updates every known backdrop now.
+if [ "$LOGIN" = 0 ]; then
+	xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'last-image$' | while read -r prop; do
+		xfconf-query -c xfce4-desktop -p "$prop" -s "$IMG" 2>/dev/null || true
+	done
+fi
 
 echo "Boykisser theme set to ${MODE} :3"

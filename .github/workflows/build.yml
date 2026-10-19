@@ -105,22 +105,29 @@ jobs:
           mkdir -p config/includes.chroot/etc/boykisser
           echo "lite" > config/includes.chroot/etc/boykisser/lite
 
-      - name: Fetch latest boykisser-tools (full only)
-        if: matrix.variant == 'full'
+      - name: Resolve tag
+        id: tag
         run: |
-          urls=$(curl -fsSL https://api.github.com/repos/taynotfound/boykisser-tools/releases/latest \
-            | grep -o '"browser_download_url": *"[^"]*\.deb"' | grep -o 'https[^"]*')
-          if [ -n "$urls" ]; then
-            mkdir -p config/packages.chroot
-            for url in $urls; do
-              name=$(basename "$url")
-              curl -fsSL "$url" -o "config/packages.chroot/$name"
-              echo ":3 fetched $name"
-            done
-          else
-            echo "::error::boykisser-tools release not found — full ISO would ship without boykisser-center etc."
-            exit 1
+          # Use caller input, then dispatch input, then tag, then nightly fallback
+          tag="${{ inputs.release_tag || github.event.inputs.release_tag }}"
+          if [ -z "$tag" ]; then
+            if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+              tag="${GITHUB_REF_NAME}"
+            else
+              tag="nightly-$(date +%Y%m%d)"
+            fi
           fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "item=boykisser-linux-$tag${{ matrix.item_suffix }}" >> "$GITHUB_OUTPUT"
+
+      - name: Package boykisser-tools from this commit
+        run: |
+          # Every variant ships the tools from tools/ at this exact commit, so
+          # the ISO and the scripts can never drift apart again.
+          tools/build-debs.sh config/packages.chroot
+          ls -l config/packages.chroot
+          mkdir -p config/includes.chroot/etc/boykisser
+          echo "${{ steps.tag.outputs.tag }}" > config/includes.chroot/etc/boykisser/release
 
       - name: Build the live ISO (${{ matrix.variant }})
         run: |
@@ -145,21 +152,6 @@ jobs:
           mv -f "$iso" "${{ matrix.iso }}"
           sha256sum "${{ matrix.iso }}" | tee "SHA256SUMS-${{ matrix.variant }}"
           echo "size=$(du -h "${{ matrix.iso }}" | cut -f1)" >> "$GITHUB_OUTPUT"
-
-      - name: Resolve tag
-        id: tag
-        run: |
-          # Use caller input, then dispatch input, then tag, then nightly fallback
-          tag="${{ inputs.release_tag || github.event.inputs.release_tag }}"
-          if [ -z "$tag" ]; then
-            if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-              tag="${GITHUB_REF_NAME}"
-            else
-              tag="nightly-$(date +%Y%m%d)"
-            fi
-          fi
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          echo "item=boykisser-linux-$tag${{ matrix.item_suffix }}" >> "$GITHUB_OUTPUT"
 
       - name: Mirror to the Internet Archive
         id: ia
@@ -342,3 +334,23 @@ jobs:
             dist/boykisser-linux-lite-amd64.iso
             dist/SHA256SUMS
 
+      - name: Announce on Discord
+        if: success()
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          PRERELEASE: ${{ steps.tag.outputs.prerelease }}
+          URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.tag.outputs.tag }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "No DISCORD_RELEASE_WEBHOOK secret, skipping."; exit 0; fi
+          kind="release"; [ "$PRERELEASE" = "true" ] && kind="pre-release"
+          jq -n --arg tag "$TAG" --arg url "$URL" --arg kind "$kind" '{
+            username: "Boykisser Linux",
+            avatar_url: "https://raw.githubusercontent.com/taynotfound/BoykisserLinux/main/config/includes.chroot/usr/share/boykisser/start.png",
+            embeds: [{
+              title: "Boykisser Linux \($tag) is out :3",
+              url: $url,
+              color: 16736162,
+              description: "A new \($kind) just landed: Full, Netinstall and Lite ISOs plus checksums.\n\n[Download](\($url)) · [Website](https://boykisser.taymaerz.de) · [Docs](https://boykisser.taymaerz.de/docs/)"
+            }]
+          }' | curl -fsS -X POST -H "Content-Type: application/json" -d @- "$WEBHOOK"

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # boykisser-center :3   -   the graphical Boykisser control center.
-# A proper GTK3 app: system status up top, friendly action tiles below.
-# Everything heavy runs through the existing boykisser-* helpers in a terminal.
+# A GTK3 app: system status up top, friendly action tiles below. Everything
+# heavy runs through the existing boykisser-* helpers in a terminal.
 import os
 import shutil
 import subprocess
+import threading
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -13,23 +14,21 @@ from gi.repository import Gtk, GLib, GdkPixbuf, Gdk, Pango  # noqa: E402
 LOGO = next((p for p in ("/usr/share/boykisser/face.png",
                          "/usr/share/boykisser/start.png",
                          "/usr/share/boykisser/logo.png") if os.path.exists(p)), None)
+DISCORD = "https://discord.gg/3ZpwE9PPfP"
+LIVE = os.path.isdir("/run/live")
 
+# Theme-aware: only the hero banner and accents are pink, everything else uses
+# the GTK theme's own colours so it looks right in both light and dark mode.
 CSS = b"""
-window { background: #fff0f7; }
-.hero { background: linear-gradient(135deg, #ff5fa2, #ff8fc0); border-radius: 14px; }
+.hero { background: linear-gradient(135deg, #ff5fa2, #c2408a); border-radius: 14px; }
 .hero label { color: white; }
 .hero .title { font-size: 20px; font-weight: 800; }
-.tile {
-    background: white; border-radius: 12px; border: 1px solid #ffd3e6;
-    padding: 4px; transition: all 150ms ease;
-}
-.tile:hover { background: #ffe4f0; border-color: #ff5fa2; }
-.tile .name { font-weight: 700; color: #71264d; }
-.tile .desc { color: #9b5b7c; font-size: 12px; }
-.pill {
-    background: rgba(255,255,255,0.25); border-radius: 99px;
-    padding: 2px 10px; font-size: 12px;
-}
+.pill { background: rgba(255,255,255,0.22); border-radius: 99px; padding: 2px 10px; font-size: 12px; }
+.section { font-weight: 800; color: #ff5fa2; margin-top: 6px; }
+.tile { border-radius: 12px; padding: 4px; border: 1px solid alpha(#ff5fa2, 0.25); }
+.tile:hover { border-color: #ff5fa2; background: alpha(#ff5fa2, 0.10); }
+.tile .name { font-weight: 700; }
+.tile .desc { font-size: 12px; opacity: 0.75; }
 """
 
 
@@ -41,25 +40,37 @@ def sh(cmd):
         return ""
 
 
-def in_terminal(command, keep_open=True):
-    """Run a boykisser helper in the user's terminal emulator."""
-    tail = '; echo; read -p "Press enter to close... :3" _' if keep_open else ""
-    for term in ("x-terminal-emulator", "xfce4-terminal", "konsole", "gnome-terminal"):
+def icon(*names):
+    """First icon name the current theme actually has (avoids 'missing' images)."""
+    theme = Gtk.IconTheme.get_default()
+    return next((n for n in names if theme.has_icon(n)), names[-1])
+
+
+def in_terminal(command):
+    """Run a helper in a terminal and keep it open so the user can read the output."""
+    script = f'{command}; echo; printf "Press enter to close... :3 "; read _'
+    # Debian policy: x-terminal-emulator takes "-e prog args..." like xterm.
+    for term, flag in (("x-terminal-emulator", "-e"), ("xfce4-terminal", "-x"),
+                       ("konsole", "-e"), ("gnome-terminal", "--")):
         if shutil.which(term):
-            subprocess.Popen([term, "-e", f'sh -c \'{command}{tail}\''])
+            subprocess.Popen([term, flag, "sh", "-c", script])
             return
     subprocess.Popen(["sh", "-c", command])
 
 
+def spawn(*argv):
+    subprocess.Popen(list(argv))
+
+
 class Center(Gtk.Window):
     def __init__(self):
-        super().__init__(title="Boykisser Center :3")
-        self.set_default_size(680, 640)
+        super().__init__(title="Boykisser Center")
+        self.set_default_size(720, 680)
         self.set_position(Gtk.WindowPosition.CENTER)
         if LOGO:
             try:
                 self.set_icon_from_file(LOGO)
-            except Exception:
+            except GLib.Error:
                 pass
 
         style = Gtk.CssProvider()
@@ -68,87 +79,90 @@ class Center(Gtk.Window):
             Gdk.Screen.get_default(), style,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14,
-                        margin=16)
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, margin=16)
         self.add(outer)
         outer.pack_start(self._hero(), False, False, 0)
 
         scroll = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
         scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         outer.pack_start(scroll, True, True, 0)
+        body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        scroll.add(body)
 
-        flow = Gtk.FlowBox(valign=Gtk.Align.START, max_children_per_line=2,
-                           min_children_per_line=2, selection_mode=Gtk.SelectionMode.NONE,
-                           column_spacing=12, row_spacing=12)
-        scroll.add(flow)
-
-        live = os.path.isdir("/run/live")
-        tiles = [
-            ("system-software-update", "Update everything",
-             "apt + Flatpak, with a Timeshift snapshot first",
-             lambda: in_terminal("boykisser-update")),
-            ("system-software-install", "App presets",
-             "Art, Social, Office & Music packs from Flathub",
-             lambda: subprocess.Popen(["boykisser-presets"])),
-            ("web-browser", "Pick a browser",
-             "Firefox, LibreWolf, Brave or Chromium",
-             lambda: subprocess.Popen(["boykisser-browser"])),
-            ("applications-games", "Get the full app set",
-             "OBS, Steam, VS Code, codecs and friends",
-             lambda: in_terminal("boykisser-postinstall-apps")),
-            ("edit-delete", "Remove apps",
-             "Strip the groups you don't want",
-             lambda: subprocess.Popen(["boykisser-debloat"])),
-            ("preferences-desktop-theme", "Light / dark theme",
-             "Flip the whole desktop in one click",
-             lambda: subprocess.Popen(["boykisser-theme-toggle"])),
-            ("video-display", "NVIDIA drivers",
-             "Install the proprietary driver",
-             lambda: in_terminal("boykisser-nvidia")),
-            ("system-run", "Newer kernel",
-             "Latest kernel from trixie-backports",
-             lambda: in_terminal("boykisser-kernel --install")),
-            ("computer", "System doctor",
-             "Quick health check of the important bits",
-             lambda: in_terminal("boykisser-doctor")),
-            ("edit-clear-all", "Clean up disk space",
-             "Old packages, caches and logs",
-             lambda: in_terminal("boykisser-cleanup")),
-            ("tools-report-bug", "Report a problem",
-             "Opens a pre-filled GitHub issue",
-             lambda: subprocess.Popen(["boykisser-report"])),
-            ("internet-group-chat", "Join the Discord",
-             "Say hi or get help :3",
-             lambda: subprocess.Popen(["xdg-open", "https://discord.gg/3ZpwE9PPfP"])),
-        ]
-        if live:
-            tiles.insert(0, ("drive-harddisk", "Install to disk",
-                             "You're in the live session  -  make it permanent!",
-                             lambda: subprocess.Popen(["install-boykisser"])))
-        else:
-            tiles.append(("system-lock-screen", "Autologin",
-                          "Toggle logging in without a password",
-                          self._autologin))
-
-        for icon, name, desc, action in tiles:
-            flow.add(self._tile(icon, name, desc, action))
+        for title, tiles in self._sections():
+            lbl = Gtk.Label(label=title, xalign=0)
+            lbl.get_style_context().add_class("section")
+            body.pack_start(lbl, False, False, 0)
+            flow = Gtk.FlowBox(valign=Gtk.Align.START, max_children_per_line=2,
+                               min_children_per_line=1, homogeneous=True,
+                               selection_mode=Gtk.SelectionMode.NONE,
+                               column_spacing=10, row_spacing=10)
+            for t in tiles:
+                flow.add(self._tile(*t))
+            body.pack_start(flow, False, False, 0)
 
         self.show_all()
 
+    def _sections(self):
+        system = [
+            (icon("system-software-update", "software-update-available"), "Update everything",
+             "apt, Flatpak, firmware and the Boykisser tools", lambda: in_terminal("boykisser-update")),
+            (icon("computer", "utilities-system-monitor"), "System doctor",
+             "Quick health check of the important bits", lambda: in_terminal("boykisser-doctor")),
+            (icon("edit-clear-all", "user-trash"), "Clean up disk space",
+             "Old packages, caches and logs", lambda: in_terminal("boykisser-cleanup")),
+            (icon("nvidia-settings", "video-display"), "NVIDIA drivers",
+             "Install the proprietary driver", lambda: in_terminal("boykisser-nvidia")),
+            (icon("system-run", "applications-system"), "Newer kernel",
+             "Latest kernel from trixie-backports", lambda: in_terminal("boykisser-kernel --install")),
+        ]
+        if LIVE:
+            system.insert(0, (icon("drive-harddisk", "system-installer"), "Install to disk",
+                              "You're in the live session, make it permanent!",
+                              lambda: spawn("install-boykisser")))
+        else:
+            system.append((icon("system-lock-screen", "changes-prevent"), "Autologin",
+                           "Toggle logging in without a password", self._autologin))
+        apps = [
+            (icon("system-software-install", "applications-other"), "App presets",
+             "Art, Social, Office & Music packs from Flathub", lambda: spawn("boykisser-presets")),
+            (icon("applications-games", "input-gaming"), "Get the full app set",
+             "OBS, Steam, VS Code, codecs and friends",
+             lambda: in_terminal("boykisser-postinstall-apps")),
+            (icon("web-browser", "internet-web-browser"), "Pick a browser",
+             "Firefox, LibreWolf, Brave or Chromium", lambda: spawn("boykisser-browser")),
+            (icon("edit-delete", "list-remove"), "Remove apps",
+             "Strip the groups you don't want", lambda: spawn("boykisser-debloat")),
+        ]
+        look = [
+            (icon("preferences-desktop-theme", "applications-graphics"), "Light / dark theme",
+             "Flip the whole desktop in one click", lambda: spawn("boykisser-theme-toggle")),
+            (icon("preferences-desktop-wallpaper", "image-x-generic"), "Next wallpaper",
+             "Cycle through the Boykisser wallpapers",
+             lambda: spawn("boykisser-wallpaper", "--next")),
+        ]
+        help_ = [
+            (icon("help-about", "dialog-information"), "Welcome checklist",
+             "The first-steps guide", lambda: spawn("boykisser-welcome")),
+            (icon("tools-report-bug", "dialog-warning"), "Report a problem",
+             "Opens a pre-filled GitHub issue", lambda: spawn("boykisser-report")),
+            (icon("discord", "com.discordapp.Discord", "user-available"), "Join the Discord",
+             "Say hi or get help :3", lambda: spawn("xdg-open", DISCORD)),
+        ]
+        return (("System", system), ("Apps", apps), ("Look & feel", look), ("Help", help_))
+
     # --- widgets ----------------------------------------------------------------
     def _hero(self):
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=14)
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.get_style_context().add_class("hero")
-        box.set_property("margin", 0)
-        inner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=14,
-                        margin=14)
+        inner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=14, margin=14)
         box.pack_start(inner, True, True, 0)
 
         if LOGO:
             try:
                 pb = GdkPixbuf.Pixbuf.new_from_file_at_scale(LOGO, 72, 72, True)
                 inner.pack_start(Gtk.Image.new_from_pixbuf(pb), False, False, 0)
-            except Exception:
+            except GLib.Error:
                 pass
 
         text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4,
@@ -159,14 +173,13 @@ class Center(Gtk.Window):
         title.get_style_context().add_class("title")
         text.pack_start(title, False, False, 0)
 
-        version = sh("cat /etc/boykisser/version 2>/dev/null") or "Boykisser Linux"
+        version = sh("head -n1 /etc/boykisser/version 2>/dev/null") or "Boykisser Linux"
         sub = Gtk.Label(label=version, xalign=0)
         sub.set_ellipsize(Pango.EllipsizeMode.END)
         text.pack_start(sub, False, False, 0)
 
-        pills = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        text.pack_start(pills, False, False, 0)
-        self._pills = pills
+        self._pills = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        text.pack_start(self._pills, False, False, 0)
         GLib.idle_add(self._load_status)
         return box
 
@@ -180,25 +193,34 @@ class Center(Gtk.Window):
         kernel = sh("uname -r")
         if kernel:
             self._pill(f"🐧 {kernel}")
-        if os.path.isdir("/run/live"):
+        if LIVE:
             self._pill("💿 live session")
-        disk = sh("df -h --output=avail / | tail -1").strip()
+        disk = sh("df -h --output=avail / | tail -1")
         if disk:
             self._pill(f"💾 {disk} free")
-        net = subprocess.run(["getent", "hosts", "deb.debian.org"],
-                             capture_output=True).returncode == 0
-        self._pill("🌐 online" if net else "🌐 offline")
+        tools = sh("dpkg-query -W -f '${Version}' boykisser-core 2>/dev/null")
+        if tools:
+            self._pill(f"🧰 tools {tools}")
+        # the network probe can take a few seconds offline: don't block the UI
+        GLib.timeout_add(50, self._load_net)
         return False
 
-    def _tile(self, icon, name, desc, action):
+    def _load_net(self):
+        def probe():
+            ok = subprocess.run(["getent", "hosts", "deb.debian.org"],
+                                capture_output=True).returncode == 0
+            GLib.idle_add(self._pill, "🌐 online" if ok else "🌐 offline")
+        threading.Thread(target=probe, daemon=True).start()
+        return False
+
+    def _tile(self, icon_name, name, desc, action):
         btn = Gtk.Button()
         btn.get_style_context().add_class("tile")
         btn.set_relief(Gtk.ReliefStyle.NONE)
-        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12,
-                      margin=8)
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12, margin=8)
         btn.add(row)
-        img = Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.DIALOG)
-        row.pack_start(img, False, False, 0)
+        row.pack_start(Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.DIALOG),
+                       False, False, 0)
         text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2,
                        valign=Gtk.Align.CENTER)
         row.pack_start(text, True, True, 0)
@@ -209,13 +231,10 @@ class Center(Gtk.Window):
         d.get_style_context().add_class("desc")
         text.pack_start(d, False, False, 0)
         btn.connect("clicked", lambda *_: action())
-        child = Gtk.FlowBoxChild()
-        child.add(btn)
-        return child
+        return btn
 
     def _autologin(self):
-        state = sh("boykisser-autologin status")
-        on = "ON" in state
+        on = "ON" in sh("boykisser-autologin status")
         dlg = Gtk.MessageDialog(transient_for=self, modal=True,
                                 message_type=Gtk.MessageType.QUESTION,
                                 buttons=Gtk.ButtonsType.YES_NO,

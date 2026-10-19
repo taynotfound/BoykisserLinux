@@ -64,16 +64,19 @@ chroot "$ROOT" sh -c 'command -v debconf-set-selections >/dev/null 2>&1 && \
 	  | debconf-set-selections' 2>/dev/null || true
 
 log "downloading KDE Plasma (this can take a while)…"
-if ! chroot "$ROOT" sh -c '
-		export DEBIAN_FRONTEND=noninteractive
-		apt-get update &&
-		apt-get install -y --no-install-recommends \
-			kde-plasma-desktop plasma-workspace plasma-nm \
-			konsole dolphin sddm 2>/dev/null ||
-		apt-get install -y kde-plasma-desktop'
-then
-	log "KDE install failed  -  leaving XFCE in place."
-	exit 0
+# Recommends are skipped (they'd drag in a second DM, PIM suite, games, ...), so
+# list the pieces a usable Plasma session needs: audio/network/bluetooth applets,
+# power + display settings, the KDE portal and GTK integration.
+KDE_PKGS="kde-plasma-desktop plasma-workspace plasma-nm plasma-pa bluedevil
+	powerdevil kscreen systemsettings kde-config-gtk-style breeze-gtk-theme
+	xdg-desktop-portal-kde konsole dolphin ark kwrite spectacle"
+# shellcheck disable=SC2086
+if ! chroot "$ROOT" env DEBIAN_FRONTEND=noninteractive sh -c "apt-get update && apt-get install -y --no-install-recommends $(echo $KDE_PKGS)"; then
+	log "minimal KDE set failed, trying the plain metapackage…"
+	if ! chroot "$ROOT" env DEBIAN_FRONTEND=noninteractive apt-get install -y kde-plasma-desktop; then
+		log "KDE install failed  -  leaving XFCE in place."
+		exit 0
+	fi
 fi
 
 # --- keep LightDM, make Plasma the default session ---------------------------
@@ -103,15 +106,6 @@ EOF
 # Tela-circle-pink-dark icon set and the Boykisser wallpaper. We set both a
 # system-wide default (/etc/xdg/kdeglobals, also covers /etc/skel for future
 # users) and the config of every account Calamares just created.
-WALLPAPER=""
-for w in \
-	/usr/share/backgrounds/boykisser/boykisser1.png \
-	/usr/share/backgrounds/boykisser/boykisser2.png \
-	/usr/share/backgrounds/boykisser/boykisser4.png
-do
-	[ -f "$ROOT$w" ] && { WALLPAPER="$w"; break; }
-done
-
 KDEGLOBALS_SRC=/usr/share/boykisser/kde/kdeglobals
 if [ -f "$ROOT$KDEGLOBALS_SRC" ]; then
 	log "applying the Boykisser KDE theme (pink + Tela-circle-pink-dark)…"
@@ -121,26 +115,15 @@ if [ -f "$ROOT$KDEGLOBALS_SRC" ]; then
 	cp -f "$ROOT$KDEGLOBALS_SRC" "$ROOT/etc/xdg/kdeglobals"
 	cp -f "$ROOT$KDEGLOBALS_SRC" "$ROOT/etc/skel/.config/kdeglobals"
 
-	# Per-account: kdeglobals + a Boykisser wallpaper on the desktop.
-		while IFS=: read -r username _ uid _ _ uhome _; do
-			[ -n "$uid" ] || continue
-			[ "$uid" -ge 1000 ] && [ "$uid" -lt 60000 ] || continue
-			[ -d "$ROOT$uhome" ] || continue
-
+	# Per-account copy. Colours, icons and wallpaper are applied on first login
+	# by boykisser-theme (autostart), which uses Plasma's own apply tools.
+	while IFS=: read -r username _ uid _ _ uhome _; do
+		[ -n "$uid" ] || continue
+		[ "$uid" -ge 1000 ] && [ "$uid" -lt 60000 ] || continue
+		[ -d "$ROOT$uhome" ] || continue
 		mkdir -p "$ROOT$uhome/.config"
 		cp -f "$ROOT$KDEGLOBALS_SRC" "$ROOT$uhome/.config/kdeglobals"
-
-		if [ -n "$WALLPAPER" ]; then
-			cat > "$ROOT$uhome/.config/plasma-org.kde.plasma.desktop-appletsrc" <<EOF
-[Containments][1]
-wallpaperplugin=org.kde.image
-
-[Containments][1][Wallpaper][org.kde.image][General]
-Image=file://$WALLPAPER
-EOF
-		fi
-
-			chroot "$ROOT" chown -R "$username:$username" "$uhome/.config" 2>/dev/null || true
+		chroot "$ROOT" chown -R "$username:$username" "$uhome/.config" 2>/dev/null || true
 	done < "$ROOT/etc/passwd"
 fi
 
