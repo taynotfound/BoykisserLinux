@@ -57,6 +57,11 @@ case "${XDG_CURRENT_DESKTOP:-}" in *KDE*)
 	fi
 	command -v plasma-apply-wallpaperimage >/dev/null 2>&1 && \
 		plasma-apply-wallpaperimage "$IMG" >/dev/null 2>&1 || true
+	# Boykisser start button, like on XFCE (icon ships in hicolor).
+	QDBUS="$(command -v qdbus6 || command -v qdbus || true)"
+	[ -n "$QDBUS" ] && "$QDBUS" org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
+		'panels().forEach(function(p){p.widgets("org.kde.plasma.kickoff").forEach(function(w){w.currentConfigGroup=["General"];w.writeConfig("icon","boykisser-start");});});' \
+		>/dev/null 2>&1 || true
 
 	echo "$MODE" > "$STAMP"
 	echo "Boykisser theme set to ${MODE} (KDE) :3"

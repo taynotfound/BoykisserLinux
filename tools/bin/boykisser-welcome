@@ -13,6 +13,9 @@ touch "$SEEN"
 
 LOGO="/usr/share/boykisser/start.png"
 [ -f "$LOGO" ] || LOGO="/usr/share/boykisser/face.png"
+# smaller mascot for the dialog itself so the checklist gets the room
+ART="/usr/share/boykisser/start-112.png"
+[ -f "$ART" ] || ART="$LOGO"
 
 DISCORD="https://discord.gg/3ZpwE9PPfP"
 
@@ -35,8 +38,8 @@ run_yad() {
 			HDR="<b>Welcome to Boykisser Linux!</b>\nA few steps to make it purr:"
 		fi
 		choice=$(yad --list --title="Welcome to Boykisser Linux :3" \
-			--width=560 --height=420 --center --borders=16 \
-			--window-icon="$LOGO" --image="$LOGO" --image-on-top \
+			--width=600 --height=560 --center --borders=16 \
+			--window-icon="$LOGO" --image="$ART" --image-on-top \
 			--text="$HDR" \
 			--column="":IMG --column="Step" --column="what" --hide-column=3 --no-headers \
 			"$([ "$NET_OK" = 0 ] && echo dialog-ok || echo network-wireless)" "Connect to the internet" "net" \

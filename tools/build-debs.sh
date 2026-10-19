@@ -59,6 +59,8 @@ if [ "$1" = configure ]; then
 	done
 fi
 EOF
+	# package-specific additions
+	[ -f "$HERE/share/postinst/$name" ] && cat "$HERE/share/postinst/$name" >> "$root/DEBIAN/postinst"
 	chmod 0755 "$root/DEBIAN/postinst"
 	dpkg-deb --root-owner-group -Zxz --build "$root" "$OUT/${name}_${VERSION}_all.deb" >/dev/null
 	echo ":3 built ${name}_${VERSION}_all.deb"

@@ -99,7 +99,10 @@ cat > "$ROOT/etc/lightdm/lightdm.conf.d/60-boykisser-kde.conf" <<EOF
 # Boykisser Linux  -  default to the KDE Plasma session (user chose KDE) :3
 [Seat:*]
 user-session=$SESSION
+autologin-session=$SESSION
 EOF
+# lightdm.conf is read after lightdm.conf.d/, so a session set there would win.
+sed -i '/^[[:space:]]*\(user\|autologin\)-session[[:space:]]*=/d' "$ROOT/etc/lightdm/lightdm.conf" 2>/dev/null || true
 
 # --- brand KDE the Boykisser way ---------------------------------------------
 # Mirror the XFCE look on Plasma: pink (#ff5fa2) accent, dark Breeze, the

@@ -1,0 +1,18 @@
+
+# Installs made from ISOs before 2.0 kept the live session account: "user",
+# password "live" (printed on the website), in the sudo group. Lock it if it still
+# has that password. Locking instead of deleting keeps files of anyone who
+# actually adopted the account; they can unlock it with `sudo passwd user`.
+if [ "$1" = configure ] && [ -f /etc/boykisser/version ] && [ ! -d /run/live ] \
+   && getent passwd user >/dev/null 2>&1; then
+	hash="$(getent shadow user | cut -d: -f2)"
+	case "$hash" in
+		'$'*'$'*)
+			salt="${hash%\$*}"
+			if command -v perl >/dev/null 2>&1 \
+			   && [ "$(perl -e 'print crypt($ARGV[0], $ARGV[1])' live "$salt")" = "$hash" ]; then
+				usermod -L -e 1 user
+				echo "boykisser-system: locked the leftover live-session account 'user' (it still had the public password)"
+			fi ;;
+	esac
+fi
