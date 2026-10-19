@@ -62,6 +62,8 @@ fi
 
 # --- install ------------------------------------------------------------------
 export DEBIAN_FRONTEND=noninteractive
+# Steam and Lutris are in contrib.
+/usr/lib/boykisser/apt-components "$ROOT" || true
 # Steam's runtime is 32-bit; the slim images don't have i386 enabled yet.
 case " $* " in *" gaming "*)
 	chroot "$ROOT" dpkg --add-architecture i386 || log "could not enable i386 (Steam may fail)" ;;

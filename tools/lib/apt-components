@@ -1,0 +1,36 @@
+#!/bin/sh
+# Make sure Debian's apt sources include contrib and non-free. :3
+#
+#   /usr/lib/boykisser/apt-components [ROOT]
+#
+# Boykisser needs contrib (Steam, Lutris) and non-free (the NVIDIA driver), but
+# Debian's installer only enables "main non-free-firmware". Only lines/stanzas
+# pointing at deb.debian.org or security.debian.org are touched; other repos
+# (VS Code, backports you added yourself) stay as they are.
+# Exit status: 0 if something was changed, 1 if it was already fine.
+
+ROOT="${1:-}"
+changed=1
+
+add_components() { # file sed-address
+	before="$(cksum < "$1")"
+	sed -i -E "$2{
+		/[[:space:]]contrib([[:space:]]|\$)/! s/([[:space:]]main)([[:space:]]|\$)/\\1 contrib\\2/
+		/[[:space:]]non-free([[:space:]]|\$)/! s/([[:space:]]contrib)([[:space:]]|\$)/\\1 non-free\\2/
+	}" "$1"
+	[ "$before" = "$(cksum < "$1")" ] || { changed=0; echo "apt-components: enabled contrib/non-free in ${1#"$ROOT"}"; }
+}
+
+for f in "$ROOT/etc/apt/sources.list" "$ROOT"/etc/apt/sources.list.d/*.list; do
+	[ -f "$f" ] || continue
+	add_components "$f" '/^deb(-src)?[[:space:]].*(deb|security)\.debian\.org/'
+done
+
+# deb822 files: only ones that point at Debian's archive
+for f in "$ROOT"/etc/apt/sources.list.d/*.sources; do
+	[ -f "$f" ] || continue
+	grep -qE '^URIs:.*(deb|security)\.debian\.org' "$f" || continue
+	add_components "$f" '/^Components:/'
+done
+
+exit $changed

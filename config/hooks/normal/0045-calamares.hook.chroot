@@ -111,7 +111,34 @@ fi
 exit 0
 SOURCES_EOF
 
-chmod 0755 "$HELPER_DIR/calamares-bootloader-config" "$HELPER_DIR/calamares-sources-media"
+cat > "$HELPER_DIR/calamares-sources-final" <<'SOURCES_FINAL_EOF'
+#!/bin/sh
+# Boykisser Linux: write the installed system's apt sources.
+#
+# Debian's helper only enables "main non-free-firmware", but Boykisser needs
+# contrib (Steam, Lutris) and non-free (the NVIDIA driver) too. Without them the
+# netinstall first boot, the Gaming bundle and `boykisser nvidia` all fail.
+CHROOT=$(mount | grep proc | grep calamares | awk '{print $3}' | sed -e "s#/proc##g")
+[ -n "$CHROOT" ] || exit 0
+RELEASE="trixie"
+COMPONENTS="main contrib non-free non-free-firmware"
+
+rm -f "$CHROOT/etc/apt/sources.list.d/base.list"
+cat > "$CHROOT/etc/apt/sources.list" <<EOF
+# Boykisser Linux uses Debian's archive directly.
+# See https://wiki.debian.org/SourcesList for more information.
+deb http://deb.debian.org/debian $RELEASE $COMPONENTS
+deb http://deb.debian.org/debian $RELEASE-updates $COMPONENTS
+deb http://security.debian.org/debian-security $RELEASE-security $COMPONENTS
+
+# Backports: newer kernels and apps (boykisser kernel --install uses this)
+deb http://deb.debian.org/debian $RELEASE-backports $COMPONENTS
+EOF
+exit 0
+SOURCES_FINAL_EOF
+
+chmod 0755 "$HELPER_DIR/calamares-bootloader-config" "$HELPER_DIR/calamares-sources-media" \
+	"$HELPER_DIR/calamares-sources-final"
 
 # Rebrand the launcher calamares-settings-debian copies to the Desktop.
 DEB_LAUNCHER=/usr/share/applications/calamares-install-debian.desktop

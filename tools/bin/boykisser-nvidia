@@ -58,10 +58,8 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 
-# Make sure contrib/non-free are enabled (Boykisser ships them, but be safe).
-if ! grep -rqsE 'non-free' /etc/apt/sources.list /etc/apt/sources.list.d/; then
-	sed -i 's/ main$/ main contrib non-free non-free-firmware/' /etc/apt/sources.list || true
-fi
+# The driver lives in non-free. Debian's installer only enables non-free-firmware.
+/usr/lib/boykisser/apt-components || true
 
 dpkg --add-architecture i386
 apt-get update

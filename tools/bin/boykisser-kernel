@@ -17,6 +17,8 @@ BPO_LIST=/etc/apt/sources.list.d/backports.sources
 
 ensure_repo() {
 	[ -f "$BPO_LIST" ] && return 0
+	# Boykisser installs already list backports in sources.list
+	grep -rqsE '^[^#]*trixie-backports' /etc/apt/sources.list /etc/apt/sources.list.d/ && return 0
 	say "-> enabling the trixie-backports repo..."
 	$SUDO tee "$BPO_LIST" >/dev/null <<'EOF'
 Types: deb
@@ -38,9 +40,9 @@ case "${1:-}" in
 		;;
 	""|--status)
 		printf "${B}running kernel:${R}   %s\n" "$(uname -r)"
-		if [ -f "$BPO_LIST" ]; then CAND="enabled"; else CAND="not enabled"; fi
+		if grep -rqsE '^[^#]*trixie-backports' /etc/apt/sources.list /etc/apt/sources.list.d/; then CAND="enabled"; else CAND="not enabled"; fi
 		printf "${B}backports repo:${R}   %s\n" "$CAND"
-		if command -v apt-cache >/dev/null 2>&1 && [ -f "$BPO_LIST" ]; then
+		if command -v apt-cache >/dev/null 2>&1 && [ "$CAND" = enabled ]; then
 			BPO=$(apt-cache -o APT::Default-Release=trixie-backports policy linux-image-amd64 2>/dev/null | awk '/Candidate:/{print $2}')
 			printf "${B}backports kernel:${R} %s\n" "${BPO:-unknown}"
 		fi

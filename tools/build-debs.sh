@@ -30,7 +30,7 @@ pkg() {
 	mkdir -p "$root/DEBIAN"
 	for spec in "$@"; do
 		local src="${spec%%:*}" dest="${spec#*:}"
-		install -D -m "$( [[ $dest == usr/bin/* ]] && echo 0755 || echo 0644 )" \
+		install -D -m "$( [[ $dest == usr/bin/* || $dest == usr/lib/boykisser/* ]] && echo 0755 || echo 0644 )" \
 			"$HERE/$src" "$root/$dest"
 	done
 	{
@@ -67,7 +67,8 @@ EOF
 }
 
 pkg boykisser-core "" "the boykisser command" \
-	bin/boykisser:usr/bin/boykisser
+	bin/boykisser:usr/bin/boykisser \
+	lib/apt-components:usr/lib/boykisser/apt-components
 
 pkg boykisser-center "python3, python3-gi, gir1.2-gtk-3.0" "graphical control center (GTK3)" \
 	bin/boykisser-center:usr/bin/boykisser-center \
@@ -79,7 +80,7 @@ pkg boykisser-update "curl, python3" "system updater (apt + Flatpak + firmware +
 pkg boykisser-doctor "pciutils" "read-only system health check" \
 	bin/boykisser-doctor:usr/bin/boykisser-doctor
 
-pkg boykisser-nvidia "pciutils" "NVIDIA proprietary driver installer" \
+pkg boykisser-nvidia "boykisser-core, pciutils" "NVIDIA proprietary driver installer" \
 	bin/boykisser-nvidia:usr/bin/boykisser-nvidia \
 	share/applications/boykisser-nvidia.desktop:usr/share/applications/boykisser-nvidia.desktop
 
@@ -89,14 +90,14 @@ pkg boykisser-theme "" "light/dark theme switcher for XFCE and KDE Plasma" \
 	bin/boykisser-wallpaper:usr/bin/boykisser-wallpaper \
 	share/applications/boykisser-theme-toggle.desktop:usr/share/applications/boykisser-theme-toggle.desktop
 
-pkg boykisser-apps "flatpak" "app installers (presets, browser picker, debloat, bundles)" \
+pkg boykisser-apps "boykisser-core, flatpak" "app installers (presets, browser picker, debloat, bundles)" \
 	bin/boykisser-postinstall-apps:usr/bin/boykisser-postinstall-apps \
 	bin/boykisser-presets:usr/bin/boykisser-presets \
 	bin/boykisser-browser:usr/bin/boykisser-browser \
 	bin/boykisser-debloat:usr/bin/boykisser-debloat \
 	bin/boykisser-install-bundles:usr/bin/boykisser-install-bundles
 
-pkg boykisser-system "python3, pciutils" "system tools (cleanup, kernel, autologin, report, welcome, installer glue)" \
+pkg boykisser-system "boykisser-core, python3, pciutils" "system tools (cleanup, kernel, autologin, report, welcome, installer glue)" \
 	bin/boykisser-cleanup:usr/bin/boykisser-cleanup \
 	bin/boykisser-kernel:usr/bin/boykisser-kernel \
 	bin/boykisser-autologin:usr/bin/boykisser-autologin \

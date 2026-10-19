@@ -46,6 +46,7 @@ sudo apt install kde-plasma-desktop   # then pick Plasma on the login screen
 Images built before October 2026 had installer bugs that never surfaced as errors:
 
 - **The live account stayed on the installed system.** It's called `user`, its password is the public `live`, and it can use `sudo`. `boykisser update` (tools 2.0 or newer) locks it automatically if the password is still `live`. To check by hand: `sudo passwd -S user`. To remove it for good: `sudo deluser --remove-home user`.
+- **Steam, Lutris and the NVIDIA driver couldn't be installed**, because only Debian's `main` and `non-free-firmware` sections were enabled. `boykisser update` (tools 2.0.1 or newer) adds `contrib` and `non-free`.
 - **Picking KDE or app bundles in the installer did nothing**, and the live packages weren't removed (so automatic security updates stayed off). Install what you wanted afterwards (`sudo apt install kde-plasma-desktop`), then run `sudo boykisser-live-cleanup /` once to finish the cleanup.
 
 ## Reporting a bug

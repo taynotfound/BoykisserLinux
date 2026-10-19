@@ -16,3 +16,10 @@ if [ "$1" = configure ] && [ -f /etc/boykisser/version ] && [ ! -d /run/live ] \
 			fi ;;
 	esac
 fi
+
+# Installs from older ISOs only have "main non-free-firmware" enabled, which
+# breaks Steam, Lutris and the NVIDIA driver. Add contrib and non-free.
+if [ "$1" = configure ] && [ -f /etc/boykisser/version ] && [ ! -d /run/live ] \
+   && [ -x /usr/lib/boykisser/apt-components ]; then
+	/usr/lib/boykisser/apt-components || true
+fi

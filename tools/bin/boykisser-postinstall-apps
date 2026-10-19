@@ -25,6 +25,9 @@ while [ "$i" -lt 60 ]; do
 	sleep 2
 done
 
+# Steam and Lutris are in contrib, the NVIDIA driver in non-free.
+/usr/lib/boykisser/apt-components || true
+
 # apt update with a few retries  -  mirrors/DNS can be slow right after boot
 for try in 1 2 3; do
 	apt-get update && break
