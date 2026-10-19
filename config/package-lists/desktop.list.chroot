@@ -106,6 +106,9 @@ librsvg2-common
 librsvg2-bin
 adwaita-qt
 qt6ct
+# Qt apps (OBS, VLC) follow the GTK theme, incl. light/dark, via the gtk3 platform theme
+qt6-gtk-platformtheme
+qt5-gtk-platformtheme
 fonts-noto
 fonts-noto-color-emoji
 fonts-firacode

@@ -1,0 +1,6 @@
+# Boykisser Linux :3  -  make Qt apps (OBS, VLC, ...) follow the GTK theme on XFCE,
+# including light/dark. Plasma has its own platform theme, so leave it alone.
+case "${XDG_CURRENT_DESKTOP:-}" in
+	*KDE*) ;;
+	*) [ -n "${QT_QPA_PLATFORMTHEME:-}" ] || export QT_QPA_PLATFORMTHEME=gtk3 ;;
+esac

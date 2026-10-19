@@ -72,7 +72,9 @@ if [ -f /etc/bash.bashrc ] && ! grep -q 'BOYKISSER_FETCH' /etc/bash.bashrc; then
 	cat >> /etc/bash.bashrc <<'EOF'
 
 # Boykisser Linux greeter :3
-if [ -n "$PS1" ] && [ -z "$BOYKISSER_FETCH" ] && command -v fastfetch >/dev/null 2>&1; then
+# opt out per user with: touch ~/.config/boykisser/no-fetch
+if [ -n "$PS1" ] && [ -z "$BOYKISSER_FETCH" ] && [ ! -e "$HOME/.config/boykisser/no-fetch" ] \
+   && command -v fastfetch >/dev/null 2>&1; then
 	export BOYKISSER_FETCH=1
 	fastfetch
 fi
