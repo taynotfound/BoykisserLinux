@@ -1,0 +1,8 @@
+#!/bin/sh
+# Flip between the Boykisser light and dark looks :3
+CUR="$(cat "${HOME}/.config/boykisser/mode" 2>/dev/null || echo dark)"
+if [ "$CUR" = "dark" ]; then
+	exec boykisser-theme light
+else
+	exec boykisser-theme dark
+fi
