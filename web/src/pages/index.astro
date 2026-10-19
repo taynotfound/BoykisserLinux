@@ -1,0 +1,340 @@
+---
+import { Image } from 'astro:assets';
+import '@fontsource-variable/fredoka';
+import '@fontsource-variable/nunito';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/landing.css';
+
+import mascot from '../assets/mascot.png';
+import shotXfce from '../assets/screenshots/xfce.png';
+import shotCenter from '../assets/screenshots/boykisser-center.png';
+
+const GITHUB = 'https://github.com/taynotfound/BoykisserLinux';
+const RELEASES = `${GITHUB}/releases/latest`;
+const DISCORD = 'https://discord.gg/3ZpwE9PPfP';
+
+const title = 'Boykisser Linux: Debian, but make it pink :3';
+const description =
+	'A pink, gimmicky, actually daily-drivable Debian 13 distro. XFCE or KDE Plasma, Flatpak ready, Steam and OBS out of the box, no telemetry. Free ISO download.';
+
+const features = [
+	{
+		icon: '💅',
+		title: 'Pink from the first frame',
+		text: 'Boot menu, splash screen, installer, desktop and icons all match. One click flips the whole thing between light and dark.',
+	},
+	{
+		icon: '🖥️',
+		title: 'XFCE or KDE Plasma',
+		text: 'XFCE is the default and installs fully offline. Prefer Plasma? Pick it in the installer and it gets the same pink treatment.',
+	},
+	{
+		icon: '🎮',
+		title: 'Games just run',
+		text: 'Steam with 32-bit libraries, Heroic, GameMode and MangoHud are ready on the full ISO. Proton does the rest.',
+	},
+	{
+		icon: '🎥',
+		title: 'Made for streaming',
+		text: 'OBS Studio with a working virtual camera, so Discord, browsers and call apps see it without any fiddling.',
+	},
+	{
+		icon: '📦',
+		title: 'Flatpak, sorted',
+		text: 'Flathub is wired up before you ever log in. GNOME Software, Flatseal and Gear Lever are there for the rest.',
+	},
+	{
+		icon: '🎛️',
+		title: 'Boykisser Center',
+		text: 'Updates, app presets, NVIDIA drivers, newer kernels, a health check and a bug reporter, all in one window.',
+	},
+	{
+		icon: '🛡️',
+		title: 'Private and patched',
+		text: 'No telemetry, no accounts. Firewall on, automatic security updates, and Timeshift snapshots before updates once you turn it on.',
+	},
+	{
+		icon: '🦖',
+		title: 'Old hardware welcome',
+		text: 'A Lite ISO for BIOS-only machines that choke on modern boot chains. Revive that 2010 laptop.',
+	},
+];
+
+const flavours = [
+	{
+		id: 'full',
+		name: 'Full',
+		badge: 'Recommended',
+		size: '~2.6 GB',
+		text: 'Everything included: Steam, OBS, VS Code, codecs. Installs and runs completely offline.',
+	},
+	{
+		id: 'netinstall',
+		name: 'Netinstall',
+		size: '~1.5 GB',
+		text: 'Same desktop, smaller download. The big apps are fetched on the first boot, so you need internet.',
+	},
+	{
+		id: 'lite',
+		name: 'Lite',
+		size: '~1.8 GB',
+		text: 'For pre-2012 machines with BIOS-only firmware. No heavy apps, safe graphics mode by default.',
+	},
+];
+
+const shots = [
+	{ id: 'xfce', label: 'Desktop', img: shotXfce, alt: 'The Boykisser XFCE desktop with the pink panel, desktop icons and a system widget' },
+	{ id: 'center', label: 'Boykisser Center', img: shotCenter, alt: 'Boykisser Center, a grid of tiles for updates, apps, drivers and more' },
+];
+
+const wallpapers = ['boykisser1', 'boykisser2', 'boykisser3', 'boykisser4', 'boykisser5', 'boykisser6'];
+const wallExt: Record<string, string> = {
+	boykisser1: 'png', boykisser2: 'png', boykisser3: 'jpg', boykisser4: 'png', boykisser5: 'jpeg', boykisser6: 'jpeg',
+};
+const RAW = 'https://raw.githubusercontent.com/taynotfound/BoykisserLinux/main/config/includes.chroot/usr/share/backgrounds/boykisser';
+
+const cli = [
+	['center', 'open the Boykisser Center'],
+	['update', 'apt, Flatpak, firmware and these tools'],
+	['doctor', 'check the health of your system'],
+	['presets', 'Art, Social, Office and Music app packs'],
+	['browser', 'Firefox, LibreWolf, Brave or Chromium'],
+	['theme', 'switch look: light | dark'],
+	['nvidia', 'install the proprietary NVIDIA driver'],
+	['report', 'open a pre-filled bug report'],
+];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href="https://boykisser.taymaerz.de/" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<meta name="theme-color" content="#160e24" />
+		<meta property="og:site_name" content="Boykisser Linux" />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://boykisser.taymaerz.de/" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content="https://boykisser.taymaerz.de/og.png" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<script type="application/ld+json" set:html={JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'SoftwareApplication',
+			name: 'Boykisser Linux',
+			operatingSystem: 'Linux',
+			applicationCategory: 'OperatingSystem',
+			description,
+			url: 'https://boykisser.taymaerz.de/',
+			image: 'https://boykisser.taymaerz.de/og.png',
+			downloadUrl: RELEASES,
+			author: { '@type': 'Person', name: 'Tay Maerz', url: 'https://taymaerz.de' },
+			offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+		})} />
+	</head>
+	<body>
+		<a class="skip" href="#main">Skip to content</a>
+
+		<header class="nav">
+			<a class="brand" href="/">
+				<Image src={mascot} alt="" width={36} height={36} />
+				<span>Boykisser Linux</span>
+			</a>
+			<nav aria-label="Main">
+				<a href="#features">Features</a>
+				<a href="#look">Screenshots</a>
+				<a href="/docs/getting-started/">Docs</a>
+				<a href={GITHUB}>GitHub</a>
+				<a class="btn btn-sm btn-primary" href="#download">Download</a>
+			</nav>
+		</header>
+
+		<main id="main">
+			<section class="hero">
+				<div class="hero-copy">
+					<p class="eyebrow">Debian 13 “trixie” · XFCE or KDE Plasma · amd64</p>
+					<h1>Debian,<br /><span class="pink">but make it pink.</span></h1>
+					<p class="lede">
+						A gay, gimmicky and genuinely daily-drivable Linux distro. Plain Debian under the paint,
+						with games, streaming and Flatpak set up before you even log in.
+					</p>
+					<div class="cta">
+						<a class="btn btn-primary" href="#download">Download the ISO</a>
+						<a class="btn" href="/docs/getting-started/">Read the docs</a>
+					</div>
+					<p class="release" data-release hidden></p>
+				</div>
+				<div class="hero-art">
+					<div class="window">
+						<div class="window-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+						<Image src={shotXfce} alt="The Boykisser Linux XFCE desktop" widths={[640, 960, 1280]} sizes="(max-width: 900px) 92vw, 560px" loading="eager" />
+					</div>
+					<Image class="hero-cat" src={mascot} alt="" width={180} height={180} data-cat />
+				</div>
+			</section>
+
+			<ul class="pills" aria-label="At a glance">
+				<li>No telemetry</li>
+				<li>UEFI + legacy BIOS</li>
+				<li>Firewall on by default</li>
+				<li>Automatic security updates</li>
+				<li>Free, forever</li>
+			</ul>
+
+			<section id="features" class="section">
+				<h2>Everything’s already set up</h2>
+				<p class="section-lede">The boring setup work is done, so the first thing you do is use your computer.</p>
+				<div class="features">
+					{features.map((f) => (
+						<article class="card">
+							<span class="card-icon" aria-hidden="true">{f.icon}</span>
+							<h3>{f.title}</h3>
+							<p>{f.text}</p>
+						</article>
+					))}
+				</div>
+			</section>
+
+			<section id="look" class="section">
+				<h2>Take a look</h2>
+				<div class="tabs" role="tablist" aria-label="Screenshots">
+					{shots.map((s, i) => (
+						<button role="tab" id={`tab-${s.id}`} aria-controls={`panel-${s.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
+							{s.label}
+						</button>
+					))}
+				</div>
+				{shots.map((s, i) => (
+					<div class="shot" role="tabpanel" id={`panel-${s.id}`} aria-labelledby={`tab-${s.id}`} hidden={i !== 0}>
+						<Image src={s.img} alt={s.alt} widths={[640, 960, 1280]} sizes="(max-width: 1100px) 92vw, 1000px" />
+					</div>
+				))}
+			</section>
+
+			<section class="section split">
+				<div>
+					<h2>One command for everything</h2>
+					<p>
+						Every Boykisser tool lives behind the <code>boykisser</code> command, and most of them are
+						buttons in the Boykisser Center too. They’re plain shell scripts you can read, packaged as
+						Debian packages that update themselves.
+					</p>
+					<a class="link" href="/docs/cli/">See every command →</a>
+				</div>
+				<div class="terminal" aria-label="Output of the boykisser command">
+					<div class="window-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+					<pre><code><span class="prompt">user@boykisser:~$</span> boykisser
+<span class="pink"><b>Boykisser Linux :3</b></span>
+
+<b>usage:</b> boykisser &lt;command&gt;
+{cli.map(([cmd, desc]) => <Fragment>{'\n  '}<span class="pink">{cmd.padEnd(10)}</span> {desc}</Fragment>)}
+  <span class="dim">…and more</span></code></pre>
+				</div>
+			</section>
+
+			<section class="section">
+				<h2>Six wallpapers, zero chill</h2>
+				<p class="section-lede">They ship with every image. <code>boykisser wallpaper --next</code> cycles through them.</p>
+				<div class="walls">
+					{wallpapers.map((w, i) => (
+						<a href={`${RAW}/${w}.${wallExt[w]}`} target="_blank" rel="noopener">
+							<img src={`/wallpapers/${w}.webp`} alt={`Boykisser wallpaper ${i + 1}`} width="640" height="360" loading="lazy" />
+						</a>
+					))}
+				</div>
+			</section>
+
+			<section id="download" class="section">
+				<h2>Get Boykisser Linux</h2>
+				<p class="section-lede">
+					Three flavours, rebuilt every week with the latest Debian security updates.
+					Not sure? Take <b>Full</b>.
+				</p>
+				<div class="flavours">
+					{flavours.map((f) => (
+						<article class={`card flavour ${f.badge ? 'featured' : ''}`} data-flavour={f.id}>
+							{f.badge && <span class="badge">{f.badge}</span>}
+							<h3>{f.name}</h3>
+							<p class="size" data-size>{f.size}</p>
+							<p>{f.text}</p>
+							<div class="flavour-links">
+								<a class="btn btn-primary btn-sm" data-direct href={RELEASES}>Download</a>
+								<a class="btn btn-sm" data-torrent href={RELEASES} hidden>Torrent</a>
+							</div>
+						</article>
+					))}
+				</div>
+
+				<ol class="steps">
+					<li>
+						<h3>Check it</h3>
+						<p>Verify the download against <code>SHA256SUMS</code> from the release.</p>
+					</li>
+					<li>
+						<h3>Flash it</h3>
+						<p>Write the ISO to a USB stick with <a href="https://etcher.balena.io/">Etcher</a>, <a href="https://rufus.ie/">Rufus</a> or <code>dd</code>.</p>
+					</li>
+					<li>
+						<h3>Boot it</h3>
+						<p>Try the live session, then hit <b>Install Boykisser Linux</b> on the desktop.</p>
+					</li>
+				</ol>
+				<p class="fineprint">
+					Needs a 64-bit PC with 2 GB RAM (4 GB+ recommended) and 20 GB of disk.
+					<a href="/docs/downloading/">Download and verification guide →</a>
+				</p>
+			</section>
+
+			<section class="section faq">
+				<h2>Quick questions</h2>
+				<details>
+					<summary>Is this a joke distro?</summary>
+					<p>The name is. The OS isn’t. It’s Debian 13 with a lot of setup done for you, and it’s someone’s actual daily driver. Anything that works on Debian works here.</p>
+				</details>
+				<details>
+					<summary>Does it phone home?</summary>
+					<p>No. There’s no telemetry and no account. The only network traffic Boykisser adds is checking GitHub for tool updates when <em>you</em> run <code>boykisser update</code>.</p>
+				</details>
+				<details>
+					<summary>Can I use it for gaming?</summary>
+					<p>Yes. Steam, Proton, Heroic, GameMode and MangoHud are ready on the full ISO, and <code>boykisser nvidia</code> installs the proprietary driver if you have an NVIDIA card.</p>
+				</details>
+				<details>
+					<summary>Who makes this?</summary>
+					<p>One person, <a href="https://taymaerz.de">Tay</a>, as a hobby, with some help from AI tools. Every change is reviewed and tested by a human. Found a bug? <code>boykisser report</code> or <a href={DISCORD}>Discord</a>.</p>
+				</details>
+				<a class="link" href="/docs/faq/">More answers in the FAQ →</a>
+			</section>
+		</main>
+
+		<footer class="footer">
+			<div class="footer-inner">
+				<div class="brand">
+					<Image src={mascot} alt="" width={32} height={32} />
+					<span>Boykisser Linux</span>
+				</div>
+				<nav aria-label="Footer">
+					<a href="/docs/getting-started/">Docs</a>
+					<a href={GITHUB}>GitHub</a>
+					<a href={DISCORD}>Discord</a>
+					<a href="https://ko-fi.com/taygotkofi">Ko-fi</a>
+					<a href="https://github.com/sponsors/taynotfound">Sponsor</a>
+				</nav>
+			</div>
+			<p class="fineprint">
+				Made with 💕 by <a href="https://taymaerz.de">Tay Maerz</a>. Boykisser is a community meme character; this is unofficial fan work.
+				Not affiliated with Debian. Debian is a trademark of Software in the Public Interest, Inc.
+			</p>
+		</footer>
+
+		<script>
+			import { initLanding } from '../scripts/landing';
+			initLanding();
+		</script>
+	</body>
+</html>

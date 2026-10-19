@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://boykisser.taymaerz.de/sitemap.xml

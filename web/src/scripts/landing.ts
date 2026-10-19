@@ -1,0 +1,138 @@
+// Landing page behaviour: live release info, screenshot tabs, and the kisses.
+
+const REPO = 'taynotfound/BoykisserLinux';
+
+type Asset = { name: string; size: number; browser_download_url: string };
+type Release = { tag_name: string; published_at: string; html_url: string; body?: string; assets: Asset[] };
+
+const gb = (bytes: number) => `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+
+/** Fill in the latest version, real sizes and Internet Archive links. The static
+ *  links to the releases page keep working if GitHub is unreachable. */
+async function loadRelease() {
+	try {
+		const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);
+		if (!res.ok) return;
+		const rel: Release = await res.json();
+
+		const info = document.querySelector<HTMLElement>('[data-release]');
+		if (info) {
+			const date = new Date(rel.published_at).toLocaleDateString(undefined, { dateStyle: 'medium' });
+			const link = Object.assign(document.createElement('a'), { href: rel.html_url, textContent: rel.tag_name });
+			info.replaceChildren('Latest build ', link, ` · ${date}`);
+			info.hidden = false;
+		}
+
+		const body = rel.body ?? '';
+		const isos = body.match(/https:\/\/archive\.org\/download\/\S+?\.iso/g) ?? [];
+		const torrents = body.match(/https:\/\/archive\.org\/download\/\S+?_archive\.torrent/g) ?? [];
+
+		for (const card of document.querySelectorAll<HTMLElement>('[data-flavour]')) {
+			const id = card.dataset.flavour!;
+			const file = id === 'full' ? 'boykisser-linux-amd64.iso' : `boykisser-linux-${id}-amd64.iso`;
+			const match = (u: string) => (id === 'full' ? !/netinstall|lite/.test(u) : u.includes(`-${id}`));
+
+			const parts = rel.assets.filter((a) => a.name.startsWith(file));
+			const size = parts.reduce((n, a) => n + a.size, 0);
+			const sizeEl = card.querySelector<HTMLElement>('[data-size]');
+			if (size && sizeEl) sizeEl.textContent = gb(size);
+
+			const direct = card.querySelector<HTMLAnchorElement>('[data-direct]');
+			const mirror = isos.find(match);
+			const single = parts.length === 1 ? parts[0].browser_download_url : null;
+			if (direct) direct.href = mirror ?? single ?? rel.html_url;
+
+			const torrent = card.querySelector<HTMLAnchorElement>('[data-torrent]');
+			const t = torrents.find(match);
+			if (torrent && t) {
+				torrent.href = t;
+				torrent.hidden = false;
+			}
+		}
+	} catch {
+		/* offline or rate-limited: the static links still work */
+	}
+}
+
+function initTabs() {
+	const tabs = [...document.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+	const select = (tab: HTMLButtonElement) => {
+		for (const t of tabs) {
+			const on = t === tab;
+			t.setAttribute('aria-selected', String(on));
+			t.tabIndex = on ? 0 : -1;
+			document.getElementById(t.getAttribute('aria-controls')!)!.hidden = !on;
+		}
+	};
+	tabs.forEach((tab, i) => {
+		tab.addEventListener('click', () => select(tab));
+		tab.addEventListener('keydown', (e) => {
+			const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+			if (!step) return;
+			const next = tabs[(i + step + tabs.length) % tabs.length];
+			select(next);
+			next.focus();
+		});
+	});
+}
+
+/** Click anywhere for a little kiss; type "boykisser" (or tap the cat 7 times) for party mode. */
+function initKisses() {
+	if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+	const KISSES = [':3', '🐾', '💕', ':3c', '♡'];
+
+	const kiss = (x: number, y: number) => {
+		const el = document.createElement('span');
+		el.className = 'kiss';
+		el.textContent = KISSES[Math.floor(Math.random() * KISSES.length)];
+		el.style.left = `${x}px`;
+		el.style.top = `${y}px`;
+		document.body.append(el);
+		el.addEventListener('animationend', () => el.remove());
+	};
+
+	document.addEventListener('click', (e) => {
+		if ((e.target as Element).closest('a, button, summary')) return;
+		kiss(e.clientX, e.clientY);
+	});
+
+	const party = () => {
+		const on = document.body.classList.toggle('party');
+		if (!on) return;
+		const toast = document.createElement('div');
+		toast.className = 'toast';
+		toast.textContent = 'you found the secret!! party mode :3 💖';
+		document.body.append(toast);
+		setTimeout(() => toast.remove(), 4000);
+		for (let i = 0; i < 24; i++) {
+			setTimeout(() => kiss(Math.random() * innerWidth, Math.random() * innerHeight), i * 90);
+		}
+	};
+
+	let buffer = '';
+	addEventListener('keydown', (e) => {
+		if ((e.target as Element).matches('input, textarea')) return;
+		buffer = (buffer + e.key.toLowerCase()).slice(-9);
+		if (buffer === 'boykisser') {
+			buffer = '';
+			party();
+		}
+	});
+
+	let taps = 0;
+	let timer: ReturnType<typeof setTimeout>;
+	document.querySelector('[data-cat]')?.addEventListener('click', () => {
+		clearTimeout(timer);
+		timer = setTimeout(() => (taps = 0), 1500);
+		if (++taps >= 7) {
+			taps = 0;
+			party();
+		}
+	});
+}
+
+export function initLanding() {
+	initTabs();
+	initKisses();
+	loadRelease();
+}

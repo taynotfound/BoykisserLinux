@@ -1,0 +1,65 @@
+/* Boykisser theme for the Starlight docs: plum greys + Boykisser pink.
+   Colours match the OS itself (Plymouth, GRUB, Calamares sidebar). */
+
+:root {
+	--sl-font: 'Nunito Variable', system-ui, sans-serif;
+	--sl-font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+	--bk-font-display: 'Fredoka Variable', 'Nunito Variable', system-ui, sans-serif;
+}
+
+/* Dark (default) */
+:root {
+	--sl-color-accent-low: #4a1534;
+	--sl-color-accent: #ff5fa2;
+	--sl-color-accent-high: #ffc2dc;
+	--sl-color-white: #ffffff;
+	--sl-color-gray-1: #f1e9f7;
+	--sl-color-gray-2: #cdbfdc;
+	--sl-color-gray-3: #9a87b0;
+	--sl-color-gray-4: #5f4d78;
+	--sl-color-gray-5: #3a2a52;
+	--sl-color-gray-6: #241838;
+	--sl-color-black: #160e24;
+}
+
+/* Light */
+:root[data-theme='light'] {
+	--sl-color-accent-low: #ffd6e8;
+	--sl-color-accent: #d6337a;
+	--sl-color-accent-high: #8a1d4f;
+	--sl-color-white: #1a0e2e;
+	--sl-color-gray-1: #2b1d40;
+	--sl-color-gray-2: #43325c;
+	--sl-color-gray-3: #6b5a84;
+	--sl-color-gray-4: #9b8bb2;
+	--sl-color-gray-5: #d8cde6;
+	--sl-color-gray-6: #f1ebf7;
+	--sl-color-gray-7: #faf6fd;
+	--sl-color-black: #ffffff;
+}
+
+h1, h2, h3, h4,
+.site-title {
+	font-family: var(--bk-font-display);
+	letter-spacing: -0.01em;
+}
+
+.site-title img {
+	border-radius: 50%;
+}
+
+.sl-markdown-content img {
+	border-radius: 0.75rem;
+	border: 1px solid var(--sl-color-gray-5);
+}
+
+/* kbd keys look like little pink keycaps */
+.sl-markdown-content kbd {
+	font-family: var(--sl-font-mono);
+	font-size: 0.85em;
+	padding: 0.1em 0.45em;
+	border-radius: 0.35em;
+	border: 1px solid var(--sl-color-gray-4);
+	border-bottom-width: 2px;
+	background: var(--sl-color-gray-6);
+}

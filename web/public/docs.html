@@ -1,0 +1,12 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Boykisser Linux docs</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="/docs/getting-started/">
+<script>
+  // The old docs lived at docs.html#/<page>; send those links to the new pages.
+  var map = { "boykisser-cli": "cli", "boykisser-tools-install": "boykisser-tools", "presets-and-apps": "apps" };
+  var page = location.hash.replace(/^#\/?/, "") || "getting-started";
+  location.replace("/docs/" + (map[page] || page) + "/");
+</script>
+<p><a href="/docs/getting-started/">Continue to the docs</a></p>
