@@ -52,7 +52,7 @@ If the stick doesn't show up in the boot menu or refuses to start, turn Secure B
 
 ## 4. Look around
 
-The live session logs in by itself and runs entirely in RAM. Nothing you do touches your disk, and it all disappears when you reboot. If a login screen ever shows up, the user is `user` and the password is `live`.
+The live session logs in by itself and runs entirely in RAM. Nothing you do touches your disk, and it all disappears when you reboot. If a login screen ever shows up, the user is `live` and the password is `live`.
 
 A welcome window opens with a small checklist. Good things to try:
 

@@ -13,7 +13,7 @@ First step for anything: run `boykisser doctor`. It points at most problems on i
 
 **Black screen or frozen splash.** Pick **Live system (failsafe)** in the boot menu. If that works, your GPU needs `nomodeset`: on an installed system press <kbd>e</kbd> at the boot menu, add `nomodeset` to the `linux` line and boot with <kbd>F10</kbd>.
 
-**A login screen appears in the live session.** User `user`, password `live`.
+**A login screen appears in the live session.** User `live`, password `live`.
 
 ## Installer
 
@@ -40,6 +40,13 @@ sudo apt install kde-plasma-desktop   # then pick Plasma on the login screen
 **A Flatpak app can't see my files.** Open **Flatseal**, pick the app and allow the folder under **Filesystem**.
 
 **An update broke something.** If Timeshift is set up: open it, pick the snapshot from before `boykisser update`, and **Restore**. If the desktop doesn't start any more, boot the live stick and run Timeshift from there.
+
+## Installed from an older ISO?
+
+Images built before October 2026 had installer bugs that never surfaced as errors:
+
+- **The live account stayed on the installed system.** It's called `user`, its password is the public `live`, and it can use `sudo`. `boykisser update` (tools 2.0 or newer) locks it automatically if the password is still `live`. To check by hand: `sudo passwd -S user`. To remove it for good: `sudo deluser --remove-home user`.
+- **Picking KDE or app bundles in the installer did nothing**, and the live packages weren't removed (so automatic security updates stayed off). Install what you wanted afterwards (`sudo apt install kde-plasma-desktop`), then run `sudo boykisser-live-cleanup /` once to finish the cleanup.
 
 ## Reporting a bug
 

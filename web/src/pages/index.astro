@@ -8,6 +8,9 @@ import '../styles/landing.css';
 import mascot from '../assets/mascot.png';
 import shotXfce from '../assets/screenshots/xfce.png';
 import shotCenter from '../assets/screenshots/boykisser-center.png';
+import shotKde from '../assets/screenshots/kde.png';
+import shotInstaller from '../assets/screenshots/installer.png';
+import shotGrub from '../assets/screenshots/grub.png';
 
 const GITHUB = 'https://github.com/taynotfound/BoykisserLinux';
 const RELEASES = `${GITHUB}/releases/latest`;
@@ -83,8 +86,11 @@ const flavours = [
 ];
 
 const shots = [
-	{ id: 'xfce', label: 'Desktop', img: shotXfce, alt: 'The Boykisser XFCE desktop with the pink panel, desktop icons and a system widget' },
+	{ id: 'xfce', label: 'XFCE', img: shotXfce, alt: 'The Boykisser XFCE desktop with the pink panel, desktop icons and a system widget' },
+	{ id: 'kde', label: 'KDE Plasma', img: shotKde, alt: 'The Boykisser KDE Plasma desktop with a dark panel and the Boykisser start button' },
 	{ id: 'center', label: 'Boykisser Center', img: shotCenter, alt: 'Boykisser Center, a grid of tiles for updates, apps, drivers and more' },
+	{ id: 'installer', label: 'Installer', img: shotInstaller, alt: 'The Boykisser installer with optional app bundles for gaming, streaming, development and office' },
+	{ id: 'grub', label: 'Boot menu', img: shotGrub, alt: 'The pink Boykisser boot menu on an installed system' },
 ];
 
 const wallpapers = ['boykisser1', 'boykisser2', 'boykisser3', 'boykisser4', 'boykisser5', 'boykisser6'];

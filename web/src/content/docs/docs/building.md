@@ -41,7 +41,9 @@ A full build takes 20 to 40 minutes the first time. Downloaded packages are cach
 ./test-vm.sh --installed   # boot what you installed on that disk
 ```
 
-It needs QEMU, and OVMF for UEFI. KVM is used when available.
+It needs QEMU, and OVMF for UEFI. KVM is used when available. If your distro packages QEMU's GTK window and virtio GPU separately (Arch: `qemu-ui-gtk`, `qemu-hw-display-virtio-vga`), the script falls back to plain VGA and a VNC display on `127.0.0.1:5900`.
+
+The build needs real root (debootstrap creates device nodes), so with podman run it as root, e.g. `sudo ./build.sh` or `ENGINE="sudo podman" ./build.sh`.
 
 ## Change the tools
 
