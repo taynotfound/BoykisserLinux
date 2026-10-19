@@ -87,7 +87,7 @@ if [ -n "$DISK" ]; then
 	fi
 	FMT=raw
 	[ "$(od -An -c -N3 "$DISK" | tr -d ' ')" = "QFI" ] && FMT=qcow2
-	COMMON+=(-drive file="$DISK",if=virtio,format=$FMT)
+	COMMON+=(-drive "file=$DISK,if=virtio,format=$FMT")
 fi
 [ "$INSTALLED" = 0 ] && COMMON+=(-boot d -cdrom "$ISO")
 

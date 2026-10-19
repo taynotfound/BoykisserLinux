@@ -1,0 +1,68 @@
+name: CI
+
+# Quick checks for every push and pull request. The ISO itself is built by
+# build.yml (tags + the weekly schedule) because it takes ~30 minutes.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: |
+          sudo apt-get install -y shellcheck >/dev/null
+          files=$(ls tools/bin/* tools/build-debs.sh build.sh test-vm.sh auto/config \
+            config/hooks/normal/[0-9]*.hook.* config/hooks/live/*.hook.chroot \
+            config/includes.chroot/usr/lib/boykisser/* 2>/dev/null)
+          rc=0
+          for f in $files; do
+            [ -L "$f" ] && continue                       # stock live-build hooks
+            head -n1 "$f" | grep -q python && continue
+            shellcheck -S warning -e SC2054 "$f" || rc=1  # SC2054: QEMU's comma syntax
+          done
+          exit $rc
+      - name: Python
+        run: python3 -m py_compile tools/bin/boykisser-center
+
+  tools:
+    name: Package boykisser-tools
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: tools/build-debs.sh dist
+      - name: Install them on Debian trixie
+        run: |
+          docker run --rm -v "$PWD/dist":/debs:ro debian:trixie bash -ec '
+            apt-get update -qq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq /debs/*.deb >/dev/null
+            boykisser version
+            boykisser autologin status'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boykisser-tools-debs
+          path: dist/*.deb
+          retention-days: 7
+
+  web:
+    name: Build website
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build
