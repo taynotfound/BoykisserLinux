@@ -57,7 +57,7 @@ The next ISO build packages them automatically. To ship them to installed system
 
 ## Releases
 
-- Every Monday CI tags a new `vM.YY.N` release and builds all three ISOs with the current Debian kernel and security updates.
+- Every Monday CI tags a new `vMAJOR.MONTH.YY.N` release (for example `v2.10.26.4`; the major number lives in `MAJOR_VERSION`) and builds all three ISOs with the current Debian kernel and security updates.
 - `./scripts/bump_version.sh` tags a release by hand.
 - ISOs are published to GitHub Releases (the full one split into parts) and mirrored to the Internet Archive with a torrent.
 

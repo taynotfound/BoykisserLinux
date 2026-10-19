@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 320" width="1280" height="320" role="img" aria-label="Boykisser Linux: a pink Debian spin">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a1550"/>
+      <stop offset="1" stop-color="#120a20"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff7ab8" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ff7ab8" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="card"><rect width="1280" height="320" rx="28"/></clipPath>
+  </defs>
+  <style>
+    .glow { animation: breathe 5s ease-in-out infinite; }
+    /* the face is turned sideways, so each eye closes toward its flat edge (the lid) */
+    .eye { transform-box: fill-box; transform-origin: left center; animation: blink 6s infinite; }
+    @keyframes breathe { 0%, 100% { opacity: .65 } 50% { opacity: 1 } }
+    @keyframes blink { 0%, 90%, 96%, 100% { transform: scaleX(1) } 93% { transform: scaleX(.15) } }
+    @media (prefers-reduced-motion: reduce) { .glow, .eye { animation: none } }
+    text { font-family: 'Fredoka', 'Nunito', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+  </style>
+
+  <g clip-path="url(#card)">
+    <rect width="1280" height="320" fill="url(#bg)"/>
+    <circle class="glow" cx="225" cy="160" r="230" fill="url(#glow)"/>
+  </g>
+
+  <!-- the :3 mark (branding/src/logo.svg), 64 units scaled to 192px -->
+  <g transform="translate(129 64) scale(3)">
+    <g transform="rotate(-10 32 32)">
+      <g>
+        <path class="eye" d="M14 16.5 A5.5 5.5 0 0 1 14 27.5 Z" fill="#fff3f8" stroke="#fff3f8" stroke-width="2" stroke-linejoin="round"/>
+        <path class="eye" d="M14 36.5 A5.5 5.5 0 0 1 14 47.5 Z" fill="#fff3f8" stroke="#fff3f8" stroke-width="2" stroke-linejoin="round"/>
+      </g>
+      <path d="M33 15 C45 11 49 29 35 32 C49 35 45 53 33 49" fill="none" stroke="#ff7ab8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <text x="420" y="150" font-size="76" font-weight="700" fill="#fff3f8">Boykisser Linux</text>
+  <text x="422" y="204" font-size="32" font-weight="600" fill="#ff8ec8">A pink Debian spin :3</text>
+  <text x="423" y="246" font-size="22" fill="#bfa9d6">Debian 13 · XFCE or KDE Plasma · Steam, OBS and Flatpak ready</text>
+</svg>

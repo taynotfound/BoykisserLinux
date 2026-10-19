@@ -22,16 +22,7 @@ jobs:
       - name: Bump Version
         id: bump
         run: |
-          MONTH=$(date -u +%-m)
-          YEAR=$(date -u +%y)
-          REVISION=0
-          while read -r tag; do
-            if [[ "$tag" =~ ^v${MONTH}\.${YEAR}\.[0-9]+$ ]]; then
-              REVISION=${tag##*.}
-              break
-            fi
-          done < <(git tag --list "v${MONTH}.${YEAR}.*" --sort=-version:refname)
-          NEW_VERSION="v${MONTH}.${YEAR}.$((REVISION + 1))"
+          NEW_VERSION=$(scripts/next-version.sh)
           echo "Creating weekly release tag: $NEW_VERSION"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

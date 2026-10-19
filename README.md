@@ -1,13 +1,7 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="branding/src/logo.svg">
-  <img src="branding/src/logo-light.svg" alt="Boykisser Linux logo" width="128">
-</picture>
+<img src="branding/banner.svg" alt="Boykisser Linux: a pink Debian spin" width="100%">
 
-# Boykisser Linux
-
-**A pink Debian spin with XFCE or KDE Plasma.**<br>
 Steam, OBS and Flatpak are set up before you first log in. Underneath it's normal Debian 13.
 
 [![Latest release](https://img.shields.io/github/v/release/taynotfound/BoykisserLinux?style=for-the-badge&color=ff7ab8&labelColor=160e24&label=release)](https://github.com/taynotfound/BoykisserLinux/releases/latest)
@@ -173,7 +167,8 @@ More in the [build docs](https://boykisser.taymaerz.de/docs/building/).
 
 ## Releases
 
-- **ISOs.** CI tags `vM.YY.N` every Monday and builds all three versions. They go to GitHub Releases and the Internet Archive and are announced on Discord. Tag one by hand with [`scripts/bump_version.sh`](scripts/bump_version.sh).
+- **ISOs.** CI tags `vMAJOR.MONTH.YY.N` (for example `v2.10.26.4`) every Monday and builds all three versions. They go to GitHub Releases and the Internet Archive and are announced on Discord. Tag one by hand with [`scripts/bump_version.sh`](scripts/bump_version.sh).
+- **Major version.** Bump [`MAJOR_VERSION`](MAJOR_VERSION) after a big rewrite. The release count within the month carries on.
 - **Tools.** Bump [`tools/VERSION`](tools/VERSION) and push a matching `tools-vX.Y.Z` tag.
 
 ## Contributing
