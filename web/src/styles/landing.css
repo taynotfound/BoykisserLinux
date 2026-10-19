@@ -174,9 +174,8 @@ h3 {
 	color: #fff;
 	text-decoration: none;
 }
-.brand img {
-	border-radius: 50%;
-	background: #fff;
+.brand svg {
+	flex: none;
 }
 .nav nav {
 	display: flex;
@@ -338,9 +337,9 @@ main {
 	font-weight: 700;
 	font-size: 0.95rem;
 }
-.pills li::before {
-	content: '♡ ';
+.pills li i {
 	color: var(--pink);
+	margin-right: 0.35rem;
 }
 
 /* ---------- cards ---------- */
@@ -373,7 +372,8 @@ main {
 	height: 3rem;
 	margin-bottom: 1rem;
 	border-radius: 14px;
-	font-size: 1.5rem;
+	font-size: 1.3rem;
+	color: var(--pink);
 	background: rgb(255 95 162 / 0.12);
 	border: 1px solid var(--line-pink);
 }
@@ -670,6 +670,8 @@ main {
 	z-index: 999;
 	pointer-events: none;
 	font-size: 1.4rem;
+	font-weight: 800;
+	color: var(--pink);
 	translate: -50% -50%;
 	animation: kiss 0.8s ease-out forwards;
 }

@@ -12,8 +12,8 @@ export default defineConfig({
 			title: 'Boykisser Linux',
 			description:
 				'Docs for Boykisser Linux: a pink, daily-drivable Debian 13 distro with XFCE or KDE Plasma.',
-			logo: { src: './src/assets/mascot.png', alt: '' },
-			favicon: '/favicon.png',
+			logo: { dark: './src/assets/brand/logo.svg', light: './src/assets/brand/logo-light.svg', alt: '' },
+			favicon: '/favicon.svg',
 			customCss: [
 				'@fontsource-variable/fredoka',
 				'@fontsource-variable/nunito',

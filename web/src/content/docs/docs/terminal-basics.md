@@ -88,5 +88,5 @@ journalctl -b -p err          # errors since this boot
 - Debian's own docs apply here too: [debian.org/doc](https://www.debian.org/doc/).
 
 :::caution
-Be careful copying commands from the internet that start with `sudo`, especially ones with `rm`, `dd` or `curl … | sh`. If you don't know what something does, ask on [Discord](https://discord.gg/3ZpwE9PPfP) first.
+Be careful copying commands from the internet that start with `sudo`, especially ones with `rm`, `dd` or `curl ... | sh`. If you don't know what something does, ask on [Discord](https://discord.gg/3ZpwE9PPfP) first.
 :::

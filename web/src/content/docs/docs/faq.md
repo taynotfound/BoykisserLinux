@@ -5,7 +5,7 @@ description: Common questions about Boykisser Linux.
 
 ### Is this a serious distro?
 
-The name is a meme. The OS isn't. It's Debian 13 (trixie) with a lot of setup done for you, and it's someone's actual daily driver. Anything that works on Debian works here, and Debian's documentation applies.
+The name is a meme, but I use it every day. It's Debian 13 (trixie) with a lot of setup done for you, so anything that works on Debian works here and Debian's documentation applies.
 
 ### What do I need to run it?
 
@@ -57,4 +57,4 @@ Boykisser is a community meme character. This project is unofficial fan work, ma
 
 ### Who makes it?
 
-[Tay](https://taymaerz.de), as a hobby, with help from AI tools. Every change is reviewed and tested by a human. Contributions are welcome on [GitHub](https://github.com/taynotfound/BoykisserLinux), and the [Discord](https://discord.gg/3ZpwE9PPfP) is the place to say hi.
+Me, [Tay](https://taymaerz.de). It's a hobby project. Pull requests are welcome on [GitHub](https://github.com/taynotfound/BoykisserLinux), and you can say hi on [Discord](https://discord.gg/3ZpwE9PPfP).

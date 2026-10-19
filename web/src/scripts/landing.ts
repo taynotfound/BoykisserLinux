@@ -79,12 +79,20 @@ function initTabs() {
 /** Click anywhere for a little kiss; type "boykisser" (or tap the cat 7 times) for party mode. */
 function initKisses() {
 	if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-	const KISSES = [':3', '🐾', '💕', ':3c', '♡'];
+	// text faces or Font Awesome icons (paw, heart)
+	const KISSES = [':3', ':3c', 'fa-paw', 'fa-heart', 'fa-heart'];
 
 	const kiss = (x: number, y: number) => {
 		const el = document.createElement('span');
 		el.className = 'kiss';
-		el.textContent = KISSES[Math.floor(Math.random() * KISSES.length)];
+		const k = KISSES[Math.floor(Math.random() * KISSES.length)];
+		if (k.startsWith('fa-')) {
+			const icon = document.createElement('i');
+			icon.className = `fa-solid ${k}`;
+			el.append(icon);
+		} else {
+			el.textContent = k;
+		}
 		el.style.left = `${x}px`;
 		el.style.top = `${y}px`;
 		document.body.append(el);
@@ -101,7 +109,7 @@ function initKisses() {
 		if (!on) return;
 		const toast = document.createElement('div');
 		toast.className = 'toast';
-		toast.textContent = 'you found the secret!! party mode :3 💖';
+		toast.textContent = 'you found the secret!! party mode :3';
 		document.body.append(toast);
 		setTimeout(() => toast.remove(), 4000);
 		for (let i = 0; i < 24; i++) {

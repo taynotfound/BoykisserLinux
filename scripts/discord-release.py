@@ -24,7 +24,7 @@ REPO = os.environ.get("GITHUB_REPOSITORY", "taynotfound/BoykisserLinux")
 RAW = f"https://raw.githubusercontent.com/{REPO}/main"
 SITE = "https://boykisser.taymaerz.de"
 PINK = 0xFF5FA2
-MASCOT = f"{RAW}/config/includes.chroot/usr/share/boykisser/start.png"
+MASCOT = f"{RAW}/config/includes.chroot/usr/share/boykisser/badge.png"
 HERO = f"{RAW}/web/src/assets/screenshots/xfce.png"
 IS_COMPONENTS_V2 = 1 << 15
 

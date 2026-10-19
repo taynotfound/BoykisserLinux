@@ -7,12 +7,12 @@ description: What's preinstalled, and the easy ways to add or remove apps.
 
 | | Full | Netinstall | Lite |
 | --- | --- | --- | --- |
-| Firefox ESR, Thunar, Mousepad, Ristretto, file roller, GParted, Disks | ✓ | ✓ | ✓ |
-| GNOME Software + Flathub, Timeshift, Déjà Dup backups | ✓ | ✓ | ✓ |
-| OBS Studio with virtual camera, VLC, multimedia codecs | ✓ | first boot | |
-| Steam, GameMode, MangoHud, Vulkan tools | ✓ | first boot | |
-| VS Code Insiders | ✓ | first boot | |
-| Printing (CUPS) | ✓ | first boot | |
+| Firefox ESR, Thunar, Mousepad, Ristretto, file roller, GParted, Disks | Yes | Yes | Yes |
+| GNOME Software + Flathub, Timeshift, Déjà Dup backups | Yes | Yes | Yes |
+| OBS Studio with virtual camera, VLC, multimedia codecs | Yes | first boot | |
+| Steam, GameMode, MangoHud, Vulkan tools | Yes | first boot | |
+| VS Code Insiders | Yes | first boot | |
+| Printing (CUPS) | Yes | first boot | |
 | Heroic, Discord (Flatpak) | first boot | first boot | |
 | Flatseal, Gear Lever (Flatpak) | first boot | first boot | first boot |
 
