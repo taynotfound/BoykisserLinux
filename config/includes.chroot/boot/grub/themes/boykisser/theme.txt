@@ -27,8 +27,8 @@ terminal-font: "Boykisser Regular 16"
 
 # Boot menu
 + boot_menu {
-    left                 = 25%
-    width                = 50%
+    left                 = 15%
+    width                = 70%
     top                  = 30%
     height               = 50%
     item_color           = "#d8c7ec"
@@ -43,12 +43,12 @@ terminal-font: "Boykisser Regular 16"
 # Countdown / timeout progress bar
 + progress_bar {
     id           = "__timeout__"
-    left         = 25%
-    top          = 82%
-    height       = 16
-    width        = 50%
+    left         = 10%
+    top          = 84%
+    height       = 20
+    width        = 80%
     font         = "Boykisser Regular 16"
-    text_color   = "#1a0e2e"
+    text_color   = "#ffd6e8"
     fg_color     = "#ff5fa2"
     bg_color     = "#3a2a52"
     border_color = "#ff8ec8"

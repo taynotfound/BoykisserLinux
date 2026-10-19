@@ -1,0 +1,7 @@
+#!/bin/sh
+# Boykisser Linux: intentionally a no-op.
+# live-build's stock hook of this name deletes every icon-theme.cache to save a
+# few MB, which makes GTK scan the ~30k Tela icons uncached in every app.
+# `lb config` re-links any stock hook that's missing, so this file has to exist
+# to keep it out.
+exit 0

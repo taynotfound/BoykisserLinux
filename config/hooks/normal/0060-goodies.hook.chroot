@@ -31,13 +31,15 @@ EOF
 sed -i '/^IMAGE_VERSION=/d;/^VARIANT_ID=/d' /etc/os-release
 printf 'IMAGE_VERSION="%s"\nVARIANT_ID=%s\n' "$RELEASE" "$VARIANT" >> /etc/os-release
 
-# os-release belongs to base-files, so every Debian point release would put the
-# Debian branding back. Divert both copies so base-files writes *.debian instead.
-cp /etc/os-release /etc/os-release.boykisser
-for f in /usr/lib/os-release /etc/os-release; do
-	dpkg-divert --quiet --local --divert "$f.debian" --add "$f"
-done
-mv -f /etc/os-release.boykisser /usr/lib/os-release
+# base-files owns /usr/lib/os-release (and ships /etc/os-release as a symlink to
+# it), so every Debian point release would put the Debian branding back. Divert
+# the real file so base-files writes /usr/lib/os-release.debian instead, and keep
+# /etc/os-release pointing at ours. (live-build holds its own diversion on
+# /etc/os-release during the build and drops it afterwards without renaming, so
+# leave that path's diversion alone.)
+cp /etc/os-release /tmp/os-release.boykisser
+dpkg-divert --quiet --local --no-rename --divert /usr/lib/os-release.debian --add /usr/lib/os-release
+mv -f /tmp/os-release.boykisser /usr/lib/os-release
 ln -sf ../usr/lib/os-release /etc/os-release
 
 # --- friendly shell aliases + a tip -------------------------------------------
