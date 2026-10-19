@@ -63,7 +63,7 @@ else
 fi
 
 # --- release tag shown in /etc/boykisser/version and os-release ------------------
-RELEASE="${BOYKISSER_RELEASE:-dev-$(git -C "$HERE" describe --tags --always --dirty 2>/dev/null || echo local)}"
+RELEASE="${BOYKISSER_RELEASE:-dev-$(git -C "$HERE" describe --tags --match "v*" --always --dirty 2>/dev/null || echo local)}"
 mkdir -p "$(dirname "$RELEASE_FILE")"
 echo "$RELEASE" > "$RELEASE_FILE"
 echo ":3 release: $RELEASE"

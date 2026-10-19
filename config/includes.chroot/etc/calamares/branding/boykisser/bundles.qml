@@ -40,7 +40,7 @@ Item {
 
             Text {
                 Layout.fillWidth: true
-                text: qsTr("<b>App bundles</b><br/>Tick anything you want preinstalled. All bundles need an internet connection during install — no internet, no problem, they're just skipped.")
+                text: qsTr("<b>App bundles</b><br/>Tick anything you want installed too. Bundles are downloaded during the install. Without internet they're skipped and you can add them later.")
                 font.pointSize: 11
                 wrapMode: Text.WordWrap
                 color: "#2b2b2b"
@@ -48,9 +48,9 @@ Item {
 
             Repeater {
                 model: [
-                    { id: "gaming",    icon: "bundle-gaming.svg",    title: qsTr("Gaming"),                 desc: qsTr("Steam, Lutris, GameMode and MangoHud — ready to game out of the box.") },
+                    { id: "gaming",    icon: "bundle-gaming.svg",    title: qsTr("Gaming"),                 desc: qsTr("Steam, Lutris, GameMode and MangoHud.") },
                     { id: "streaming", icon: "bundle-streaming.svg", title: qsTr("Streaming & Creation"),   desc: qsTr("OBS Studio, Kdenlive and Audacity for streaming, video and audio work.") },
-                    { id: "dev",       icon: "bundle-dev.svg",       title: qsTr("Development"),            desc: qsTr("git, build-essential, Python, Node.js and Podman for hacking on things.") },
+                    { id: "dev",       icon: "bundle-dev.svg",       title: qsTr("Development"),            desc: qsTr("git, build tools, Python, Node.js and Podman.") },
                     { id: "office",    icon: "bundle-office.svg",    title: qsTr("Office & Productivity"),  desc: qsTr("LibreOffice, Thunderbird and Evince for documents, mail and PDFs.") }
                 ]
 

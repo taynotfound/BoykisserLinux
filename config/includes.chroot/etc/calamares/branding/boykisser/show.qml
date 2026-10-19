@@ -43,7 +43,7 @@ Presentation {
         Text {
             anchors.centerIn: parent
             horizontalAlignment: Text.AlignHCenter
-            text: "Everything works out of the box.\n\nFirefox · Steam · OBS · VS Code\nFlatpak + Flathub · NVIDIA support"
+            text: "Steam, OBS, VS Code and more\nare one click away in the Boykisser Center.\n\nFlathub is ready in Software."
             color: "#ffffff"
             font.pixelSize: 22
         }
@@ -62,7 +62,7 @@ Presentation {
         Text {
             anchors.centerIn: parent
             horizontalAlignment: Text.AlignHCenter
-            text: "Light or dark — always gay.\n\nThank you for installing! :3"
+            text: "Light or dark, it stays pink.\n\nThanks for installing! :3"
             color: "#7fd4ff"
             font.pixelSize: 26
             font.bold: true

@@ -60,7 +60,9 @@ if [ -f "$ISO" ]; then
 			[ -z "$code" ] && continue
 			echo ""
 			echo "label live-$code"
-			echo "	menu label ^Live ($label)"
+			# isolinux can't draw UTF-8, so spell the names in plain ASCII there
+			ascii=$(printf '%s' "$label" | sed 's/ç/c/g; s/ñ/n/g; s/ê/e/g')
+			echo "	menu label ^Live ($ascii)"
 			echo "	linux $KERNEL"
 			echo "	initrd $INITRD"
 			echo "	append $APPEND locales=$locale keyboard-layouts=$kbd"
