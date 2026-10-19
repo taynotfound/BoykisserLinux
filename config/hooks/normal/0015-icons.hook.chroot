@@ -1,0 +1,31 @@
+#!/bin/sh
+# Install the Tela-circle pink icon themes (Tela-circle-pink, -light, -dark).
+# Pulled from a pinned upstream release and checksum-verified instead of
+# vendoring ~44k SVGs into git. Bump TELA_TAG + TELA_SHA256 to update.
+set -e
+
+TELA_TAG=2026-07-07
+TELA_SHA256=0a8aee6e95f19ff96cc497d804c75e2af4271a5e6472c55891fb8ac5b099b59b
+URL="https://github.com/vinceliuice/Tela-circle-icon-theme/archive/refs/tags/${TELA_TAG}.tar.gz"
+
+echo "Installing Tela-circle pink icons ($TELA_TAG) :3"
+
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"' EXIT
+
+for i in 1 2 3; do
+	curl -fsSL "$URL" -o "$WORK/tela.tar.gz" && break
+	echo "download failed (attempt $i), retrying..."; sleep 5
+done
+echo "$TELA_SHA256  $WORK/tela.tar.gz" | sha256sum -c -
+
+tar -xzf "$WORK/tela.tar.gz" -C "$WORK"
+# -c = circle folders, -n = base name; "pink" yields Tela-circle-pink{,-light,-dark}.
+# DESKTOP_SESSION/lsb_release would make it swap in the elementary set; keep it plain.
+env -u DESKTOP_SESSION bash "$WORK"/Tela-circle-icon-theme-*/install.sh \
+	-c -n Tela-circle -d /usr/share/icons pink
+
+for t in Tela-circle-pink Tela-circle-pink-dark Tela-circle-pink-light; do
+	[ -f "/usr/share/icons/$t/index.theme" ] || { echo "!! $t missing after install"; exit 1; }
+	gtk-update-icon-cache -f -q "/usr/share/icons/$t" 2>/dev/null || true
+done
