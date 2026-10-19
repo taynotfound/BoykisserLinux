@@ -53,7 +53,7 @@ cat boykisser-linux-amd64.iso.part* > boykisser-linux-amd64.iso
 sha256sum --ignore-missing -c SHA256SUMS
 ```
 
-Flash it with [Etcher](https://etcher.balena.io/), [Rufus](https://rufus.ie/) (DD mode) or `dd`, boot it, and double-click **Install Boykisser Linux**. The live session logs in by itself (user `user`, password `live`). The [getting started guide](https://boykisser.taymaerz.de/docs/getting-started/) has the details.
+Flash it with [Etcher](https://etcher.balena.io/), [Rufus](https://rufus.ie/) (DD mode) or `dd`, boot it, and double-click **Install Boykisser Linux**. The live session logs in by itself (user `live`, password `live`). The [getting started guide](https://boykisser.taymaerz.de/docs/getting-started/) has the details.
 
 ## This repository
 
