@@ -49,3 +49,7 @@ web/node_modules/
 web/dist/
 web/.astro/
 __pycache__/
+
+# vercel link state
+.vercel
+.env*
