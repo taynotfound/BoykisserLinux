@@ -31,6 +31,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     strategy:
       fail-fast: false
       matrix:
@@ -122,7 +124,6 @@ jobs:
             fi
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          echo "item=boykisser-linux-$tag${{ matrix.item_suffix }}" >> "$GITHUB_OUTPUT"
 
       - name: Package boykisser-tools from this commit
         run: |
@@ -157,42 +158,6 @@ jobs:
           sha256sum "${{ matrix.iso }}" | tee "SHA256SUMS-${{ matrix.variant }}"
           echo "size=$(du -h "${{ matrix.iso }}" | cut -f1)" >> "$GITHUB_OUTPUT"
 
-      - name: Mirror to the Internet Archive
-        id: ia
-        env:
-          IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
-          IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
-          ITEM: ${{ steps.tag.outputs.item }}
-          TAG: ${{ steps.tag.outputs.tag }}
-          ISO: ${{ matrix.iso }}
-          VARIANT: ${{ matrix.variant }}
-        run: |
-          if [ -z "$IA_ACCESS_KEY" ] || [ -z "$IA_SECRET_KEY" ]; then
-            echo "No Internet Archive keys set  -  skipping mirror upload."
-            echo "uploaded=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          pip install --user internetarchive
-          mkdir -p ~/.config/internetarchive
-          cat > ~/.config/internetarchive/ia.ini <<EOF
-          [s3]
-          access = ${IA_ACCESS_KEY}
-          secret = ${IA_SECRET_KEY}
-          EOF
-          ia upload "$ITEM" "$ISO" "SHA256SUMS-${VARIANT}" \
-            --metadata="title:Boykisser Linux ${TAG} (${VARIANT})" \
-            --metadata="mediatype:software" \
-            --metadata="collection:opensource_media" \
-            --metadata="subject:linux;debian;boykisser-linux" \
-            --metadata="creator:taynotfound" \
-            --retries 5
-          echo "uploaded=true" >> "$GITHUB_OUTPUT"
-          {
-            echo "item_url=https://archive.org/details/${ITEM}"
-            echo "iso_url=https://archive.org/download/${ITEM}/${ISO}"
-            echo "torrent_url=https://archive.org/download/${ITEM}/${ITEM}_archive.torrent"
-          } >> "$GITHUB_OUTPUT"
-
       - name: Split ISO for the GitHub fallback
         run: |
           if [ "${{ matrix.variant }}" = "full" ]; then
@@ -207,10 +172,6 @@ jobs:
         env:
           VARIANT: ${{ matrix.variant }}
           ISO: ${{ matrix.iso }}
-          UPLOADED: ${{ steps.ia.outputs.uploaded }}
-          ISO_URL: ${{ steps.ia.outputs.iso_url }}
-          TORRENT_URL: ${{ steps.ia.outputs.torrent_url }}
-          ITEM_URL: ${{ steps.ia.outputs.item_url }}
           SIZE: ${{ steps.iso.outputs.size }}
           TAG: ${{ steps.tag.outputs.tag || github.event.inputs.release_tag }}
         run: |
@@ -229,13 +190,9 @@ jobs:
             echo
             echo "$blurb"
             echo
-            if [ "$UPLOADED" = "true" ]; then
-              echo "- **Direct mirror:** ${ISO_URL}"
-              echo "- **Torrent:** ${TORRENT_URL} _(can take a few minutes to appear)_"
-              echo "- **Mirror page:** ${ITEM_URL}"
-              echo
-            fi
-            
+            # the mirror job swaps this for Internet Archive links once they exist
+            echo "<!-- mirror:${VARIANT} -->"
+            echo
           if [ "$VARIANT" = "netinstall" ] || [ "$VARIANT" = "lite" ]; then
             echo "- **[Download ${ISO}](https://github.com/${{ github.repository }}/releases/download/${TAG}/${ISO})**"
           else
@@ -259,6 +216,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -341,11 +300,157 @@ jobs:
             dist/boykisser-linux-lite-amd64.iso
             dist/SHA256SUMS
 
+  mirror:
+    # Runs beside the release, never in front of it: the GitHub parts are the
+    # real download, the Internet Archive copy is a nice-to-have single file +
+    # torrent. One big PUT to IA can stall for ages and get thrown back as
+    # "s3 is overloaded", so every attempt is time-boxed and checked.
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: full
+            iso: boykisser-linux-amd64.iso
+            item_suffix: ""
+          - variant: netinstall
+            iso: boykisser-linux-netinstall-amd64.iso
+            item_suffix: "-netinstall"
+          - variant: lite
+            iso: boykisser-linux-lite-amd64.iso
+            item_suffix: "-lite"
+    steps:
+      - name: Download the ${{ matrix.variant }} ISO
+        uses: actions/download-artifact@v4
+        with:
+          name: iso-${{ matrix.variant }}
+
+      - name: Upload to the Internet Archive
+        env:
+          IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
+          IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
+          TAG: ${{ needs.build.outputs.tag }}
+          ISO: ${{ matrix.iso }}
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          ITEM="boykisser-linux-${TAG}${{ matrix.item_suffix }}"
+          : > "mirror-${VARIANT}.md"
+          if [ -z "$IA_ACCESS_KEY" ] || [ -z "$IA_SECRET_KEY" ]; then
+            echo "No Internet Archive keys set  -  skipping mirror upload."
+            exit 0
+          fi
+
+          # the full ISO arrives split for GitHub; IA gets it whole
+          if [ ! -f "$ISO" ]; then
+            cat "$ISO".part* > "$ISO"
+            rm -f "$ISO".part*
+          fi
+          sha256sum -c "SHA256SUMS-${VARIANT}"
+          size=$(stat -c %s "$ISO")
+          md5=$(md5sum "$ISO" | cut -d' ' -f1)
+
+          pip install --user --quiet internetarchive
+          mkdir -p ~/.config/internetarchive
+          cat > ~/.config/internetarchive/ia.ini <<EOF
+          [s3]
+          access = ${IA_ACCESS_KEY}
+          secret = ${IA_SECRET_KEY}
+          EOF
+
+          landed() {
+            ia list --columns=name,md5 "$ITEM" 2>/dev/null | grep -q "${md5}"
+          }
+
+          ok=false
+          for attempt in 1 2 3; do
+            echo "::group::IA upload attempt ${attempt}"
+            # --size-hint lets IA place the item on a server with room for the
+            # whole ISO up front; --checksum skips files that already made it;
+            # --no-derive keeps IA from re-processing a 2+ GB disk image.
+            if timeout 35m ia upload "$ITEM" "$ISO" "SHA256SUMS-${VARIANT}" \
+                --size-hint="$size" \
+                --checksum \
+                --no-derive \
+                --retries 3 --sleep 60 \
+                --metadata="title:Boykisser Linux ${TAG} (${VARIANT})" \
+                --metadata="mediatype:software" \
+                --metadata="collection:opensource_media" \
+                --metadata="subject:linux;debian;boykisser-linux" \
+                --metadata="creator:taynotfound"; then
+              ok=true
+            fi
+            echo "::endgroup::"
+            $ok && break
+            # a timed-out PUT often still gets ingested  -  give IA a moment
+            # and check before sending gigabytes again
+            sleep 120
+            if landed; then ok=true; break; fi
+          done
+
+          if ! $ok; then
+            echo "::warning::Internet Archive upload of ${ISO} failed; the release still has the GitHub download."
+            exit 1
+          fi
+          {
+            echo "- **Direct mirror (single file):** https://archive.org/download/${ITEM}/${ISO}"
+            echo "- **Torrent:** https://archive.org/download/${ITEM}/${ITEM}_archive.torrent _(can take a few minutes to appear)_"
+            echo "- **Mirror page:** https://archive.org/details/${ITEM}"
+          } > "mirror-${VARIANT}.md"
+          cat "mirror-${VARIANT}.md"
+
+      - name: Hand the links to the announce job
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mirror-${{ matrix.variant }}
+          retention-days: 1
+          if-no-files-found: ignore
+          path: mirror-${{ matrix.variant }}.md
+
+  announce:
+    # waits for the mirrors (success or not) so the release notes and the
+    # Discord post carry whichever IA links made it
+    needs: [release, mirror]
+    if: always() && needs.release.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need git history for changelog
+
+      - name: Collect mirror links
+        uses: actions/download-artifact@v4
+        with:
+          pattern: mirror-*
+          path: mirrors
+          merge-multiple: true
+
+      - name: Add mirror links to the release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          mkdir -p dist
+          gh release view "$TAG" --json body --jq .body > dist/release-notes.md
+          python3 - <<'PY'
+          import pathlib, re
+          notes = pathlib.Path("dist/release-notes.md")
+          def links(m):
+              f = pathlib.Path(f"mirrors/mirror-{m.group(1)}.md")
+              return f.read_text().strip() if f.exists() and f.read_text().strip() else ""
+          notes.write_text(re.sub(r"<!-- mirror:(\w+) -->", links, notes.read_text()))
+          PY
+          gh release edit "$TAG" --notes-file dist/release-notes.md
+          # sparse stand-ins so the Discord card can show each flavour's size
+          gh release view "$TAG" --json assets --jq '.assets[] | "\(.size) \(.name)"' |
+            while read -r size name; do truncate -s "$size" "dist/$name"; done
+
       - name: Announce on Discord
-        if: success()
         env:
           DISCORD_RELEASE_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
-          TAG: ${{ steps.tag.outputs.tag }}
+          TAG: ${{ needs.release.outputs.tag }}
           KIND: ${{ inputs.release_kind || 'big' }}
         run: |
           prev=$(git describe --tags --abbrev=0 --match 'v*' "${GITHUB_SHA}^" 2>/dev/null || true)

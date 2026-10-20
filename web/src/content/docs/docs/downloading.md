@@ -17,7 +17,7 @@ Each release also has a `SHA256SUMS` file.
 
 ## Easiest: the Internet Archive mirror
 
-Every release is mirrored on the Internet Archive as single files, with a torrent. Open the release, expand **Installation Instructions & Mirror Links**, and use the **Direct mirror** or **Torrent** link for your flavour. The website's download buttons point there too. No reassembly needed.
+Every release is mirrored on the Internet Archive as single files, with a torrent. Open the release, expand **Installation Instructions & Mirror Links**, and use the **Direct mirror** or **Torrent** link for your flavour. The website's download buttons point there too. No reassembly needed. The mirror links are added a little after the release goes up, so if they are missing, check back in a bit.
 
 ## From GitHub: reassemble the full ISO
 
